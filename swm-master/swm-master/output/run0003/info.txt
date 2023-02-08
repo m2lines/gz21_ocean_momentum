@@ -1,0 +1,37 @@
+Shallow water model run 3 initialised on Fri Dec 20 17:25:38 2019
+Domain is 3840km x 3840km (approx. 39.9deg x 34.5deg) centred at 30.0degN
+with 256 x 256 grid points
+at resolution 15.00km x 15.00km (approx. 0.16deg x 0.13deg)
+
+All model scripts stored in a zipped file.
+Output will be stored in output/run0003 every 6 hours.
+Param dictionary stored as txt and zip.
+
+Integrating 10.0 days with dt=3.17 min in 4548 time steps
+Time integration scheme is RK4 with CFL = 0.90
+
+Starting shallow water model on Fri Dec 20 17:25:40 2019
+Model integration will take approximately 7min, 0s, and is hopefully done on Fri Dec 20 17:32:40 2019
+5%
+10%
+15%
+20%
+25%
+30%
+35%
+40%
+45%
+50%
+55%
+60%
+65%
+70%
+75%
+80%
+85%
+90%
+95%
+100%
+
+Time integration done in 7min, 9s on Fri Dec 20 17:32:49 2019
+All output written in run0003.
