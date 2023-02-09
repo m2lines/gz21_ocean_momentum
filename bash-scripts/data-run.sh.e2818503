@@ -1,0 +1,6 @@
+2023/02/08 23:43:22 INFO mlflow.projects.utils: === Created directory /tmp/2818503.1.short.q/tmpyw_90avu for downloading remote URIs passed to arguments of type 'path' ===
+2023/02/08 23:43:22 INFO mlflow.projects.backend.local: === Running command 'python cmip26.py -85 85 -280 80 --CO2 1 --ntimes 10 --factor 4 --chunk_size 1 --global_ 0' in run with ID '840208938a814772a6931001212c87e7' === 
+/data/home/ahw795/.cache/pypoetry/virtualenvs/gz-ocean-momentum-rf9qqOFf-py3.9/lib/python3.9/site-packages/xarray/backends/plugins.py:71: RuntimeWarning: Engine 'cfgrib' loading failed:
+Cannot find the ecCodes library
+  warnings.warn(f"Engine {name!r} loading failed:\n{ex}", RuntimeWarning)
+2023/02/08 23:43:52 ERROR mlflow.cli: === Run (ID '840208938a814772a6931001212c87e7') failed ===
