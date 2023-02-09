@@ -13,20 +13,17 @@ TODOs:
 logged.
 """
 import torch
-from torch.nn import Module, Parameter, Sequential, ModuleList
+from torch.nn import Module, Parameter, Sequential
 from torch.nn import functional as F
 from torch.nn.modules.utils import _pair
 from torch.nn.functional import pad
-import torch.nn as nn
+from torch import nn
 
 import numpy as np
 from .base import DetectOutputSizeMixin, FinalTransformationMixin
 
 
 class Identity(Module):
-    def __init__(self):
-        super().__init__()
-
     def forward(self, input: torch.Tensor):
         return input
 
@@ -57,7 +54,7 @@ class LocallyConnected2d(nn.Module):
         stride,
         bias=False,
     ):
-        super(LocallyConnected2d, self).__init__()
+        super().__init__()
         self.kernel_size = _pair(kernel_size)
         self.stride = _pair(stride)
         self.padding = _pair(padding)
@@ -274,8 +271,6 @@ class MixedModel(Module):
 
 
 if __name__ == "__main__":
-    import numpy as np
-
     net = FullyCNN()
     net._final_transformation = lambda x: x
     input_ = torch.randint(0, 10, (17, 2, 35, 30)).to(dtype=torch.float)

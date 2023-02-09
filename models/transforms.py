@@ -8,16 +8,13 @@ transformations that ensure that the precision is positive.
 """
 
 from abc import ABC, abstractmethod
-from torch.nn import Module, Parameter
 import torch
+from torch.nn import Module, Parameter
 from torch.nn.functional import softplus
 
 
 class Transform(Module, ABC):
     """Abstract Base Class for all transforms"""
-
-    def __init__(self):
-        super().__init__()
 
     @abstractmethod
     def transform(self, input):
@@ -103,9 +100,6 @@ class SoftPlusTransform(PrecisionTransform):
 
 
 class MixedSoftPlusTransform(MixedPrecisionTransform):
-    def __init__(self):
-        super().__init__()
-
     @staticmethod
     def transform_precision(precision):
         return softplus(precision)

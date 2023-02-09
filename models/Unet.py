@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import torch
+from torch import nn
 from torch.nn import Module, ModuleList, Upsample, Sequential
 from torch.nn import functional as F
-from torch.nn.functional import pad
-import torch.nn as nn
-from .base import DetectOutputSizeMixin, FinalTransformationMixin
 from data.datasets import CropToMultipleof
+from .base import DetectOutputSizeMixin, FinalTransformationMixin
 
 
 class Unet_(Module, DetectOutputSizeMixin):
@@ -55,11 +54,10 @@ class Unet_(Module, DetectOutputSizeMixin):
         """Returns the padding, depending on the padding parameter"""
         if self.padding:
             return k_size // 2
-        else:
-            return 0
+        return 0
 
     def forward(self, x: torch.Tensor):
-        blocks = list()
+        blocks = []
         for i in range(self.n_scales):
             # Convolutions layers for that scale
             x = self.down_convs[i](x)
