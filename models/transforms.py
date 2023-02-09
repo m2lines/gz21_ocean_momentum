@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed May  6 19:38:09 2020
-
-@author: arthur
 In this file we define some transformations applied to the output of our 
 models. This allows us to keep separate these from the models themselves.
 In particular, when we use a heteroskedastic loss, we compare two
@@ -61,8 +58,9 @@ class PrecisionTransform(Transform):
         # Careful: the split argument is the size of the sections, not the
         # number of them (although does not matter for 4 channels)
         result = torch.clone(input_)
-        result[:, self.indices, :, :] = self.transform_precision(
-            input_[:, self.indices, :, :]) + self.min_value
+        result[:, self.indices, :, :] = (
+            self.transform_precision(input_[:, self.indices, :, :]) + self.min_value
+        )
         return result
 
     @staticmethod
@@ -84,8 +82,11 @@ class MixedPrecisionTransform(PrecisionTransform):
     def transform(self, input_):
         result = super().transform(input_)
         result = torch.clone(result)
-        result[:, self.indices, :, :] = (1 / ((torch.abs(result[:, self.mean_indices, :, :]) + 0.01)) *
-                                         result[:, self.indices, :, :])
+        result[:, self.indices, :, :] = (
+            1
+            / ((torch.abs(result[:, self.mean_indices, :, :]) + 0.01))
+            * result[:, self.indices, :, :]
+        )
         return result
 
 
@@ -98,7 +99,7 @@ class SoftPlusTransform(PrecisionTransform):
         return softplus(precision)
 
     def __repr__(self):
-        return ''.join(('SoftPlusTransform(', str(self.min_value), ')'))
+        return "".join(("SoftPlusTransform(", str(self.min_value), ")"))
 
 
 class MixedSoftPlusTransform(MixedPrecisionTransform):
@@ -110,7 +111,7 @@ class MixedSoftPlusTransform(MixedPrecisionTransform):
         return softplus(precision)
 
     def __repr__(self):
-        return ''.join(('MixedSoftPlusTransform(', str(self.min_value), ')'))
+        return "".join(("MixedSoftPlusTransform(", str(self.min_value), ")"))
 
 
 class SquareTransform(PrecisionTransform):
@@ -122,7 +123,7 @@ class SquareTransform(PrecisionTransform):
         return precision**2
 
     def __repr__(self):
-        return ''.join(('SquareTransform(', str(self.min_value), ')'))
+        return "".join(("SquareTransform(", str(self.min_value), ")"))
 
 
 class MeanTransform(Transform):
@@ -146,7 +147,7 @@ class ComposeTransform(Transform):
         return input
 
     def __repr__(self):
-        return ' o '.join([t.__repr__() for t in self.transforms])
+        return " o ".join([t.__repr__() for t in self.transforms])
 
 
 class MeanPrecisionTransform(ComposeTransform):
