@@ -17,6 +17,7 @@ class DetectOutputSizeMixin:
     """
 
     # TODO Should there be an __init__ method here, or is this a child class?
+    # See class FullyCNN in models1.py - combine & tidy
 
     def output_width(self, input_height, input_width):
         """
@@ -42,6 +43,8 @@ class DetectOutputSizeMixin:
         x = torch.zeros((1, self.n_in_channels, input_height, input_width))
         x = x.to(device=self.device)
         # TODO Not sure what this line is doing, self should not be callable...
+        # Calls the foward method of the network - make more explicit.
+        # Gets size of output of NN for a given height
         y = self(x)
 
         # temporary fix for student loss

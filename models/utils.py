@@ -11,7 +11,7 @@ import subgrid.train as train
 
 def load_model_cls(model_module_name: str, model_cls_name: str):
     """
-    Function Purpose?
+    Called to load a model from a models module.
 
     Parameters
     ----------

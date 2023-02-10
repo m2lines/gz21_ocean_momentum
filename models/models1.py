@@ -35,7 +35,7 @@ class ScaledModule(nn.Module):
     def forward(self, input: torch.Tensor):
         return self.factor * self.module.forward(input)
 
-
+# THIS IS NOT USED IN FINAL
 class LocallyConnected2d(nn.Module):
     """Class based on the code provided on the following link:
     https://discuss.pytorch.org/t/locally-connected-layers/26979
@@ -116,6 +116,7 @@ class LocallyConnected2d(nn.Module):
         return output_h, output_w
 
 
+# THIS IS UNUSED BY FINAL PAPER
 class Divergence2d(nn.Module):
     """Class that defines a fixed layer that produces the divergence of the
     input field. Note that the padding is set to 2, hence the spatial dim
@@ -171,6 +172,7 @@ class Divergence2d(nn.Module):
         return res
 
 
+# THIS IS THE FINAL PAPER
 class FullyCNN(DetectOutputSizeMixin, nn.Sequential):
     def __init__(
         self,
@@ -227,6 +229,7 @@ class FullyCNN(DetectOutputSizeMixin, nn.Sequential):
         return subbloc
 
 
+# NOT USED IN THE FINAL PAPER??
 class MixedModel(nn.Module):
     net_cls = FullyCNN
 

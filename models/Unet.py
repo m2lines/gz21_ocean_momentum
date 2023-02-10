@@ -1,3 +1,11 @@
+# THIS FILE CAN BE REMOVED
+# WAS USED IN THE RESEARCH PROCESS BUT WAS SUPERCEDED BY MODELS1
+
+# During training you can pass a choice of model
+# This could be passed as an alternative 
+
+
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import torch

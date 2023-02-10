@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# THIS IS CURRENTLY CALLED INDIRECTLY VIA MLFLOW
 import os
 
 # TODO Consider using pathlib
@@ -259,6 +260,7 @@ criterion = getattr(train.losses, loss_cls_name)(n_target_channels)
 
 # Recover the model's class, based on the corresponding CLI parameters
 try:
+    # Loads model from model module - TODO replace by loadmodelclass from utils.py
     models_module = importlib.import_module(model_module_name)
     model_cls = getattr(models_module, model_cls_name)
 except ModuleNotFoundError as e:
