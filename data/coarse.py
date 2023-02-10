@@ -99,6 +99,8 @@ def spatial_filter_dataset(dataset: xr.Dataset, grid_info: xr.Dataset,
     """
     area_u = grid_info['dxu'] * grid_info['dyu'] / 1e8
     dataset = dataset * area_u
+    # Normalisation term, so that if the quantity we filter is constant
+    # over the domain, the filtered quantity is constant with the same value
     norm = xr.apply_ufunc(lambda x: gaussian_filter(x, sigma, mode='constant'),
                           area_u, dask='parallelized', output_dtypes=[float, ])
     filtered = xr.apply_ufunc(lambda x: gaussian_filter(x, sigma, mode='constant'),
@@ -185,8 +187,6 @@ def eddy_forcing(u_v_dataset : xr.Dataset, grid_data: xr.Dataset,
         forcing_coarse = forcing_coarse.where(forcing_coarse['usurf'] != 0)
     if not debug_mode:
         return forcing_coarse
-
-    # Debug mode, we also return advection terms
     u_v_dataset = u_v_dataset.merge(adv)
     filtered_adv = filtered_adv.rename({'adv_x': 'f_adv_x',
                                         'adv_y': 'f_adv_y'})
