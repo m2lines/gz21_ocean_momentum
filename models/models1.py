@@ -13,23 +13,21 @@ TODOs:
 logged.
 """
 import torch
-from torch.nn import Module, Parameter, Sequential
-from torch.nn import functional as F
+from torch import nn
 from torch.nn.modules.utils import _pair
 from torch.nn.functional import pad
-from torch import nn
 
 import numpy as np
-from .base import DetectOutputSizeMixin, FinalTransformationMixin
+from .base import DetectOutputSizeMixin
 
 
-class Identity(Module):
+class Identity(nn.Module):
     def forward(self, input: torch.Tensor):
         return input
 
 
-class ScaledModule(Module):
-    def __init__(self, factor: float, module: torch.nn.Module):
+class ScaledModule(nn.Module):
+    def __init__(self, factor: float, module: nn.Module):
         super().__init__()
         self.factor = factor
         self.module = module
@@ -118,7 +116,7 @@ class LocallyConnected2d(nn.Module):
         return output_h, output_w
 
 
-class Divergence2d(Module):
+class Divergence2d(nn.Module):
     """Class that defines a fixed layer that produces the divergence of the
     input field. Note that the padding is set to 2, hence the spatial dim
     of the output is larger than that of the input."""
@@ -131,10 +129,10 @@ class Divergence2d(Module):
         factor = n_input_channels // n_output_channels
         lambda_ = 1 / (factor * 2)
         shape = (1, n_input_channels // 4, 1, 1)
-        self.lambdas1x = Parameter(torch.ones(shape)) * lambda_
-        self.lambdas2x = Parameter(torch.ones(shape)) * lambda_
-        self.lambdas1y = Parameter(torch.ones(shape)) * lambda_
-        self.lambdas2y = Parameter(torch.ones(shape)) * lambda_
+        self.lambdas1x = nn.Parameter(torch.ones(shape)) * lambda_
+        self.lambdas2x = nn.Parameter(torch.ones(shape)) * lambda_
+        self.lambdas1y = nn.Parameter(torch.ones(shape)) * lambda_
+        self.lambdas2y = nn.Parameter(torch.ones(shape)) * lambda_
         self.lambdas1x = self.lambdas1x.to(device=device)
         self.lambdas2x = self.lambdas2x.to(device=device)
         self.lambdas1y = self.lambdas1y.to(device=device)
@@ -149,21 +147,22 @@ class Divergence2d(Module):
         self.y_derivative = y_derivative
 
     def forward(self, input: torch.Tensor):
-        n, c, h, w = input.size()
-        y_derivative1 = self.y_derivative * self.lambdas1y
-        x_derivative2 = self.x_derivative * self.lambdas2x
-        y_derivative2 = self.y_derivative * self.lambdas2y
-        output11 = F.conv2d(
+        _, c, _, _ = input.size()
+        # TODO Following lines were unused, is this correct? Remove?
+        # y_derivative1 = self.y_derivative * self.lambdas1y
+        # x_derivative2 = self.x_derivative * self.lambdas2x
+        # y_derivative2 = self.y_derivative * self.lambdas2y
+        output11 = nn.functional.conv2d(
             input[:, : c // 4, :, :], self.x_derivative * self.lambdas1x, padding=2
         )
-        output12 = F.conv2d(
+        output12 = nn.functional.conv2d(
             input[:, c // 4 : c // 2, :, :], self.y_derivative, padding=2
         )
         output1 = output11 + output12
-        output21 = F.conv2d(
+        output21 = nn.functional.conv2d(
             input[:, c // 2 : c // 2 + c // 4, :, :], self.x_derivative, padding=2
         )
-        output22 = F.conv2d(
+        output22 = nn.functional.conv2d(
             input[:, c // 2 + c // 4 :, :, :], self.y_derivative, padding=2
         )
         output2 = output21 + output22
@@ -172,7 +171,7 @@ class Divergence2d(Module):
         return res
 
 
-class FullyCNN(DetectOutputSizeMixin, Sequential):
+class FullyCNN(DetectOutputSizeMixin, nn.Sequential):
     def __init__(
         self,
         n_in_channels: int = 2,
@@ -205,7 +204,7 @@ class FullyCNN(DetectOutputSizeMixin, Sequential):
         conv7 = torch.nn.Conv2d(32, 32, 3, padding=padding_3)
         block7 = self._make_subblock(conv7)
         conv8 = torch.nn.Conv2d(32, n_out_channels, 3, padding=padding_3)
-        Sequential.__init__(
+        nn.Sequential.__init__(
             self, *block1, *block2, *block3, *block4, *block5, *block6, *block7, conv8
         )
 
@@ -228,7 +227,7 @@ class FullyCNN(DetectOutputSizeMixin, Sequential):
         return subbloc
 
 
-class MixedModel(Module):
+class MixedModel(nn.Module):
     net_cls = FullyCNN
 
     def __init__(self, *args, **kwargs):
@@ -261,7 +260,7 @@ class MixedModel(Module):
         return getattr(self.net, attr_name)
 
     def __setattr__(self, key, value):
-        if key == "net" or key == "n_in_channels":
+        if key in ("net", "n_in_channels"):
             self.__dict__[key] = value
         else:
             setattr(self.net, key, value)

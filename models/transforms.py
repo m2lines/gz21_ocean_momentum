@@ -9,29 +9,77 @@ transformations that ensure that the precision is positive.
 
 from abc import ABC, abstractmethod
 import torch
-from torch.nn import Module, Parameter
+import torch.nn as nn
 from torch.nn.functional import softplus
 
 
-class Transform(Module, ABC):
-    """Abstract Base Class for all transforms"""
+class Transform(nn.Module, ABC):
+    """
+    Parameters
+    ----------
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+
+    """
+ 
+    # TODO There are some empty methods here, can they be removed?
 
     @abstractmethod
     def transform(self, input):
+        """
+        Function Purpose?
+
+        Parameters
+        ----------
+        input : TYPE?
+            Description?
+
+        Returns
+        -------
+
+        """
         pass
 
     def forward(self, input_):
+        """
+        Function Purpose?
+
+        Parameters
+        ----------
+        input : TYPE?
+            Description?
+
+        Returns
+        -------
+
+        """
         return self.transform(input_)
 
     @abstractmethod
     def __repr__(self):
+        """
+        Function Purpose?
+
+        Parameters
+        ----------
+        input : TYPE?
+            Description?
+
+        Returns
+        -------
+
+        """
         pass
 
 
 class PrecisionTransform(Transform):
     def __init__(self, min_value=0.1):
         super().__init__()
-        self.min_value = Parameter(torch.tensor(min_value))
+        self.min_value = nn.Parameter(torch.tensor(min_value))
 
     @property
     def min_value(self):
@@ -39,21 +87,53 @@ class PrecisionTransform(Transform):
 
     @min_value.setter
     def min_value(self, value):
-        self._min_value = Parameter(torch.tensor(value))
+        self._min_value = nn.Parameter(torch.tensor(value))
 
     @property
     def indices(self):
-        """Return the indices transformed"""
+        """
+        Return the indices transformed
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         return self._indices
 
     @indices.setter
     def indices(self, values):
+        """
+        Function Purpose?
+
+        Parameters
+        ----------
+        input : TYPE?
+            Description?
+
+        Returns
+        -------
+
+        """
         self._indices = values
 
     def transform(self, input_):
-        # Split in sections of size 2 along channel dimension
-        # Careful: the split argument is the size of the sections, not the
-        # number of them (although does not matter for 4 channels)
+        """
+        Split in sections of size 2 along channel dimension
+        Note: the split argument is the size of the sections, not the
+        number of sections (although does not matter for 4 channels)
+
+        Parameters
+        ----------
+        input : TYPE?
+            Description?
+
+        Returns
+        -------
+
+        """
         result = torch.clone(input_)
         result[:, self.indices, :, :] = (
             self.transform_precision(input_[:, self.indices, :, :]) + self.min_value
@@ -63,6 +143,18 @@ class PrecisionTransform(Transform):
     @staticmethod
     @abstractmethod
     def transform_precision(precision):
+        """
+        Function Purpose?
+
+        Parameters
+        ----------
+        input : TYPE?
+            Description?
+
+        Returns
+        -------
+
+        """
         pass
 
 
@@ -72,11 +164,35 @@ class MixedPrecisionTransform(PrecisionTransform):
 
     @property
     def mean_indices(self):
+        """
+        Function Purpose?
+
+        Parameters
+        ----------
+        input : TYPE?
+            Description?
+
+        Returns
+        -------
+
+        """
         s = set(self.indices)
         s2 = set(list(range(4)))
         return list(s2.difference(s))
 
     def transform(self, input_):
+        """
+        Function Purpose?
+
+        Parameters
+        ----------
+        input : TYPE?
+            Description?
+
+        Returns
+        -------
+
+        """
         result = super().transform(input_)
         result = torch.clone(result)
         result[:, self.indices, :, :] = (

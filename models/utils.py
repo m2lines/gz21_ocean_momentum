@@ -4,11 +4,26 @@ import importlib
 import logging
 import torch
 import mlflow
+# TODO Does this need renaming to GZ-ocean-momentum.utils?
 from subgrid.utils import select_experiment, select_run, pickle_artifact
 import subgrid.train as train
 
 
 def load_model_cls(model_module_name: str, model_cls_name: str):
+    """
+    Function Purpose?
+
+    Parameters
+    ----------
+    model_module_name : str
+        Description?
+    model_cls_name : str
+        Description?
+
+    Returns
+    -------
+
+    """
     try:
         module = importlib.import_module(model_module_name)
         model_cls = getattr(module, model_cls_name)
@@ -24,8 +39,19 @@ def load_model_cls(model_module_name: str, model_cls_name: str):
 
 
 def select_and_load():
-    """Prompts the user to select a model from those available, load its
-    parameters and returns it"""
+    """
+    Prompts the user to select a model from those available, load its
+    parameters and returns it.
+
+    Parameters
+    ----------
+    input : TYPE?
+        Description?
+
+    Returns
+    -------
+
+    """
     models_experiment_id, _ = select_experiment("21")
     cols = [
         "metrics.test loss",

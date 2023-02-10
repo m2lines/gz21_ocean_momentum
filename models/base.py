@@ -7,10 +7,6 @@ class DetectOutputSizeMixin:
     """
     Parameters
     ----------
-    x : float
-        The X coordinate.
-    y : float
-        The Y coordinate.
 
     Attributes
     ----------
