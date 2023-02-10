@@ -24,6 +24,6 @@ jobs:
         python-version: 3.x
     - run: pip install --upgrade pip
     - run: pip install black>=23 pylint>=2.16 mypy>=1.0 pydocstyle>=6.3
-    - run: black --diff --check $(git ls-files '*.py')
-    - run: pylint --disable=all --enable=unused-import $(git ls-files '*.py')
-    - run: mypy --strict $(git ls-files '*.py')
+    - run: pylint --disable=all --enable=unused-import .
+    - run: mypy --strict .
+    - run: pydocstyle --convention=numpy .
