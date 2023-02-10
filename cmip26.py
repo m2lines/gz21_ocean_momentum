@@ -13,6 +13,7 @@ from os.path import join
 import os
 
 import argparse
+import configparser
 import xarray as xr
 from dask.diagnostics import ProgressBar
 import mlflow
@@ -31,7 +32,8 @@ if logging_level is not None:
     logging_level = getattr(logging, logging_level)
     logging.basicConfig(level=logging_level)
 logger = logging.getLogger(__name__)
-
+config = configparser.ConfigParser()
+config.read('config.ini')
 
 # Script parameters
 CATALOG_URL = 'https://raw.githubusercontent.com/pangeo-data/pangeo-datastore\
@@ -41,7 +43,7 @@ DESCRIPTION = 'Read data from the CM2.6 and \
         apply coarse graining. Stores the resulting dataset into an MLFLOW \
         experiment within a specific run.'
 
-data_location = tempfile.mkdtemp(dir='/scratch/ag7531/temp/')
+data_location = tempfile.mkdtemp(dir=config['MLFLOW']['TEMP_DATA_LOCATION'])
 
 # Parse the command-line parameters
 parser = argparse.ArgumentParser(description=DESCRIPTION)
@@ -94,9 +96,9 @@ if params.factor != 0 and not debug_mode:
     template2 = template.copy()
     template2 = template2.rename(dict(usurf='S_x', vsurf='S_y'))
     template = xr.merge((template, template2))
-    forcing = xr.map_blocks(func, patch_data, template=template)
-    # forcing = eddy_forcing(patch_data, grid_data, scale=scale_m, method='mean',
-    #                        scale_mode='factor')
+    #forcing = xr.map_blocks(func, patch_data, template=template)
+    forcing = eddy_forcing(patch_data, grid_data, scale=scale_m, method='mean',
+                            scale_mode='factor')
 elif not debug_mode:
     scale_m = params.scale * 1e3
     forcing = eddy_forcing(patch_data, grid_data, scale=scale_m, method='mean')
@@ -126,8 +128,11 @@ forcing = forcing.sel(xu_ocean=slice(bounds[2], bounds[3]),
 # forcing = forcing.chunk(dict(zip(('time', 'xu_ocean', 'yu_ocean'),
 #                                  chunk_sizes)))
 
+forcing = forcing.chunk(dict(time=1))
+
 logger.info('Preparing forcing data')
 logger.debug(forcing)
+print(forcing)
 # export data
 forcing.to_zarr(join(data_location, 'forcing'), mode='w')
 
