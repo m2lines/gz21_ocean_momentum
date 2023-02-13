@@ -30,8 +30,8 @@ logging_level = os.environ.get('LOGGING_LEVEL')
 
 # read config file
 config = configparser.ConfigParser()
-config.read('configArthurLaptop.ini')
-#config.read('config.ini')
+#config.read('configArthurLaptop.ini')
+config.read('config.ini')
 
 # set logging config depending on the logging config
 if logging_level is not None:
