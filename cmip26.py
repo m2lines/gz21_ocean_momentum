@@ -18,9 +18,9 @@ import xarray as xr
 from dask.diagnostics import ProgressBar
 import mlflow
 
-from src.gz_ocean_momentum.data.utils import cyclize_dataset
-from src.gz_ocean_momentum.data.coarse import eddy_forcing
-from src.gz_ocean_momentum.data.pangeo_catalog import get_patch
+from gz_ocean_momentum.data.utils import cyclize_dataset
+from gz_ocean_momentum.data.coarse import eddy_forcing
+from gz_ocean_momentum.data.pangeo_catalog import get_patch
 import logging
 import tempfile
 
