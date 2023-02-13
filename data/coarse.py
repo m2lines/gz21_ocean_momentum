@@ -103,8 +103,13 @@ def spatial_filter_dataset(dataset: xr.Dataset, grid_info: xr.Dataset,
     # over the domain, the filtered quantity is constant with the same value
     norm = xr.apply_ufunc(lambda x: gaussian_filter(x, sigma, mode='constant'),
                           area_u, dask='parallelized', output_dtypes=[float, ])
-    filtered = xr.apply_ufunc(lambda x: spatial_filter(x, sigma), dataset,
-                              dask='parallelized', output_dtypes=[float, ])
+    filtered = xr.apply_ufunc(lambda x: gaussian_filter(x, sigma, mode='constant'),
+                              dataset,
+                              input_core_dims=[['yu_ocean', 'xu_ocean']],
+                              output_core_dims=[['yu_ocean', 'xu_ocean']],
+                              dask='parallelized',
+                              vectorize=True,
+                              output_dtypes=[float, ])
     return filtered / norm
 
 
