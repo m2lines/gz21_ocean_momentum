@@ -1,5 +1,5 @@
 import numpy as np
-from data.pangeo_catalog import get_grid
+
 
 #grid_cm26 = get_grid()
 

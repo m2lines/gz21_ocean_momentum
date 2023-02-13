@@ -11,10 +11,9 @@ Implementation of the U-net structure
 import torch
 from torch.nn import (Module, ModuleList, Upsample, Sequential)
 from torch.nn import functional as F
-from torch.nn.functional import pad
 import torch.nn as nn
 from .base import DetectOutputSizeMixin, FinalTransformationMixin
-from data.datasets import CropToMultipleof
+from src.gz_ocean_momentum.data.datasets import CropToMultipleof
 
 
 class Unet_(Module, DetectOutputSizeMixin):
