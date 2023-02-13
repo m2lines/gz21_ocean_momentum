@@ -22,11 +22,40 @@ from .base import DetectOutputSizeMixin
 
 
 class Identity(nn.Module):
+    """
+    Parameters
+    ----------
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+
+    """
+
     def forward(self, input: torch.Tensor):
         return input
 
 
 class ScaledModule(nn.Module):
+    """
+    Parameters
+    ----------
+    factor : float
+        description?
+    module : torch.nn.Module
+        description?
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+    forward
+
+    """
+
     def __init__(self, factor: float, module: nn.Module):
         super().__init__()
         self.factor = factor
@@ -35,7 +64,88 @@ class ScaledModule(nn.Module):
     def forward(self, input: torch.Tensor):
         return self.factor * self.module.forward(input)
 
-# THIS IS NOT USED IN FINAL
+
+# THIS IS THE FINAL PAPER
+class FullyCNN(DetectOutputSizeMixin, nn.Sequential):
+    """
+    Parameters
+    ----------
+    n_in_channels : int
+        number of input chanels to model
+    n_out_channels : int
+        number of output channels from model
+    padding : type?
+        description?
+    batch_norm : bool
+        whether to normalise batches
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+    final_transformation
+    forward
+
+    """
+
+    def __init__(
+        self,
+        n_in_channels: int = 2,
+        n_out_channels: int = 4,
+        padding=None,
+        batch_norm=False,
+    ):
+        if padding is None:
+            padding_5 = 0
+            padding_3 = 0
+        elif padding == "same":
+            padding_5 = 2
+            padding_3 = 1
+        else:
+            raise ValueError("Unknow value for padding parameter.")
+
+        self.n_in_channels = n_in_channels
+        self.batch_norm = batch_norm
+        conv1 = torch.nn.Conv2d(n_in_channels, 128, 5, padding=padding_5)
+        block1 = self._make_subblock(conv1)
+        conv2 = torch.nn.Conv2d(128, 64, 5, padding=padding_5)
+        block2 = self._make_subblock(conv2)
+        conv3 = torch.nn.Conv2d(64, 32, 3, padding=padding_3)
+        block3 = self._make_subblock(conv3)
+        conv4 = torch.nn.Conv2d(32, 32, 3, padding=padding_3)
+        block4 = self._make_subblock(conv4)
+        conv5 = torch.nn.Conv2d(32, 32, 3, padding=padding_3)
+        block5 = self._make_subblock(conv5)
+        conv6 = torch.nn.Conv2d(32, 32, 3, padding=padding_3)
+        block6 = self._make_subblock(conv6)
+        conv7 = torch.nn.Conv2d(32, 32, 3, padding=padding_3)
+        block7 = self._make_subblock(conv7)
+        conv8 = torch.nn.Conv2d(32, n_out_channels, 3, padding=padding_3)
+        nn.Sequential.__init__(
+            self, *block1, *block2, *block3, *block4, *block5, *block6, *block7, conv8
+        )
+
+    @property
+    def final_transformation(self):
+        return self._final_transformation
+
+    @final_transformation.setter
+    def final_transformation(self, transformation):
+        self._final_transformation = transformation
+
+    def forward(self, x):
+        x = super().forward(x)
+        return self.final_transformation(x)
+
+    def _make_subblock(self, conv):
+        subbloc = [conv, nn.ReLU()]
+        if self.batch_norm:
+            subbloc.append(nn.BatchNorm2d(conv.out_channels))
+        return subbloc
+
+
+# THIS IS NOT USED IN FINAL PAPER
 class LocallyConnected2d(nn.Module):
     """Class based on the code provided on the following link:
     https://discuss.pytorch.org/t/locally-connected-layers/26979
@@ -116,7 +226,7 @@ class LocallyConnected2d(nn.Module):
         return output_h, output_w
 
 
-# THIS IS UNUSED BY FINAL PAPER
+# THIS IS NOT USED IN FINAL PAPER
 class Divergence2d(nn.Module):
     """Class that defines a fixed layer that produces the divergence of the
     input field. Note that the padding is set to 2, hence the spatial dim
@@ -172,64 +282,7 @@ class Divergence2d(nn.Module):
         return res
 
 
-# THIS IS THE FINAL PAPER
-class FullyCNN(DetectOutputSizeMixin, nn.Sequential):
-    def __init__(
-        self,
-        n_in_channels: int = 2,
-        n_out_channels: int = 4,
-        padding=None,
-        batch_norm=False,
-    ):
-        if padding is None:
-            padding_5 = 0
-            padding_3 = 0
-        elif padding == "same":
-            padding_5 = 2
-            padding_3 = 1
-        else:
-            raise ValueError("Unknow value for padding parameter.")
-        self.n_in_channels = n_in_channels
-        self.batch_norm = batch_norm
-        conv1 = torch.nn.Conv2d(n_in_channels, 128, 5, padding=padding_5)
-        block1 = self._make_subblock(conv1)
-        conv2 = torch.nn.Conv2d(128, 64, 5, padding=padding_5)
-        block2 = self._make_subblock(conv2)
-        conv3 = torch.nn.Conv2d(64, 32, 3, padding=padding_3)
-        block3 = self._make_subblock(conv3)
-        conv4 = torch.nn.Conv2d(32, 32, 3, padding=padding_3)
-        block4 = self._make_subblock(conv4)
-        conv5 = torch.nn.Conv2d(32, 32, 3, padding=padding_3)
-        block5 = self._make_subblock(conv5)
-        conv6 = torch.nn.Conv2d(32, 32, 3, padding=padding_3)
-        block6 = self._make_subblock(conv6)
-        conv7 = torch.nn.Conv2d(32, 32, 3, padding=padding_3)
-        block7 = self._make_subblock(conv7)
-        conv8 = torch.nn.Conv2d(32, n_out_channels, 3, padding=padding_3)
-        nn.Sequential.__init__(
-            self, *block1, *block2, *block3, *block4, *block5, *block6, *block7, conv8
-        )
-
-    @property
-    def final_transformation(self):
-        return self._final_transformation
-
-    @final_transformation.setter
-    def final_transformation(self, transformation):
-        self._final_transformation = transformation
-
-    def forward(self, x):
-        x = super().forward(x)
-        return self.final_transformation(x)
-
-    def _make_subblock(self, conv):
-        subbloc = [conv, nn.ReLU()]
-        if self.batch_norm:
-            subbloc.append(nn.BatchNorm2d(conv.out_channels))
-        return subbloc
-
-
-# NOT USED IN THE FINAL PAPER??
+# THIS IS NOT USED IN FINAL PAPER (??)
 class MixedModel(nn.Module):
     net_cls = FullyCNN
 
