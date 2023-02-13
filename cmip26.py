@@ -30,7 +30,8 @@ logging_level = os.environ.get('LOGGING_LEVEL')
 
 # read config file
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read('configArthurLaptop.ini')
+#config.read('config.ini')
 
 # set logging config depending on the logging config
 if logging_level is not None:
@@ -97,9 +98,9 @@ if not debug_mode:
     template2 = template.copy()
     template2 = template2.rename(dict(usurf='S_x', vsurf='S_y'))
     template = xr.merge((template, template2))
-    #forcing = xr.map_blocks(func, patch_data, template=template)
-    forcing = eddy_forcing(patch_data, grid_data, scale=scale_m, method='mean',
-                            scale_mode='factor')
+    forcing = xr.map_blocks(func, patch_data, template=template)
+    #forcing = eddy_forcing(patch_data, grid_data, scale=scale_m, method='mean',
+    #                        scale_mode='factor')
 else:
     logger.info('!!!Debug mode!!!')
     forcing = patch_data
