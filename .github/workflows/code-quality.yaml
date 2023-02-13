@@ -10,11 +10,13 @@ on:
 
 jobs:
   black:
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: psf/black@stable
   build:
+    if: always()
     runs-on: ubuntu-latest
     name: Checks
     steps:
@@ -25,5 +27,8 @@ jobs:
     - run: pip install --upgrade pip
     - run: pip install black>=23 pylint>=2.16 mypy>=1.0 pydocstyle>=6.3
     - run: pylint --disable=all --enable=unused-import .
+      if: always()
     - run: mypy --strict .
+      if: always()
     - run: pydocstyle --convention=numpy .
+      if: always()
