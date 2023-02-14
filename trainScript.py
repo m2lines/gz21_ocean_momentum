@@ -22,7 +22,7 @@ import torch.nn
 from dask.diagnostics import ProgressBar
 
 # These imports are used to create the training datasets
-from data.datasets import (
+from src.gz_ocean_momentum.data.datasets import (
     DatasetWithTransform,
     DatasetTransformer,
     RawDataFromXrDataset,
@@ -31,20 +31,20 @@ from data.datasets import (
     ComposeTransforms,
     MultipleTimeIndices,
 )
-from data.utils import load_training_datasets, load_data_from_run
+from src.gz_ocean_momentum.data.utils import load_training_datasets, load_data_from_run
 
 # Some utils functions
-from train.base import Trainer
-import train.losses
-from train.utils import (
+from src.gz_ocean_momentum.train.base import Trainer
+import src.gz_ocean_momentum.train.losses
+from src.gz_ocean_momentum.train.utils import (
     DEVICE_TYPE,
     learning_rates_from_string,
 )
-from testing.utils import create_test_dataset
-from testing.metrics import MSEMetric, MaxMetric
-import models.transforms
+from src.gz_ocean_momentum.testing.utils import create_test_dataset
+from src.gz_ocean_momentum.testing.metrics import MSEMetric, MaxMetric
+import src.gz_ocean_momentum.models.transforms
 
-import models.submodels
+import src.gz_ocean_momentum.models.submodels
 
 from utils import TaskInfo
 
@@ -58,6 +58,13 @@ def negative_int(value: str):
 
 def check_str_is_None(s: str):
     return None if s.lower() == "none" else s
+
+
+
+# read config file
+config = configparser.ConfigParser()
+config.read('configArthurLaptop.ini')
+#config.read('config.ini')
 
 
 # PARAMETERS ---------
@@ -160,8 +167,8 @@ print_loss_every = params.printevery
 MODEL_NAME = "trained_model.pth"
 
 # Directories where temporary data will be saved
-data_location = tempfile.mkdtemp(dir="/scratch/ag7531/temp/")
-print("Created temporary dir at  ", data_location)
+data_location = tempfile.mkdtemp(dir=config['MLFLOW']['TEMP_DATA_LOCATION'])
+print('Created temporary dir at  ', data_location)
 
 FIGURES_DIRECTORY = "figures"
 MODELS_DIRECTORY = "models"
@@ -198,7 +205,7 @@ datasets, train_datasets, test_datasets = [], [], []
 
 for xr_dataset in xr_datasets:
     # TODO this is a temporary fix to implement seasonal patterns
-    submodel_transform = copy.deepcopy(getattr(models.submodels, submodel))
+    submodel_transform = copy.deepcopy(getattr(src.gz_ocean_momentum.models.submodels, submodel))
     print(submodel_transform)
     xr_dataset = submodel_transform.fit_transform(xr_dataset)
     with ProgressBar(), TaskInfo("Computing dataset"):
@@ -256,7 +263,7 @@ print(f"Size of validation data : {len(test_dataset)}")
 # NEURAL NETWORK---------------------------------------------------------------
 # Load the loss class required in the script parameters
 n_target_channels = datasets[0].n_targets
-criterion = getattr(train.losses, loss_cls_name)(n_target_channels)
+criterion = getattr(src.gz_ocean_momentum.train.losses, loss_cls_name)(n_target_channels)
 
 # Recover the model's class, based on the corresponding CLI parameters
 try:
@@ -269,7 +276,7 @@ except AttributeError as e:
     raise type(e)("Could not find the specified model class: " + str(e))
 net = model_cls(datasets[0].n_features, criterion.n_required_channels)
 try:
-    transformation_cls = getattr(models.transforms, transformation_cls_name)
+    transformation_cls = getattr(src.gz_ocean_momentum.models.transforms, transformation_cls_name)
     transformation = transformation_cls()
     transformation.indices = criterion.precision_indices
     net.final_transformation = transformation

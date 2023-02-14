@@ -2,7 +2,7 @@
 
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from data.xrtransforms import (
+from src.gz_ocean_momentum.data.xrtransforms import (
     ScalingTransform,
     SeasonalStdizer,
     ChainedTransform,

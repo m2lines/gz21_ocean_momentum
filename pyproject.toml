@@ -4,7 +4,6 @@ version = "0.1.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
-packages = [{include = "gz_ocean_momentum"}]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
@@ -16,8 +15,10 @@ requests = "^2.28.2"
 aiohttp = "^3.8.3"
 intake-xarray = "^0.6.1"
 gcsfs = "^2023.1.0"
+torch = "^1.13.1"
+progressbar = "^2.5"
 
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

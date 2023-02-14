@@ -7,8 +7,7 @@ Created on Mon Nov 25 18:28:27 2019
 import logging
 import torch
 import mlflow
-from .models.utils import load_model_cls, pickle_artifact
-from pathlib import Path
+from src.gz_ocean_momentum.models.utils import load_model_cls, pickle_artifact
 
 MODEL_RUN_ID = 'dc74cea68a7f4c7e98f9228649a97135'
 

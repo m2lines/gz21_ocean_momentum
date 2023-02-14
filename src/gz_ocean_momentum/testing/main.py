@@ -14,8 +14,6 @@ We allow for different modes of training:
     - training of batch norm layers only
 
 """
-from copy import deepcopy
-from sys import modules
 import os.path
 import tempfile
 import logging
@@ -26,16 +24,15 @@ import mlflow
 from torch.utils.data import DataLoader
 import xarray as xr
 from utils import select_run, select_experiment, TaskInfo
-from train.utils import learning_rates_from_string
-from data.datasets import (RawDataFromXrDataset, DatasetTransformer,
-                           Subset_, DatasetWithTransform, ComposeTransforms,
-                           MultipleTimeIndices, DatasetPartitioner)
-from train.base import Trainer
-import train.losses
-from testing.utils import create_large_test_dataset, BatchSampler, pickle_artifact
-from testing.metrics import MSEMetric, MaxMetric
-from models.utils import load_model_cls
-from models.transforms import SoftPlusTransform
+from src.gz_ocean_momentum.train.utils import learning_rates_from_string
+from src.gz_ocean_momentum.data.datasets import (RawDataFromXrDataset, DatasetTransformer,
+                                                 Subset_, DatasetWithTransform, ComposeTransforms,
+                                                 DatasetPartitioner)
+from src.gz_ocean_momentum.train.base import Trainer
+import src.gz_ocean_momentum.train.losses
+from src.gz_ocean_momentum.testing.utils import create_large_test_dataset, BatchSampler, pickle_artifact
+from src.gz_ocean_momentum.testing.metrics import MSEMetric, MaxMetric
+from src.gz_ocean_momentum.models.utils import load_model_cls
 
 import argparse
 
@@ -43,8 +40,7 @@ import argparse
 from dask.diagnostics import ProgressBar
 from other.telegram import send_message
 
-from data.xrtransforms import SeasonalStdizer
-import models.submodels
+import src.gz_ocean_momentum.models.submodels
 
 
 # Parse arguments
@@ -108,7 +104,7 @@ model_file = client.download_artifacts(model_run.run_id,
 # TODO temporary fix for backward compatibility
 if not isinstance(submodel_name, str):
     submodel_name = 'transform3'
-submodel = getattr(models.submodels, submodel_name)
+submodel = getattr(src.gz_ocean_momentum.models.submodels, submodel_name)
 
 # metrics saved independently of the training criterion
 metrics = {'mse': MSEMetric(), 'Inf Norm': MaxMetric()}
@@ -185,7 +181,7 @@ for metric in metrics.values():
 # Set up training criterion and select parameters to train
 try:
     n_targets = dataset.n_targets
-    criterion = getattr(train.losses, loss_cls_name)(n_targets)
+    criterion = getattr(src.gz_ocean_momentum.train.losses, loss_cls_name)(n_targets)
 except AttributeError as e:
     raise type(e)('Could not find the loss class used for training, ',
                   loss_cls_name)

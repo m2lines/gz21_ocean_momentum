@@ -11,7 +11,7 @@
 import torch
 from torch import nn
 from torch.nn import functional as F
-from data.datasets import CropToMultipleof
+from src.gz_ocean_momentum.data.datasets import CropToMultipleof
 from .base import DetectOutputSizeMixin, FinalTransformationMixin
 
 
