@@ -9,7 +9,7 @@ transformations that ensure that the precision is positive.
 
 from abc import ABC, abstractmethod
 import torch
-import torch.nn as nn
+from torch import nn
 from torch.nn.functional import softplus
 
 
@@ -25,7 +25,7 @@ class Transform(nn.Module, ABC):
     -------
 
     """
- 
+
     # TODO There are some empty methods here, can they be removed?
 
     @abstractmethod
@@ -77,16 +77,58 @@ class Transform(nn.Module, ABC):
 
 
 class PrecisionTransform(Transform):
+    """
+    Parameters
+    ----------
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+
+    """
+
     def __init__(self, min_value=0.1):
+        """
+        Return the indices transformed
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         super().__init__()
         self.min_value = nn.Parameter(torch.tensor(min_value))
 
     @property
     def min_value(self):
+        """
+        Return the indices transformed
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         return softplus(self._min_value)
 
     @min_value.setter
     def min_value(self, value):
+        """
+        Return the indices transformed
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         self._min_value = nn.Parameter(torch.tensor(value))
 
     @property
@@ -159,6 +201,18 @@ class PrecisionTransform(Transform):
 
 
 class MixedPrecisionTransform(PrecisionTransform):
+    """
+    Parameters
+    ----------
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+
+    """
+
     def __init__(self):
         super().__init__()
 
@@ -204,6 +258,18 @@ class MixedPrecisionTransform(PrecisionTransform):
 
 
 class SoftPlusTransform(PrecisionTransform):
+    """
+    Parameters
+    ----------
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+
+    """
+
     def __init__(self, min_value=0.1):
         super().__init__(min_value)
 
@@ -216,6 +282,18 @@ class SoftPlusTransform(PrecisionTransform):
 
 
 class MixedSoftPlusTransform(MixedPrecisionTransform):
+    """
+    Parameters
+    ----------
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+
+    """
+
     @staticmethod
     def transform_precision(precision):
         return softplus(precision)
@@ -237,6 +315,18 @@ class SquareTransform(PrecisionTransform):
 
 
 class MeanTransform(Transform):
+    """
+    Parameters
+    ----------
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+
+    """
+
     def transform(self, input):
         result = torch.clone(input)
         result[:, 0:2, :, :] = torch.tan(result[:, 0:2, :, :])
@@ -247,6 +337,18 @@ class MeanTransform(Transform):
 
 
 class ComposeTransform(Transform):
+    """
+    Parameters
+    ----------
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+
+    """
+
     def __init__(self, transforms):
         super().__init__()
         self.transforms = transforms
@@ -261,6 +363,18 @@ class ComposeTransform(Transform):
 
 
 class MeanPrecisionTransform(ComposeTransform):
+    """
+    Parameters
+    ----------
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+
+    """
+
     def __init__(self):
         t1 = SoftPlusTransform()
         t1.indices = [2, 3]

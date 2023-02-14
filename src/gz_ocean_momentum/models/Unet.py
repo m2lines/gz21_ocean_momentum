@@ -2,8 +2,7 @@
 # WAS USED IN THE RESEARCH PROCESS BUT WAS SUPERCEDED BY MODELS1
 
 # During training you can pass a choice of model
-# This could be passed as an alternative 
-
+# This could be passed as an alternative
 
 
 #!/usr/bin/env python3
@@ -112,7 +111,7 @@ class Unet_(nn.Module, DetectOutputSizeMixin):
     def _padding(self, k_size: int):
         """
         Returns the padding, depending on the padding parameter
- 
+
         Parameters
         ----------
         input : TYPE?
@@ -301,6 +300,7 @@ class Unet(FinalTransformationMixin, Unet_):
     -------
 
     """
+
     def __init__(self, *args, **kargs):
         """
         Function Purpose?
@@ -329,6 +329,7 @@ class Unet3scales(Unet):
     -------
 
     """
+
     def __init__(self, *args, **kargs):
         """
         Function Purpose?
@@ -357,6 +358,7 @@ class Unet32(Unet):
     -------
 
     """
+
     def __init__(self, *args, **kargs):
         """
         Function Purpose?
@@ -385,6 +387,7 @@ class Unet32_3scales(Unet32):
     -------
 
     """
+
     def __init__(self, *args, **kargs):
         """
         Function Purpose?

@@ -1,7 +1,7 @@
-# Collection of data operations to work on u and v data. called from 
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+""" Collection of data operations to work on u and v data. called from
+"""
 from src.gz_ocean_momentum.data.xrtransforms import (
     ScalingTransform,
     SeasonalStdizer,
