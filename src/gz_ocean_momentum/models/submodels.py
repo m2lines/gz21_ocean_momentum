@@ -6,9 +6,9 @@ Created on Wed Nov  4 13:34:58 2020
 @author: arthur
 """
 
-from data.xrtransforms import (ScalingTransform, SeasonalStdizer,
-                               ChainedTransform, TargetedTransform,
-                               BZFormulaTransform)
+from src.gz_ocean_momentum.data.xrtransforms import (ScalingTransform, SeasonalStdizer,
+                                                     ChainedTransform, TargetedTransform,
+                                                     BZFormulaTransform)
 
 velocity_vars = ['usurf', 'vsurf']
 forcing_vars = ['S_x', 'S_y']

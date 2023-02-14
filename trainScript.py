@@ -10,36 +10,30 @@ import mlflow
 import os.path
 import tempfile
 
-import torch
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import DataLoader
 import torch.optim as optim
 from torch.optim.lr_scheduler import MultiStepLR
 import torch.nn
-import torch.nn.functional as F
 
 # These imports are used to create the training datasets
-from data.datasets import (DatasetWithTransform, DatasetTransformer,
-                           RawDataFromXrDataset, ConcatDataset_,
-                           Subset_, ComposeTransforms, MultipleTimeIndices)
+from src.gz_ocean_momentum.data.datasets import (DatasetWithTransform, DatasetTransformer,
+                                                 RawDataFromXrDataset, ConcatDataset_,
+                                                 Subset_, ComposeTransforms)
 
 # Some utils functions
-from train.utils import (DEVICE_TYPE, learning_rates_from_string,
-                         run_ids_from_string, list_from_string)
-from data.utils import load_training_datasets, load_data_from_run
-from testing.utils import create_test_dataset
-from testing.metrics import MSEMetric, MaxMetric
-from train.base import Trainer
-import train.losses
-import models.transforms
+from src.gz_ocean_momentum.train.utils import (DEVICE_TYPE, learning_rates_from_string)
+from src.gz_ocean_momentum.data.utils import load_training_datasets, load_data_from_run
+from src.gz_ocean_momentum.testing.utils import create_test_dataset
+from src.gz_ocean_momentum.testing.metrics import MSEMetric, MaxMetric
+from src.gz_ocean_momentum.train.base import Trainer
+import src.gz_ocean_momentum.train.losses
+import src.gz_ocean_momentum.models.transforms
 
 import argparse
 import importlib
 import pickle
 
-from data.xrtransforms import SeasonalStdizer
-
-import models.submodels
-import sys
+import src.gz_ocean_momentum.models.submodels
 
 import copy
 
@@ -48,11 +42,20 @@ from dask.diagnostics import ProgressBar
 
 torch.autograd.set_detect_anomaly(True)
 
+
 def negative_int(value: str):
     return -int(value)
 
+
 def check_str_is_None(s: str):
     return None if s.lower() == 'none' else s
+
+
+# read config file
+config = configparser.ConfigParser()
+config.read('configArthurLaptop.ini')
+#config.read('config.ini')
+
 
 # PARAMETERS ---------
 description = 'Trains a model on a chosen dataset from the store. Allows \
@@ -130,7 +133,7 @@ print_loss_every = params.printevery
 model_name = 'trained_model.pth'
 
 # Directories where temporary data will be saved
-data_location = tempfile.mkdtemp(dir='/scratch/ag7531/temp/')
+data_location = tempfile.mkdtemp(dir=config['MLFLOW']['TEMP_DATA_LOCATION'])
 print('Created temporary dir at  ', data_location)
 
 figures_directory = 'figures'
@@ -169,7 +172,7 @@ datasets, train_datasets, test_datasets = list(), list(), list()
 
 for xr_dataset in xr_datasets:
     # TODO this is a temporary fix to implement seasonal patterns
-    submodel_transform = copy.deepcopy(getattr(models.submodels, submodel))
+    submodel_transform = copy.deepcopy(getattr(src.gz_ocean_momentum.models.submodels, submodel))
     print(submodel_transform)
     xr_dataset = submodel_transform.fit_transform(xr_dataset)
     with ProgressBar(), TaskInfo('Computing dataset'):
@@ -225,7 +228,7 @@ print('Size of validation data : {}'.format(len(test_dataset)))
 # NEURAL NETWORK---------------------------------------------------------------
 # Load the loss class required in the script parameters
 n_target_channels = datasets[0].n_targets
-criterion = getattr(train.losses, loss_cls_name)(n_target_channels)
+criterion = getattr(src.gz_ocean_momentum.train.losses, loss_cls_name)(n_target_channels)
 
 # Recover the model's class, based on the corresponding CLI parameters
 try:
@@ -239,7 +242,7 @@ except AttributeError as e:
                   str(e))
 net = model_cls(datasets[0].n_features, criterion.n_required_channels)
 try:
-    transformation_cls = getattr(models.transforms, transformation_cls_name)
+    transformation_cls = getattr(src.gz_ocean_momentum.models.transforms, transformation_cls_name)
     transformation = transformation_cls()
     transformation.indices = criterion.precision_indices
     net.final_transformation = transformation

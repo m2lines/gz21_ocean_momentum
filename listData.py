@@ -11,7 +11,7 @@ import mlflow
 from mlflow.tracking import MlflowClient
 import xarray as xr
 import matplotlib.pyplot as plt
-from analysis.utils import select_run, select_experiment
+from src.gz_ocean_momentum.analysis import select_experiment
 
 
 def show_data_sample(forcing, index: int):
