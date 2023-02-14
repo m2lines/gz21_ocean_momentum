@@ -1,0 +1,11 @@
+{
+  "ntimes" : 5,
+  "lat_min" : -85.0,
+  "lat_max" : 85.0,
+  "lon_min" : -280.0,
+  "lon_max" : 80.0,
+  "factor" : 4,
+  "chunk_size" : 1,
+  "CO2" : 1,
+  "global_data" : false
+}

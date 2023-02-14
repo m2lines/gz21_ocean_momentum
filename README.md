@@ -1,3 +1,12 @@
+# Processing data
+run `python3 cmip26.py --paramsfile cmip_runparams.json` to perform preprocessing of data.
+Fetches dataset as defined by defaults or in runparams json file, processes, and saves to mlflow.
+
+
+
+
+
+
 # General code documentation
 
 In order to keep track of script runs, we have used MLFLOW (https://mlflow.org/) to organize our code. In particular we define three important types
