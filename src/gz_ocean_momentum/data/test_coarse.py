@@ -15,6 +15,7 @@ from numpy import ma
 from .coarse import spatial_filter_dataset, spatial_filter, eddy_forcing
 import matplotlib.pyplot as plt
 
+
 class TestEddyForcing(unittest.TestCase):
     def test_spatial_filter(self):
         a = np.random.randn(10, 4, 4)
@@ -31,17 +32,24 @@ class TestEddyForcing(unittest.TestCase):
         xs_, ys_ = np.meshgrid(xs, ys)
         dxs = np.ones_like(xs_)
         dys = np.ones_like(ys_) * 2
-        dxs = DataArray(dxs, dims=('xu_ocean', 'yu_ocean'),
-                        coords={'xu_ocean': xs, 'yu_ocean': ys})
-        dys = DataArray(dys, dims=('xu_ocean', 'yu_ocean'),
-                        coords={'xu_ocean': xs, 'yu_ocean': ys})
+        dxs = DataArray(
+            dxs, dims=("xu_ocean", "yu_ocean"), coords={"xu_ocean": xs, "yu_ocean": ys}
+        )
+        dys = DataArray(
+            dys, dims=("xu_ocean", "yu_ocean"), coords={"xu_ocean": xs, "yu_ocean": ys}
+        )
         grid_info = Dataset(dict(dxu=dxs, dyu=dys))
-        data = Dataset(dict(a=DataArray(a,
-                       dims=('time', 'xu_ocean', 'yu_ocean'),
-                       coords={'time': times, 'xu_ocean': xs, 'yu_ocean': ys})))
+        data = Dataset(
+            dict(
+                a=DataArray(
+                    a,
+                    dims=("time", "xu_ocean", "yu_ocean"),
+                    coords={"time": times, "xu_ocean": xs, "yu_ocean": ys},
+                )
+            )
+        )
         filtered_data = spatial_filter_dataset(data, grid_info, (5, 5))
-        self.assertTrue(np.all(data['a'].values == filtered_data['a'].values
-                               + 1))
+        self.assertTrue(np.all(data["a"].values == filtered_data["a"].values + 1))
 
     # def test_spatial_filter_dataset(self):
     #     a1 = DataArray(data = np.zeros((10, 4, 4)),
@@ -119,12 +127,12 @@ class TestEddyForcing(unittest.TestCase):
     #     forcing = eddy_forcing(ds, 40)
 
     # def test_advections(self):
-    #     a1 = DataArray(data = np.zeros((1000, 40, 40)), 
+    #     a1 = DataArray(data = np.zeros((1000, 40, 40)),
     #                    dims = ['time', 'x', 'y'],
     #                    coords = {'time' : np.arange(1000) * 3,
     #                              'x' : np.arange(40) * 7,
     #                              'y' : np.arange(40) * 11})
-    #     a2= DataArray(data = np.zeros((1000, 40, 40)), 
+    #     a2= DataArray(data = np.zeros((1000, 40, 40)),
     #                    dims = ['time', 'x', 'y'],
     #                    coords = {'time' : np.arange(1000) * 3,
     #                              'x' : np.arange(40) * 7,

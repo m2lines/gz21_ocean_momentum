@@ -1,3 +1,4 @@
+# TODO: Currently unsure if this file is used
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -39,20 +40,20 @@ class Transform(ABC):
         return self.apply(x)
 
     def fit_transform(self, x: xr.Dataset):
-        if hasattr(self, 'fit'):
+        if hasattr(self, "fit"):
             self.fit(x)
         return self.transform(x)
 
     def inv_transform(self, x: xr.DataArray):
-        raise NotImplementedError('Inverse transform not implemented.')
+        raise NotImplementedError("Inverse transform not implemented.")
 
     def dump(self, path: str):
-        with open(path, 'wb') as f:
+        with open(path, "wb") as f:
             pickle.dump(self, f)
 
     @staticmethod
     def load(path: str):
-        with open(path, 'rb') as f:
+        with open(path, "rb") as f:
             return pickle.load(f)
 
     def __init_subclass__(cls, *args):
@@ -63,36 +64,40 @@ class Transform(ABC):
 
         def new_transform(self, x):
             if self.requires_fit and not self.fitted:
-                raise RuntimeError('The transform needs to be fitted first.')
+                raise RuntimeError("The transform needs to be fitted first.")
             new_ds = raw_transform(self, x)
             new_ds.attrs.update(x.attrs)
             return new_ds
 
         def new_inv_transform(self, x):
             if not self.fitted and self.requires_fit:
-                raise RuntimeError('The transform needs to be fitted first.')
+                raise RuntimeError("The transform needs to be fitted first.")
             return raw_inv_transform(self, x)
 
         cls.transform = new_transform
         cls.inv_transform = new_inv_transform
 
         # The following ensures that fitted is set to True if fit is called
-        if hasattr(cls, 'fit'):
+        if hasattr(cls, "fit"):
             cls.requires_fit = True
             raw_fit = cls.fit
 
             def new_fit(self, x):
                 if self.fitted and self.fit_only_once:
-                    raise RuntimeError('The transform has already been\
-                                       fitted.')
+                    raise RuntimeError(
+                        "The transform has already been\
+                                       fitted."
+                    )
                 raw_fit(self, x)
                 self.fitted = True
+
             cls.fit = new_fit
 
     def __repr__(self):
-        params = ', '.join([param + '=' + str(getattr(self, param))
-                            for param in self.repr_params])
-        return ''.join((str(type(self)), '(', params, ')'))
+        params = ", ".join(
+            [param + "=" + str(getattr(self, param)) for param in self.repr_params]
+        )
+        return "".join((str(type(self)), "(", params, ")"))
 
 
 class ChainedTransform(Transform):
@@ -117,25 +122,26 @@ class ChainedTransform(Transform):
         return x
 
     def __repr__(self, level=0):
-        tabs = '\t' * (level + 1)
-        s = 'ChainedTransform(\n' + tabs
-        reprs = [t.__repr__(level + 1) if isinstance(t, ChainedTransform)
-                 else t.__repr__() for t in self.transforms]
-        s2 = (',\n' + tabs).join(reprs)
-        s3 = '\n' + tabs[:-1] + ')'
-        return ''.join((s, s2, s3))
+        tabs = "\t" * (level + 1)
+        s = "ChainedTransform(\n" + tabs
+        reprs = [
+            t.__repr__(level + 1) if isinstance(t, ChainedTransform) else t.__repr__()
+            for t in self.transforms
+        ]
+        s2 = (",\n" + tabs).join(reprs)
+        s3 = "\n" + tabs[:-1] + ")"
+        return "".join((s, s2, s3))
 
 
 class TargetedTransform(Transform):
-    def __init__(self, transform: Transform, targets: List[str], *args,
-                 **kargs):
+    def __init__(self, transform: Transform, targets: List[str], *args, **kargs):
         super().__init__(*args, **kargs)
         self.base_transform = transform
         self.targets = targets
         self.requires_fit = self.base_transform.requires_fit
 
     def fit(self, x: xr.Dataset):
-        if hasattr(self.transform, 'fit'):
+        if hasattr(self.transform, "fit"):
             temp_ds = x[self.targets]
             self.transform.fit(temp_ds)
 
@@ -154,12 +160,14 @@ class TargetedTransform(Transform):
         return new_ds
 
     def __repr__(self):
-        targets = ', '.join(self.targets)
-        return ''.join((self.base_transform.__repr__(), ' on ', targets))
+        targets = ", ".join(self.targets)
+        return "".join((self.base_transform.__repr__(), " on ", targets))
 
 
 class ScalingTransform(Transform):
-    repr_params = ['factor', ]
+    repr_params = [
+        "factor",
+    ]
 
     def __init__(self, factor: dict = None, *args, **kargs):
         super().__init__(*args, **kargs)
@@ -173,10 +181,16 @@ class ScalingTransform(Transform):
 
 
 class SeasonalStdizer(Transform):
-    repr_params = ['apply_std', 'by']
+    repr_params = ["apply_std", "by"]
 
-    def __init__(self, by: str = 'time.month', dim: str = 'time',
-                 std: bool = True, *args, **kargs):
+    def __init__(
+        self,
+        by: str = "time.month",
+        dim: str = "time",
+        std: bool = True,
+        *args,
+        **kargs,
+    ):
         super().__init__(*args, **kargs)
         self.by = by
         self.dim = dim
@@ -221,10 +235,9 @@ class SeasonalStdizer(Transform):
         if self.apply_std:
             stds = self.stds.sel(month=months)
             r = r / stds
-            stds = stds.rename({raw_name: raw_name + '_d' for raw_name in
-                                stds.keys()})
+            stds = stds.rename({raw_name: raw_name + "_d" for raw_name in stds.keys()})
             r.update(stds)
-        del r['month']
+        del r["month"]
         return r
 
     @delayed
@@ -235,35 +248,38 @@ class SeasonalStdizer(Transform):
         if self.apply_std:
             result = result * self.stds[var_name].sel(month=months)
         result = result + self.means[var_name].sel(month=months)
-        del result['month']
+        del result["month"]
         return result.values
 
     def transform(self, data):
         template = data.copy()
         if self.apply_std:
-            template.update({raw_name + '_d' : value for raw_name, value in
-                             template.items()})
+            template.update(
+                {raw_name + "_d": value for raw_name, value in template.items()}
+            )
         return data.map_blocks(self.get_transformed, template=template)
 
     def inv_transform(self, data):
         sub_datasets = []
         nb_samples = len(data.time)
         for start in range(0, nb_samples, 8):
-            sub_data = data.isel(time=slice(start, min(start+8, nb_samples)))
+            sub_data = data.isel(time=slice(start, min(start + 8, nb_samples)))
             sub_coords = sub_data.coords
             new_xr_arrays = {}
             for k, val in sub_data.items():
                 new_shape = val.shape
                 dims = val.dims
                 transformed = self.get_inv_transformed(val, k)
-                dask_array = da.from_delayed(transformed, shape=new_shape,
-                                             dtype=np.float64)
-                new_xr_array = xr.DataArray(data=dask_array, coords=sub_coords,
-                                            dims=dims)
+                dask_array = da.from_delayed(
+                    transformed, shape=new_shape, dtype=np.float64
+                )
+                new_xr_array = xr.DataArray(
+                    data=dask_array, coords=sub_coords, dims=dims
+                )
                 new_xr_arrays[k] = new_xr_array
             new_ds = xr.Dataset(new_xr_arrays)
             sub_datasets.append(new_ds)
-        return xr.concat(sub_datasets, dim='time')
+        return xr.concat(sub_datasets, dim="time")
 
 
 class CropToNewShape(Transform):
@@ -279,24 +295,27 @@ class CropToNewShape(Transform):
 
     def transform(self, x):
         dims = x.dims
-        idx = {dim_name: self.get_slice(dims[dim_name], dim_size)
-               for dim_name, dim_size in self.new_shape.items()}
+        idx = {
+            dim_name: self.get_slice(dims[dim_name], dim_size)
+            for dim_name, dim_size in self.new_shape.items()
+        }
         return x.isel(idx)
 
     def __repr__(self):
-        return f'CropToNewShape({self.new_shape})'
+        return f"CropToNewShape({self.new_shape})"
 
 
 class CropToMinSize(CropToNewShape):
     def __init__(self, datasets, dim_names: list, *args, **kargs):
         super().__init__(*args, **kargs)
-        new_shape = {dim_name: min([dataset.dims[dim_name]
-                                    for dataset in datasets])
-                     for dim_name in dim_names}
+        new_shape = {
+            dim_name: min([dataset.dims[dim_name] for dataset in datasets])
+            for dim_name in dim_names
+        }
         super().__init__(new_shape)
 
     def __repr__(self):
-        return super().__repr__() + '(CropToMinSize)'
+        return super().__repr__() + "(CropToMinSize)"
 
 
 class CropToMultipleOf(CropToNewShape):
@@ -310,14 +329,18 @@ class CropToMultipleOf(CropToNewShape):
 
     def transform(self, x):
         dims = x.dims
-        new_sizes = {dim_name: self.get_multiple(dims[dim_name], m)
-                     for dim_name, m in self.multiples.items()}
-        idx = {dim_name: self.get_slice(dims[dim_name], new_sizes[dim_name])
-               for dim_name, multiple in self.multiples.items()}
+        new_sizes = {
+            dim_name: self.get_multiple(dims[dim_name], m)
+            for dim_name, m in self.multiples.items()
+        }
+        idx = {
+            dim_name: self.get_slice(dims[dim_name], new_sizes[dim_name])
+            for dim_name, multiple in self.multiples.items()
+        }
         return x.isel(idx)
 
     def __repr__(self):
-        return f'CropToMultipleOf({self.multiples})'
+        return f"CropToMultipleOf({self.multiples})"
 
 
 class FormulaTransform(Transform):
@@ -330,13 +353,12 @@ class FormulaTransform(Transform):
 
     def transform(self, x):
         s_x_formula, s_y_formula = self.equation(x)
-        out = x.update(dict(s_x_formula=s_x_formula,
-                            s_y_formula=s_y_formula))
-        out = out.fillna(0.)
+        out = x.update(dict(s_x_formula=s_x_formula, s_y_formula=s_y_formula))
+        out = out.fillna(0.0)
         return out
 
     def __repr__(self):
-        return 'FormulaTranform()'
+        return "FormulaTranform()"
 
 
 class BZFormulaTransform(FormulaTransform):

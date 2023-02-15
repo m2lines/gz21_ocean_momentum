@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-This script computes the subgrid forcing for a given region, using
+Compute subgrid forcing on requested dataset.
+
+Script to compute the subgrid forcing for a given region, using
 data from cmip2.6 on one of the pangeo data catalogs.
 Command line parameters include region specification.
-
-Read data from the CM2.6 and apply coarse graining.
+Reads data from the CM2.6 and apply coarse graining.
 Stores the resulting dataset into an MLFLOW
 experiment within a specific run.
 
@@ -30,7 +31,7 @@ from gz_ocean_momentum.data.pangeo_catalog import get_patch
 @dataclass
 class RunParams:
     """
-    dataclass to hold variables defining a particular dataset configuration
+    dataclass to hold variables defining a particular dataset configuration.
 
     Attributes
     ----------
@@ -60,7 +61,7 @@ class RunParams:
     @classmethod
     def load_json_params(cls, jsonpath):
         """
-        Load parameters for dataset and processing from a json file into dataclass
+        Load parameters for dataset and processing from a json file into dataclass.
 
         Parameters
         ----------
@@ -74,7 +75,7 @@ class RunParams:
 
         """
         json_run_params = cls()
-        with open(jsonpath, "r") as read_file:
+        with open(jsonpath, "r", encoding="utf-8") as read_file:
             paramsdict = json.load(read_file)
         json_run_params.ntimes = paramsdict["ntimes"]
         json_run_params.bounds = [
@@ -92,8 +93,8 @@ class RunParams:
 
 
 # read config file
+# This is unneccessary when MLFlow removed
 config = configparser.ConfigParser()
-# config.read('configArthurLaptop.ini')
 config.read("config.ini")
 
 # Script parameters
@@ -155,6 +156,20 @@ scale_m = params.factor
 
 
 def func(block):
+    """
+    Description?.
+
+    Parameters
+    ----------
+    block : type?
+        description?
+
+    Returns
+    -------
+    eddy_forcing : type?
+        description?
+
+    """
     return eddy_forcing(block, grid_data, scale=scale_m)
 
 
