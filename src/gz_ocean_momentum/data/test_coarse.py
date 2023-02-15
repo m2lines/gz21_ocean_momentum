@@ -29,7 +29,7 @@ class TestEddyForcing:
         xs_, ys_ = np.meshgrid(xs, ys)
         dxs = np.ones_like(xs_)
         dys = np.ones_like(ys_) * 2
-        
+
         dxs = xr.DataArray(
             dxs, dims=("xu_ocean", "yu_ocean"), coords={"xu_ocean": xs, "yu_ocean": ys}
         )
@@ -38,15 +38,15 @@ class TestEddyForcing:
         )
         grid_info = xr.Dataset({"dxu": dxs, "dyu": dys})
         data = xr.Dataset(
-                {
-                    "a": xr.DataArray(
+            {
+                "a": xr.DataArray(
                     np.ones((100, 5, 5)),
                     dims=("time", "xu_ocean", "yu_ocean"),
                     coords={"time": times, "xu_ocean": xs, "yu_ocean": ys},
                 )
-                }
+            }
         )
-        
+
         filtered_data = spatial_filter_dataset(data, grid_info, (5, 5))
 
         assert data["a"].values == pytest.approx(filtered_data["a"].values)
