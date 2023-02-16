@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools >= 61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+version = "0.2.0"
+
+name = "gz21_ocean_momentum_cnn"
+description = "TODO"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.9"
+classifiers = [
+    "Topic :: Scientific/Engineering :: Atmospheric Science",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    # general, likely used all over
+    "scipy",
+    "xarray",
+    "dask",
+    "mlflow-skinny",
+
+    # data download
+    "intake",
+    "requests",
+    "aiohttp",
+    "intake-xarray",
+    "gcsfs",
+
+    # "torch>=1.13.1",
+    # "progressbar>=2.5"
+]
+
+authors = [
+  { name="Arthur Guillaumin", email="a.guillaumin@qmul.ac.uk" },
+]
+
+maintainers = [
+  { name="Ben Orchard", email="thefirstmuffinman@gmail.com" },
+  { name="Jack Atkinson", email="jack.atkinson1000@gmail.com" },
+  { name="Jim Denholm", email="jd949@cam.ac.uk" },
+]
+
+[project.urls]
+"Homepage" = "https://github.com/m2lines/GZ21_ocean_momentum_CNN"
+"Bug Tracker" = "https://github.com/m2lines/GZ21_ocean_momentum_CNN/issues"
+
+[project.optional-dependencies]
+TEST = ["pytest"]
+
+[tool.setuptools]
+# By default, include-package-data is true in pyproject.toml, so you do
+# NOT have to specify this line.
+include-package-data = true
+
+#[tool.setuptools.packages]
+#find = {}
+[tool.setuptools.packages.find]
+where = ["."]  # list of folders that contain the packages (["."] by default)
+include = ["gz21_ocean_momentum_cnn", "gz21_ocean_momentum_cnn.*"]  # package names should match these glob patterns (["*"] by default)
+#exclude = ["gz21_ocean_momentum_cnn.tests*", "examples.py"]  # exclude packages matching these glob patterns (empty by default)
+namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
