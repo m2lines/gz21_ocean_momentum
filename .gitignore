@@ -1,3 +1,4 @@
 mlruns/*
 __pycache__/*
 *.pyc
+.idea/*
