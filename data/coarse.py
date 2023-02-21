@@ -1,125 +1,135 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Feb 19 12:15:35 2020
+"""Routines for coarsening a dataset."""
 
-@author: arthur
-"""
-
+import logging
 import xarray as xr
 from scipy.ndimage import gaussian_filter
 import numpy as np
-import logging
 
 
 def advections(u_v_field: xr.Dataset, grid_data: xr.Dataset):
     """
-    Return the advection terms corresponding to the passed velocity field.
-    Note that the velocities sit on U-grids
+    Compute advection terms corresponding to the passed velocity field.
 
     Parameters
     ----------
-    u_v_field : xarray dataset
-        Velocity field, must contains variables usurf and vsurf.
-    grid_data : xarray dataset
-        Dataset with grid details, must contain variables dxu and dyu.
+    u_v_field : xarray Dataset
+        Velocity field, must contains variables "usurf" and "vsurf"
+    grid_data : xarray Dataset
+        grid data, must contain variables "dxu" and "dyu"
 
     Returns
     -------
-    advections : xarray dataset
-        Advection components, under variable names adv_x and adv_y.
-
+    result : xarray Dataset
+        Advection components, under variable names "adv_x" and "adv_y"
     """
-    dxu = grid_data['dxu']
-    dyu = grid_data['dyu']
-    gradient_x = u_v_field.diff(dim='xu_ocean') / dxu
-    gradient_y = u_v_field.diff(dim='yu_ocean') / dyu
+    dxu = grid_data["dxu"]
+    dyu = grid_data["dyu"]
+    gradient_x = u_v_field.diff(dim="xu_ocean") / dxu
+    gradient_y = u_v_field.diff(dim="yu_ocean") / dyu
     # Interpolate back the gradients
-    interp_coords = dict(xu_ocean=u_v_field.coords['xu_ocean'],
-                         yu_ocean=u_v_field.coords['yu_ocean'])
+    interp_coords = {
+        "xu_ocean": u_v_field.coords["xu_ocean"],
+        "yu_ocean": u_v_field.coords["yu_ocean"],
+    }
     gradient_x = gradient_x.interp(interp_coords)
     gradient_y = gradient_y.interp(interp_coords)
-    u, v = u_v_field['usurf'], u_v_field['vsurf']
-    adv_x = u * gradient_x['usurf'] + v * gradient_y['usurf']
-    adv_y = u * gradient_x['vsurf'] + v * gradient_y['vsurf']
-    result = xr.Dataset({'adv_x': adv_x, 'adv_y': adv_y})
+    u, v = u_v_field["usurf"], u_v_field["vsurf"]
+    adv_x = u * gradient_x["usurf"] + v * gradient_y["usurf"]
+    adv_y = u * gradient_x["vsurf"] + v * gradient_y["vsurf"]
+    result = xr.Dataset({"adv_x": adv_x, "adv_y": adv_y})
     # TODO check if we can simply prevent the previous operation from adding
     # chunks
-    #result = result.chunk(dict(xu_ocean=-1, yu_ocean=-1))
+    # result = result.chunk(dict(xu_ocean=-1, yu_ocean=-1))
     return result
 
 
 def spatial_filter(data: np.ndarray, sigma: float):
     """
-    Apply a gaussian filter along all dimensions except first one, which
+    Apply a gaussian filter to spatial data.
+
+    Apply scipy gaussian filter to along all dimensions except first one, which
     corresponds to time.
 
     Parameters
     ----------
-    data : numpy array
+    data : ndarray
         Data to filter.
     sigma : float
         Unitless scale of the filter.
 
     Returns
     -------
-    result : numpy array
-        Filtered data.
-
+    result : ndarray
+        Filtered data
     """
     result = np.zeros_like(data)
     for t in range(data.shape[0]):
         data_t = data[t, ...]
-        result_t = gaussian_filter(data_t, sigma, mode='constant')
+        result_t = gaussian_filter(data_t, sigma, mode="constant")
         result[t, ...] = result_t
     return result
 
 
-def spatial_filter_dataset(dataset: xr.Dataset, grid_info: xr.Dataset,
-                           sigma: float):
+def spatial_filter_dataset(dataset: xr.Dataset, grid_info: xr.Dataset, sigma: float):
     """
     Apply spatial filtering to the dataset across the spatial dimensions.
 
     Parameters
     ----------
-    dataset : xarray dataset
-        Dataset to which filtering is applied. Time must be the first
-        dimension, whereas spatial dimensions must come after.
-    grid_info : xarray dataset
-        Dataset containing details on the grid, in particular must have
-        variables dxu and dyu.
+    dataset : xarray Dataset
+        Dataset to filter. First dimension must be time, followed by spatial dimensions
+    grid_info : xarray Dataset
+        grid data,  must include variables "dxu" and "dyu"
     sigma : float
         Scale of the filtering, same unit as those of the grid (often, meters)
 
     Returns
     -------
-    filt_dataset : xarray dataset
-        Filtered dataset.
-
+    filt_dataset : xarray Dataset
+        Filtered dataset
     """
-    area_u = grid_info['dxu'] * grid_info['dyu'] / 1e8
+    area_u = grid_info["dxu"] * grid_info["dyu"] / 1e8
     dataset = dataset * area_u
     # Normalisation term, so that if the quantity we filter is constant
     # over the domain, the filtered quantity is constant with the same value
-    norm = xr.apply_ufunc(lambda x: gaussian_filter(x, sigma, mode='constant'),
-                          area_u, dask='parallelized', output_dtypes=[float, ])
-    filtered = xr.apply_ufunc(lambda x: spatial_filter(x, sigma), dataset,
-                              dask='parallelized', output_dtypes=[float, ])
+    norm = xr.apply_ufunc(
+        lambda x: gaussian_filter(x, sigma, mode="constant"),
+        area_u,
+        dask="parallelized",
+        output_dtypes=[
+            float,
+        ],
+    )
+    filtered = xr.apply_ufunc(
+        lambda x: spatial_filter(x, sigma),
+        dataset,
+        dask="parallelized",
+        output_dtypes=[
+            float,
+        ],
+    )
     return filtered / norm
 
 
-def eddy_forcing(u_v_dataset : xr.Dataset, grid_data: xr.Dataset,
-                 scale: int, method: str = 'mean',
-                 nan_or_zero: str = 'zero', scale_mode: str = 'factor',
-                 debug_mode=False) -> xr.Dataset:
+def eddy_forcing(
+    u_v_dataset: xr.Dataset,
+    grid_data: xr.Dataset,
+    scale: int,
+    method: str = "mean",
+    nan_or_zero: str = "zero",
+    scale_mode: str = "factor",
+    debug_mode=False,
+) -> xr.Dataset:
     """
     Compute the sub-grid forcing terms.
 
     Parameters
     ----------
-    u_v_dataset : xarray dataset
+    u_v_dataset : xarray Dataset
         High-resolution velocity field.
-    grid_data : xarray dataset
+    grid_data : xarray Dataset
         High-resolution grid details.
     scale : float
         Scale, in meters, or factor, if scale_mode is set to 'factor'
@@ -134,17 +144,16 @@ def eddy_forcing(u_v_dataset : xr.Dataset, grid_data: xr.Dataset,
         The default is 'zero'.
     scale_mode: str, optional
         DEPRECIATED, should always be left as 'factor'
+
     Returns
     -------
-    forcing : xarray dataset
+    forcing : xarray Dataset
         Dataset containing the low-resolution velocity field and forcing.
-
-    """
-    # Replace nan values with zeros.
-    if nan_or_zero == 'zero':
+    """    # Replace nan values with zeros.
+    if nan_or_zero == "zero":
         u_v_dataset = u_v_dataset.fillna(0.0)
-    if scale_mode == 'factor':
-        print('Using factor mode')
+    if scale_mode == "factor":
+        print("Using factor mode")
         scale_x = scale
         scale_y = scale
     # Interpolate temperature
@@ -164,31 +173,36 @@ def eddy_forcing(u_v_dataset : xr.Dataset, grid_data: xr.Dataset,
     adv_filtered = advections(u_v_filtered, grid_data)
     # Forcing
     forcing = adv_filtered - filtered_adv
-    forcing = forcing.rename({'adv_x': 'S_x', 'adv_y': 'S_y'})
+    forcing = forcing.rename({"adv_x": "S_x", "adv_y": "S_y"})
     # Merge filtered u,v, temperature and forcing terms
     forcing = forcing.merge(u_v_filtered)
     logging.debug(forcing)
     # Coarsen
-    print('scale factor: ', scale)
-    forcing_coarse = forcing.coarsen({'xu_ocean': int(scale_x),
-                                      'yu_ocean': int(scale_y)},
-                                     boundary='trim')
-    if method == 'mean':
+    print("scale factor: ", scale)
+    forcing_coarse = forcing.coarsen(
+        {"xu_ocean": int(scale_x), "yu_ocean": int(scale_y)}, boundary="trim"
+    )
+    if method == "mean":
         forcing_coarse = forcing_coarse.mean()
     else:
-        raise ValueError('Passed coarse-graining method not implemented.')
-    if nan_or_zero == 'zero':
+        raise ValueError("Passed coarse-graining method not implemented.")
+    if nan_or_zero == "zero":
         # Replace zeros with nans for consistency
-        forcing_coarse = forcing_coarse.where(forcing_coarse['usurf'] != 0)
+        forcing_coarse = forcing_coarse.where(forcing_coarse["usurf"] != 0)
     if not debug_mode:
         return forcing_coarse
     u_v_dataset = u_v_dataset.merge(adv)
-    filtered_adv = filtered_adv.rename({'adv_x': 'f_adv_x',
-                                        'adv_y': 'f_adv_y'})
-    adv_filtered = adv_filtered.rename({'adv_x': 'adv_f_x',
-                                        'adv_y': 'adv_f_y'})
-    u_v_filtered = u_v_filtered.rename({'usurf': 'f_usurf',
-                                        'vsurf': 'f_vsurf'})
-    u_v_dataset = xr.merge((u_v_dataset, u_v_filtered, adv, filtered_adv,
-                            adv_filtered, forcing[['S_x', 'S_y']]))
+    filtered_adv = filtered_adv.rename({"adv_x": "f_adv_x", "adv_y": "f_adv_y"})
+    adv_filtered = adv_filtered.rename({"adv_x": "adv_f_x", "adv_y": "adv_f_y"})
+    u_v_filtered = u_v_filtered.rename({"usurf": "f_usurf", "vsurf": "f_vsurf"})
+    u_v_dataset = xr.merge(
+        (
+            u_v_dataset,
+            u_v_filtered,
+            adv,
+            filtered_adv,
+            adv_filtered,
+            forcing[["S_x", "S_y"]],
+        )
+    )
     return u_v_dataset, forcing_coarse
