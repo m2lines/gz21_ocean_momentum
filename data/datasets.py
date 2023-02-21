@@ -1,118 +1,284 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jan 29 18:38:40 2020
+Routines for handling datasets.
 
-@author: Arthur
-TODO list
-balance the weights when mixing data sets
-
+TODO:
+- balance the weights when mixing data sets
 """
-import torch
-from torch.utils.data import Dataset, DataLoader, ConcatDataset, Subset
-import numpy as np
-import os.path
-import matplotlib.pyplot as plt
-# import mlflow
-# from sklearn.preprocessing import StandardScaler
-import xarray as xr
-import logging
+import warnings
 import bisect
 from copy import deepcopy
 from abc import ABC, abstractmethod
 
+import numpy as np
+import torch
+from torch.utils.data import Dataset, ConcatDataset, Subset
+import xarray as xr
 
-def call_only_once(f):
-    """Decorator that ensures a function is only called at most once for
-    a given set of parameters."""
-    f.called = list()
 
-    def new_f(*args, **kargs):
-        if not (args, kargs) in f.called:
-            f.called.append((args, kargs))
-            return f(*args, **kargs)
-        else:
-            raise Exception("This method should be called at most once \
-                            for a given set of parameters.")
-    return new_f
+def call_only_once(func):
+    """
+    Decorator to ensure a function is only called once for a given set of parameters.
+
+    Parameters
+    ----------
+    func : type?  # AB
+        description?  # AB
+
+    Returns
+    -------
+    new_func : type?  # AB
+        description?  # AB
+    """
+    func.called = []
+
+    def new_func(*args, **kargs):
+        if not (args, kargs) in func.called:
+            func.called.append((args, kargs))
+            return func(*args, **kargs)
+        raise Exception(
+            "This method should be called at most once for a given set of parameters."
+        )
+
+    return new_func
 
 
 class FeaturesTargetsDataset(Dataset):
-    """Simple dataset based on an array of features and an array of targets"""
+    """
+    description  # AB
+
+    Attributes
+    ----------
+    features : ndarray
+        description?  # AB
+    targets : ndarray
+        description?  # AB
+    """
+
     def __init__(self, features: np.ndarray, targets: np.ndarray):
         self.features = features
         self.targets = targets
-        assert(len(self.features) == len(self.targets))
+        assert len(self.features) == len(self.targets)
 
     def __getitem__(self, index: int):
+        """
+        getter for target and feature of a particular index.
+
+        Parameters
+        ----------
+        index : int
+            description?  # AB
+
+        Returns
+        -------
+        (self.features[index], self.targets[index]) : tupule of ?  # AB
+            description?  # AB
+        """
         return (self.features[index], self.targets[index])
 
     def __len__(self):
+        """
+        get length of features attribute.
+
+        Returns
+        -------
+        len(self.features) : int
+            length of features attribute from FeaturesTargetsDataset class
+        """
         return len(self.features)
 
 
 def prod(l):
-    """Returns the product of the elements of an iterable."""
+    """
+    Returns the product of the elements of an iterable.
+
+    Returns product of all elements, or 1 if iterable is empty
+
+
+    Parameters
+    ----------
+    l : iterable
+        description?  # AB
+
+    Returns
+    -------
+    l[0] * prod(l[1:]) : type?  # AB
+        product of all elements, or 1 if len(l)=0
+    """
     if len(l) == 0:
         return 1
-    else:
-        return l[0] * prod(l[1:])
+    return l[0] * prod(l[1:])
 
 
 class DatasetTransformer:
+    """
+    description  # AB
+
+    Attributes
+    ----------
+    features_transform : type?  # AB
+        description?  # AB
+    targets_transform : type?  # AB
+        description?  # AB
+    """
     def __init__(self, features_transform, targets_transform=None):
-        self.transforms = dict()
-        self.transforms['features'] = features_transform
+        self.transforms = {}
+        self.transforms["features"] = features_transform
         if targets_transform is None:
             targets_transform = deepcopy(features_transform)
-        self.transforms['targets'] = targets_transform
+        self.transforms["targets"] = targets_transform
 
     def add_features_transform(self, transform):
-        feature_t = self.transforms['features']
+        """
+        description.  # AB
+
+        Parameters
+        ----------
+        transform : type?  # AB
+            description?  # AB
+        """
+        feature_t = self.transforms["features"]
         if not isinstance(feature_t, ComposeTransforms):
-            self.transforms['features'] = ComposeTransforms([feature_t, ])
-        self.transforms['features'].add_transform(transform)
+            self.transforms["features"] = ComposeTransforms(
+                [
+                    feature_t,
+                ]
+            )
+        self.transforms["features"].add_transform(transform)
 
     def add_targets_transform(self, transform):
-        target_t = self.transforms['targets']
+        """
+        description.  # AB
+
+        Parameters
+        ----------
+        transform : type?  # AB
+            description?  # AB
+        """
+        target_t = self.transforms["targets"]
         if not isinstance(target_t, ComposeTransforms):
-            self.transforms['targets'] = ComposeTransforms([target_t, ])
-        self.transforms['targets'].add_transform(transform)
+            self.transforms["targets"] = ComposeTransforms(
+                [
+                    target_t,
+                ]
+            )
+        self.transforms["targets"].add_transform(transform)
 
     def fit(self, x: torch.utils.data.Dataset):
+        """
+        description.  # AB
+
+        Parameters
+        ----------
+        x : torch.utils.data.Dataset
+            description?  # AB
+
+        Returns
+        -------
+        self : DatasetTransformer
+            description?  # AB
+        """
         features, targets = x[:]
-        self.transforms['features'].fit(features)
-        self.transforms['targets'].fit(targets)
+        self.transforms["features"].fit(features)
+        self.transforms["targets"].fit(targets)
         return self
 
     def transform(self, x):
+        """
+        Applies features and targets transforms to inputs and returns.
+
+        Parameters
+        ----------
+        x : tupule of ?  # AB
+            description?  # AB
+
+        Returns
+        -------
+        new_features, new_targets : tupule of?  # AB
+            description?  # AB
+        """
         features, targets = x
-        new_features = self.transforms['features'].transform(features)
-        new_targets = self.transforms['targets'].transform(targets)
+        new_features = self.transforms["features"].transform(features)
+        new_targets = self.transforms["targets"].transform(targets)
         return new_features, new_targets
 
     def get_features_coords(self, coords):
-        result = dict()
+        """
+        Apply features transform to input coords.
+
+        Parameters
+        ----------
+        coords : dict of ?  # AB
+            description?  # AB
+
+        Returns
+        -------
+        result : dict of ?  # AB
+            description?  # AB
+        """
+        result = {}
         for k, v in coords.items():
-            result[k] = self.transforms['features'].transform_coordinate(v, k)
+            result[k] = self.transforms["features"].transform_coordinate(v, k)
         return result
 
     def get_targets_coords(self, coords):
-        result = dict()
+        """
+        Apply targets transform to input coords.
+
+        Parameters
+        ----------
+        coords : dict of ?  # AB
+            description?  # AB
+
+        Returns
+        -------
+        result : dict of ?  # AB
+            description?  # AB
+        """
+        result = {}
         for k, v in coords.items():
-            result[k] = self.transforms['targets'].transform_coordinate(v, k)
+            result[k] = self.transforms["targets"].transform_coordinate(v, k)
         return result
 
     def __call__(self, x):
+        """
+        description?  # AB
+
+        Parameters
+        ----------
+        x : type  # AB
+            description?  # AB
+
+        Returns
+        -------
+        self.transform(x) : type?  # AB
+            description?  # AB
+        """
         return self.transform(x)
 
     def inverse_transform_target(self, target):
-        """Return the inverse transform of the passed transformed target"""
-        return self.transforms['targets'].inverse_transform(target)
+        """
+        Return the inverse transform of the passed transformed target
+        """
+        return self.transforms["targets"].inverse_transform(target)
 
     def inverse_transform(self, x: Dataset):
+        """
+        getter for target and feature of a particular index.
+
+        Parameters
+        ----------
+        x : type?  # AB torch.utils.Dataset in hints, but tuple in function?
+            description?  # AB
+
+        Returns
+        -------
+        FeaturesTargetsDataset(new_features, new_targets) : type?  # AB
+            description?  # AB
+        """
         features, targets = x
-        new_features = self.transforms['features'].inverse_transform(features)
-        new_targets = self.transforms['targets'].inverse_transform(targets)
+        new_features = self.transforms["features"].inverse_transform(features)
+        new_targets = self.transforms["targets"].inverse_transform(targets)
         return FeaturesTargetsDataset(new_features, new_targets)
 
 
@@ -148,7 +314,7 @@ class ComposeTransforms(ArrayTransform):
 
     def inverse_transform(self, x):
         for transform in self.transforms[::-1]:
-            if hasattr(transform, 'inverse_transform'):
+            if hasattr(transform, "inverse_transform"):
                 x = transform.inverse_transform(x)
         return x
 
@@ -184,26 +350,26 @@ class CropToNewShape(ArrayTransform):
         if self.height is None:
             self.fit(x)
         height, width = x.shape[1:]
-        return x[:, self.get_slice(height, self.height),
-                 self.get_slice(width, self.width)]
+        return x[
+            :, self.get_slice(height, self.height), self.get_slice(width, self.width)
+        ]
 
     def transform_coordinate(self, coords, dim):
         length = len(coords)
-        if dim == 'height':
+        if dim == "height":
             return coords[self.get_slice(length, self.height)]
-        if dim == 'width':
+        if dim == "width":
             return coords[self.get_slice(length, self.width)]
 
     def __repr__(self):
-        return f'CropToNewShape({self.height}, {self.width})'
+        return f"CropToNewShape({self.height}, {self.width})"
 
 
 class CyclicRepeat(ArrayTransform):
     """Repeats the dataset in a cyclic way. The provided data should
     cover a complete cycle, with no repetition."""
 
-    def __init__(self, axis: int, dim_name: str, cycle_length: float,
-                 nb_points: int):
+    def __init__(self, axis: int, dim_name: str, cycle_length: float, nb_points: int):
         """
         Constructor.
 
@@ -245,17 +411,18 @@ class CyclicRepeat(ArrayTransform):
         return np.concatenate((left, x, right), axis=self.axis)
 
     def transform_coordinate(self, coords, dim):
-        print(f'{dim}, {self.dim_name}')
+        print(f"{dim}, {self.dim_name}")
         if dim == self.dim_name:
-            left = coords[-self.nb_points:] - self.length
-            right = coords[:self.nb_points] + self.length
+            left = coords[-self.nb_points :] - self.length
+            right = coords[: self.nb_points] + self.length
             return np.concatenate((left, coords, right))
-        else:
-            return coords
+        return coords
 
     def __repr__(self):
-        return f'CyclicRepeat({self.axis}, {self.dim_name},' \
-                f' {self.length}, {self.nb_points})'
+        return (
+            f"CyclicRepeat({self.axis}, {self.dim_name},"
+            f" {self.length}, {self.nb_points})"
+        )
 
 
 class CropToMultipleof(CropToNewShape):
@@ -273,7 +440,7 @@ class CropToMultipleof(CropToNewShape):
         self.width = shape[3] // self.multiple_of * self.multiple_of
 
     def __repr__(self):
-        return f'CropToMultipleOf({self.multiple_of})'
+        return f"CropToMultipleOf({self.multiple_of})"
 
 
 class SignedSqrt(ArrayTransform):
@@ -295,15 +462,15 @@ class PerChannelNormalizer(ArrayTransform):
         self._mean = None
         self._use_mean = use_mean
 
-    def fit(self, X: np.ndarray):
+    def fit(self, x: np.ndarray):
         if (not self.fit_only_once) or (self._mean is None):
-            mean = np.mean(X, axis=(0, 2, 3), keepdims=True)
-            std = np.std(X, axis=(0, 2, 3), keepdims=True)
+            mean = np.mean(x, axis=(0, 2, 3), keepdims=True)
+            std = np.std(x, axis=(0, 2, 3), keepdims=True)
             self._mean = mean.reshape(mean.shape[1:])
             self._std = std.reshape(std.shape[1:])
 
     def transform(self, x: np.ndarray):
-        assert(self._mean is not None)
+        assert self._mean is not None
         if self._use_mean:
             x = x - self._mean
         return x / self._std
@@ -311,8 +478,7 @@ class PerChannelNormalizer(ArrayTransform):
     def inverse_transform(self, X):
         if self._use_mean:
             return X * self._std + self._mean
-        else:
-            return X * self._std
+        return X * self._std
 
 
 class FixedNormalizer(ArrayTransform):
@@ -330,16 +496,18 @@ class FixedVelocityNormalizer(FixedNormalizer):
     # std = 0.1
     std = 1
 
+
 class FixedForcingNormalizer(FixedNormalizer):
     # std = 1e-7
     std = 1
+
 
 class ArctanPerChannelNormalizer(PerChannelNormalizer):
     def __init__(self, *args, **kargs):
         super().__init__(*args, **kargs)
 
     def transform(self, x):
-        assert(self._mean is not None)
+        assert self._mean is not None
         if self._use_mean:
             x = x - self._mean
         return np.arctan(x)
@@ -350,44 +518,46 @@ class PerLocationNormalizer(ArrayTransform):
         self._std = None
         self._mean = None
 
-    def fit(self, X: np.ndarray):
-        mean = np.mean(X, axis=0, keepdims=True)
-        std = np.std(X, axis=0, keepdims=True)
+    def fit(self, x: np.ndarray):
+        mean = np.mean(x, axis=0, keepdims=True)
+        std = np.std(x, axis=0, keepdims=True)
         self._mean = mean.reshape(mean.shape[1:])
         self._std = std.reshape(std.shape[1:])
 
-    def transform(self, X: np.ndarray):
-        assert(self._mean is not None)
-        return (X - self._mean) / self._std
+    def transform(self, x: np.ndarray):
+        assert self._mean is not None
+        return (x - self._mean) / self._std
 
 
 class PerInputNormalizer(ArrayTransform):
-    def fit(self, X):
+    def fit(self, x):
         pass
 
-    def transform(self, X: np.ndarray):
-        mean = np.mean(X, axis=(1, 2), keepdims=True)
-        std = np.std(X, axis=(1, 2), keepdims=True)
-        return (X - mean) / std
+    def transform(self, x: np.ndarray):
+        mean = np.mean(x, axis=(1, 2), keepdims=True)
+        std = np.std(x, axis=(1, 2), keepdims=True)
+        return (x - mean) / std
 
 
 class RawDataFromXrDataset(Dataset):
-    """This class allows to define a Pytorch Dataset based on an xarray 
+    """This class allows to define a Pytorch Dataset based on an xarray
     dataset easily, specifying features and targets."""
 
     def __init__(self, dataset: xr.Dataset):
         self.xr_dataset = dataset
-        self.input_arrays = list()
-        self.output_arrays = list()
+        self.input_arrays = []
+        self.output_arrays = []
         self.index = None
 
     @property
     def output_coords(self):
-        return dict([(k, v.data) for k, v in self.xr_dataset.coords.items()])
+        # return dict([(k, v.data) for k, v in self.xr_dataset.coords.items()])
+        return {k: v.data for k, v in self.xr_dataset.coords.items()}
 
     @property
     def input_coords(self):
-        return dict([(k, v.data) for k, v in self.xr_dataset.coords.items()])
+        # return dict([(k, v.data) for k, v in self.xr_dataset.coords.items()])
+        return {k: v.data for k, v in self.xr_dataset.coords.items()}
 
     @property
     def index(self):
@@ -444,27 +614,31 @@ class RawDataFromXrDataset(Dataset):
     @property
     def width(self):
         dims = self.xr_dataset.dims
-        candidates = list(filter(lambda x: x.startswith('x'), dims))
+        candidates = list(filter(lambda x: x.startswith("x"), dims))
         if len(candidates) == 1:
             x_dim_name = candidates[0]
-        elif 'x' in candidates:
-            x_dim_name = 'x'
+        elif "x" in candidates:
+            x_dim_name = "x"
         else:
-            raise Exception('Could not determine width axis according \
-                            to convention')
+            raise Exception(
+                "Could not determine width axis according \
+                            to convention"
+            )
         return len(self.xr_dataset[x_dim_name])
 
     @property
     def height(self):
         dims = self.xr_dataset.dims
-        candidates = list(filter(lambda x: x.startswith('y'), dims))
+        candidates = list(filter(lambda x: x.startswith("y"), dims))
         if len(candidates) == 1:
             y_dim_name = candidates[0]
-        elif 'y' in candidates:
-            y_dim_name = 'y'
+        elif "y" in candidates:
+            y_dim_name = "y"
         else:
-            raise Exception('Could not determine width axis according \
-                            to convention')
+            raise Exception(
+                "Could not determine width axis according \
+                            to convention"
+            )
         return len(self.xr_dataset[y_dim_name])
 
     def __getitem__(self, index):
@@ -478,16 +652,19 @@ class RawDataFromXrDataset(Dataset):
                 features = features.swapaxes(0, 1)
                 targets = targets.swapaxes(0, 1)
         except ValueError as e:
-            raise type(e)('Make sure you have defined the index, inputs,\
-                          and outputs: ' + str(e))
-        if hasattr(features, 'compute'):
+            raise type(e)(
+                "Make sure you have defined the index, inputs,\
+                          and outputs: "
+                + str(e)
+            )
+        if hasattr(features, "compute"):
             features = features.compute()
             targets = targets.compute()
         return features, targets
 
     def __len__(self):
         """
-        Return the number of samples of the datasets. Requires that the 
+        Return the number of samples of the datasets. Requires that the
         index property has been set.
 
         Raises
@@ -505,19 +682,18 @@ class RawDataFromXrDataset(Dataset):
         try:
             return len(self.xr_dataset[self._index])
         except KeyError as e:
-            raise type(e)('Make sure you have defined the index: ' + str(e))
+            raise type(e)("Make sure you have defined the index: " + str(e))
 
     def _check_varname(self, var_name: str):
         if var_name not in self.xr_dataset:
-            raise KeyError('Variable not in the xarray dataset.')
+            raise KeyError("Variable not in the xarray dataset.")
         if var_name in self._input_arrays or var_name in self._output_arrays:
-            raise ValueError('Variable already added as input or output.')
+            raise ValueError("Variable already added as input or output.")
 
     def __getattr__(self, attr_name):
         if hasattr(self.xr_dataset, attr_name):
             return getattr(self.xr_dataset, attr_name)
-        else:
-            raise AttributeError()
+        raise AttributeError()
 
 
 class DatasetWithTransform:
@@ -527,19 +703,29 @@ class DatasetWithTransform:
 
     @property
     def output_coords(self):
-        coords = {'height': self.dataset.output_coords['yu_ocean'], 
-                  'width': self.dataset.output_coords['xu_ocean']}
+        coords = {
+            "height": self.dataset.output_coords["yu_ocean"],
+            "width": self.dataset.output_coords["xu_ocean"],
+        }
         new_coords = self.transform.get_targets_coords(coords)
-        return {'yu_ocean': new_coords['height'], 'xu_ocean': new_coords['width'],
-                'time': self.coords['time']}
+        return {
+            "yu_ocean": new_coords["height"],
+            "xu_ocean": new_coords["width"],
+            "time": self.coords["time"],
+        }
 
     @property
     def input_coords(self):
-        coords = {'height': self.dataset.input_coords['yu_ocean'],
-                  'width': self.dataset.input_coords['xu_ocean']}
+        coords = {
+            "height": self.dataset.input_coords["yu_ocean"],
+            "width": self.dataset.input_coords["xu_ocean"],
+        }
         new_coords = self.transform.get_features_coords(coords)
-        return {'yu_ocean': new_coords['height'], 'xu_ocean': new_coords['width'],
-                'time': self.coords['time']}
+        return {
+            "yu_ocean": new_coords["height"],
+            "xu_ocean": new_coords["width"],
+            "time": self.coords["time"],
+        }
 
     @property
     def height(self):
@@ -563,23 +749,20 @@ class DatasetWithTransform:
     def __getitem__(self, index: int):
         raw_features, raw_targets = self.dataset[index]
         new_features, new_targets = [], []
-        if hasattr(index, '__iter__'):
+        if hasattr(index, "__iter__"):
             n_samples = raw_features.shape[0]
             # The following is because the transform applies to a single sample
             for i in range(n_samples):
-                temp = self.transform((raw_features[i, ...],
-                                      raw_targets[i, ...]))
+                temp = self.transform((raw_features[i, ...], raw_targets[i, ...]))
                 new_features.append(temp[0])
                 new_targets.append(temp[1])
             return np.stack(new_features), np.stack(new_targets)
-        else:
-            return self.transform(self.dataset[index])
+        return self.transform(self.dataset[index])
 
     def __getattr__(self, attr):
         if hasattr(self.dataset, attr):
             return getattr(self.dataset, attr)
-        else:
-            raise AttributeError()
+        raise AttributeError()
 
     def __len__(self):
         return len(self.dataset)
@@ -587,8 +770,10 @@ class DatasetWithTransform:
     def add_transforms_from_model(self, model):
         features_transforms = self.add_features_transform_from_model(model)
         targets_transforms = self.add_targets_transform_from_model(model)
-        return {'features transform': features_transforms,
-                'targets_transform': targets_transforms}
+        return {
+            "features transform": features_transforms,
+            "targets_transform": targets_transforms,
+        }
 
     def add_features_transform_from_model(self, model):
         """Automatically adds features transform required by the model.
@@ -599,16 +784,15 @@ class DatasetWithTransform:
         # well, right now this has been done manually by fixing the number of
         # added points on each end to 10.
         # TODO make this adaptable
-        if self.attrs.get('cycle') is not None:
-            cycle_length = self.attrs['cycle']
-            cycle_repeat = CyclicRepeat(2, 'width', cycle_length, 10)
+        if self.attrs.get("cycle") is not None:
+            cycle_length = self.attrs["cycle"]
+            cycle_repeat = CyclicRepeat(2, "width", cycle_length, 10)
             self.add_features_transform(cycle_repeat)
-        if hasattr(model, 'get_features_transform'):
+        if hasattr(model, "get_features_transform"):
             transform = model.get_features_transform()
             self.add_features_transform(transform)
             return transform
-        else:
-            return None
+        return None
 
     def add_targets_transform_from_model(self, model):
         """Automatically reshapes the targets of the dataset to match
@@ -633,7 +817,7 @@ class DatasetWithTransform:
 
 
 class Subset_(Subset):
-    """Extends the Pytorch Subset class to allow for attributes of the 
+    """Extends the Pytorch Subset class to allow for attributes of the
     dataset to be propagated to the subset dataset"""
 
     def __init__(self, dataset, indices):
@@ -642,20 +826,19 @@ class Subset_(Subset):
     @property
     def output_coords(self):
         new_coords = self.dataset.output_coords
-        new_coords['time'] = new_coords['time'][self.indices].data
+        new_coords["time"] = new_coords["time"][self.indices].data
         return new_coords
 
     @property
     def input_coords(self):
         new_coords = self.dataset.input_coords
-        new_coords['time'] = new_coords['time'][self.indices]
+        new_coords["time"] = new_coords["time"][self.indices]
         return new_coords
 
     def __getattr__(self, attr):
         if hasattr(self.dataset, attr):
             return getattr(self.dataset, attr)
-        else:
-            raise AttributeError()
+        raise AttributeError()
 
 
 class DatasetPartitioner:
@@ -695,11 +878,11 @@ class DatasetPartitioner:
 
 class ConcatDataset_(ConcatDataset):
     """Extends the Pytorch Concat Dataset in two ways:
-        - enforces (by default) the concatenated dataset to have the same
-        shapes
-        - passes on attributes (from the first dataset, assuming they are
-                                equal accross concatenated datasets)
-        """
+    - enforces (by default) the concatenated dataset to have the same
+    shapes
+    - passes on attributes (from the first dataset, assuming they are
+                            equal accross concatenated datasets)
+    """
 
     def __init__(self, datasets, enforce_same_dims=True):
         super(ConcatDataset_, self).__init__(datasets)
@@ -717,8 +900,7 @@ class ConcatDataset_(ConcatDataset):
     def __getattr__(self, attr):
         if hasattr(self.datasets[0], attr):
             return getattr(self.datasets[0], attr)
-        else:
-            raise AttributeError()
+        raise AttributeError()
 
     # def __setattr__(self, attr_name, value):
     #     if 'coord' in attr_name:
@@ -752,14 +934,15 @@ class RatiosDescriptor:
 
 
 class MixedDatasets(Dataset):
-    """Similar to the ConcatDataset from pytorch, with the difference that 
+    """Similar to the ConcatDataset from pytorch, with the difference that
     the datasets are not concatenated one after another, but instead mixed.
     For instance if we mix two datasets d1 and d2 that have the same size,
-    and d = MixedDatasets((d1, d2)), then d[0] returns the first element of 
+    and d = MixedDatasets((d1, d2)), then d[0] returns the first element of
     d1, d[1] returns the first element of d2, d[2] returns the second element
     of d1, and so on. In the case where the two datasets do not have the same
     size, see the __getitem__ documentation for more information of selection
     behaviour."""
+
     lens = LensDescriptor()
     ratios = RatiosDescriptor()
 
@@ -778,8 +961,8 @@ class MixedDatasets(Dataset):
         self._datasets = datasets
         # Delete instance attribute lens if it exists so that the descriptor
         # is called on next access to re-compute
-        self.__dict__.pop('lens', None)
-        self.__dict__.pop('ratios', None)
+        self.__dict__.pop("lens", None)
+        self.__dict__.pop("ratios", None)
 
     @property
     def precision(self):
@@ -788,7 +971,7 @@ class MixedDatasets(Dataset):
     @precision.setter
     def precision(self, value: int):
         self._precision = value
-        self.__dict__.pop('ratios', None)
+        self.__dict__.pop("ratios", None)
 
     @property
     def balanced(self):
@@ -797,7 +980,7 @@ class MixedDatasets(Dataset):
     @balanced.setter
     def balanced(self, balanced):
         self._balanced = balanced
-        self.__dict__.pop('ratios', None)
+        self.__dict__.pop("ratios", None)
 
     def __len__(self):
         return min(self.lens // self.ratios) * np.sum(self.ratios)
@@ -842,8 +1025,9 @@ class MixedDataFromXrDataset(MixedDatasets):
     def n_features(self):
         n_features = [d.n_features for d in self.datasets]
         if not self.all_equal(n_features):
-            raise ValueError('All datasets do not have the same number of \
-                             features')
+            raise ValueError(
+                "All datasets do not have the same number of features"
+            )
         else:
             return n_features[0]
 
@@ -851,23 +1035,23 @@ class MixedDataFromXrDataset(MixedDatasets):
     def n_targets(self):
         n_targets = [d.n_targets for d in self.datasets]
         if not self.all_equal(n_targets):
-            raise ValueError('All datasets do not have the same number of \
-                             targets')
-        else:
-            return n_targets[0]
+            raise ValueError(
+                "All datasets do not have the same number of targets"
+            )
+        return n_targets[0]
 
     @property
     def height(self):
         heights = [dataset.height for dataset in self.datasets]
         if not self.all_equal(heights):
-            logging.warn('Concatenated datasets do not have the same height')
+            warnings.warn("Concatenated datasets do not have the same height")
         return heights[0]
 
     @property
     def width(self):
         widths = [dataset.width for dataset in self.datasets]
         if not self.all_equal(widths):
-            logging.warn('Concatenated datasets do not have the same height')
+            warnings.warn("Concatenated datasets do not have the same height")
         return widths[0]
 
     def add_input(self, var_name: str) -> None:
@@ -893,6 +1077,7 @@ class MultipleTimeIndices(Dataset):
     """Class to create a dataset based on an existing dataset where we
     concatenate multiple time indices along the channel dimension to create a
     new feature"""
+
     def __init__(self, dataset: Dataset, time_indices: list() = None):
         self.dataset = dataset
         self._time_indices = None
@@ -900,7 +1085,9 @@ class MultipleTimeIndices(Dataset):
         if time_indices is not None:
             self.time_indices = time_indices
         else:
-            self.time_indices = [0,]
+            self.time_indices = [
+                0,
+            ]
 
     @property
     def time_indices(self):
@@ -911,7 +1098,7 @@ class MultipleTimeIndices(Dataset):
     def time_indices(self, indices: list):
         for i in indices:
             if i > 0:
-                raise ValueError('The indices should be 0 or negative')
+                raise ValueError("The indices should be 0 or negative")
         self._time_indices = indices
         self._shift = max([abs(v) for v in indices])
 
@@ -921,8 +1108,10 @@ class MultipleTimeIndices(Dataset):
 
     @shift.setter
     def shift(self, value: int):
-        raise Exception('The shift cannot be set manually. Instead set \
-                        the time indices.')
+        raise Exception(
+            "The shift cannot be set manually. Instead set \
+                        the time indices."
+        )
 
     @property
     def n_features(self):
@@ -948,38 +1137,44 @@ class MultipleTimeIndices(Dataset):
     def __getattr__(self, attr_name):
         if hasattr(self.dataset, attr_name):
             return getattr(self.dataset, attr_name)
-        else:
-            raise AttributeError()
+        raise AttributeError()
 
 
-if __name__ == '__main__':
-    import xarray as xr
+if __name__ == "__main__":
     from xarray import DataArray
     from xarray import Dataset as xrDataset
     from numpy.random import randint
-    da = DataArray(data=randint(0, 10, (20, 32, 48)),
-                   dims=('time', 'yu_ocean', 'xu_ocean'))
-    da2 = DataArray(data=randint(0, 3, (20, 32, 48)),
-                    dims=('time', 'yu_ocean', 'xu_ocean'))
-    da3 = DataArray(data=randint(0, 100, (20, 32, 48)) * 10,
-                    dims=('time', 'yu_ocean', 'xu_ocean'))
-    da4 = DataArray(data=randint(0, 2, (20, 32, 48)) * 20,
-                    dims=('time', 'yu_ocean', 'xu_ocean'))
-    ds = xrDataset({'in0': da, 'in1': da2,
-                    'out0': da3, 'out1': da4},
-                   coords={'time': np.arange(20),
-                           'xu_ocean': np.arange(48) * 5,
-                           'yu_ocean': np.arange(32) * 2})
-    ds = ds.chunk({'time': 2})
-    ds = ds.where(ds['in0'] > 3)
-    dataset = RawDataFromXrDataset(ds)
-    dataset.index = 'time'
-    dataset.add_input('in0')
-    dataset.add_input('in1')
-    dataset.add_output('out0')
-    dataset.add_output('out1')
 
-    # loader = DataLoader(dataset, batch_size=7, drop_last=True)
+    da = DataArray(
+        data=randint(0, 10, (20, 32, 48)), dims=("time", "yu_ocean", "xu_ocean")
+    )
+    da2 = DataArray(
+        data=randint(0, 3, (20, 32, 48)), dims=("time", "yu_ocean", "xu_ocean")
+    )
+    da3 = DataArray(
+        data=randint(0, 100, (20, 32, 48)) * 10, dims=("time", "yu_ocean", "xu_ocean")
+    )
+    da4 = DataArray(
+        data=randint(0, 2, (20, 32, 48)) * 20, dims=("time", "yu_ocean", "xu_ocean")
+    )
+    ds = xrDataset(
+        {"in0": da, "in1": da2, "out0": da3, "out1": da4},
+        coords={
+            "time": np.arange(20),
+            "xu_ocean": np.arange(48) * 5,
+            "yu_ocean": np.arange(32) * 2,
+        },
+    )
+    ds = ds.chunk({"time": 2})
+    ds = ds.where(ds["in0"] > 3)
+    dataset1 = RawDataFromXrDataset(ds)
+    dataset1.index = "time"
+    dataset1.add_input("in0")
+    dataset1.add_input("in1")
+    dataset1.add_output("out0")
+    dataset1.add_output("out1")
+
+    # loader = DataLoader(dataset1, batch_size=7, drop_last=True)
 
     # ds2 = ds.isel(yu_ocean=slice(0, 28), xu_ocean=slice(0, 37))
     # dataset2 = RawDataFromXrDataset(ds2)
@@ -993,11 +1188,11 @@ if __name__ == '__main__':
     #                                          SignedSqrt()))
     # t.add_features_transform(CropToMultipleof(3))
     # t2 = deepcopy(t)
-    # train_dataset = Subset_(dataset, np.arange(5))
+    # train_dataset1 = Subset_(dataset1, np.arange(5))
     # train_dataset2 = Subset_(dataset2, np.arange(5))
-    # t.fit(train_dataset)
+    # t.fit(train_dataset1)
     # t2.fit(train_dataset2)
-    # new_dataset = DatasetWithTransform(dataset, t)
+    # new_dataset = DatasetWithTransform(dataset1, t)
     # new_dataset2 = DatasetWithTransform(dataset2, t2)
     # datasets = (new_dataset, new_dataset2)
     # c = ConcatDataset_(datasets)
