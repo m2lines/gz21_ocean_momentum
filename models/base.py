@@ -19,6 +19,7 @@ import torch
 class DetectOutputSizeMixin:
     """Class to detect the shape of a neural net."""
 
+    # TODO: protect this with `@no_grad` decorator to conserve memory/time etc.
     def output_width(self, input_height, input_width):
         """
         Generate a tensor and run forward model to get output width.
@@ -33,6 +34,8 @@ class DetectOutputSizeMixin:
         dummy_out.size(3) : type?  # AB
             width of the output tensor
         """
+        # TODO: following 2 lines can be combined for speedup as
+        #       e.g. `torch.zeros(10, 10, device=self.device)`
         dummy_in = torch.zeros((1, self.n_in_channels, input_height, input_width))
         dummy_in = dummy_in.to(device=self.device)
         # AB - Self here is assuming access to a neural net forward method?
@@ -45,6 +48,7 @@ class DetectOutputSizeMixin:
             dummy_out = dummy_out[0]
         return dummy_out.size(3)
 
+    # TODO: protect this with `@no_grad` decorator to conserve memory/time etc.
     def output_height(self, input_height, input_width):
         """
         Generate a tensor and run forward model to get output height.
@@ -59,6 +63,8 @@ class DetectOutputSizeMixin:
         dummy_out.size(2) : type?  # AB
             height of the output tensor
         """
+        # TODO: following 2 lines can be combined for speedup as
+        #       e.g. `torch.zeros(10, 10, device=self.device)`
         dummy_in = torch.zeros((1, self.n_in_channels, input_height, input_width))
         dummy_in = dummy_in.to(device=self.device)
         dummy_out = self(dummy_in)
@@ -78,6 +84,7 @@ class DetectOutputSizeMixin:
         type?  # AB
             description?  # AB
         """
+        # TODO: This can probably just be `return self.parameters[0].device`
         params = list(self.parameters())[0]
         return params.device
 
