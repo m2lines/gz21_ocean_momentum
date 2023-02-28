@@ -180,13 +180,13 @@ class FullyCNN(DetectOutputSizeMixin, nn.Sequential):
 
         Returns
         -------
-        subbloc : type?  # AB
+        subblock : type?  # AB
             description?  # AB
         """
-        subbloc = [conv, nn.ReLU()]
+        subblock = [conv, nn.ReLU()]
         if self.batch_norm:
-            subbloc.append(nn.BatchNorm2d(conv.out_channels))
-        return subbloc
+            subblock.append(nn.BatchNorm2d(conv.out_channels))
+        return subblock
 
 
 # THIS IS NOT USED IN FINAL PAPER
