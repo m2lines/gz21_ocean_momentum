@@ -45,14 +45,17 @@ def call_only_once(func):
 
 class FeaturesTargetsDataset(Dataset):
     """
-    description  # AB
+    Class describing a Pytorch Dataset based on a set of features
+    and targets both passed as numpy arrays.
 
     Attributes
     ----------
     features : ndarray
-        description?  # AB
+        Numpy array of features with the first dimension indexing
+        various samples
     targets : ndarray
-        description?  # AB
+        Numpy array of target values with the first dimension indexing
+        various samples
     """
 
     def __init__(self, features: np.ndarray, targets: np.ndarray):
@@ -67,11 +70,11 @@ class FeaturesTargetsDataset(Dataset):
         Parameters
         ----------
         index : int
-            description?  # AB
+            index of the feature.
 
         Returns
         -------
-        (self.features[index], self.targets[index]) : tupule of ?  # AB
+        (self.features[index], self.targets[index]) : tuple of ?  # AB
             description?  # AB
         """
         return (self.features[index], self.targets[index])
@@ -112,14 +115,14 @@ def prod(l):
 
 class DatasetTransformer:
     """
-    description  # AB
+    Class to describe a transform that can be applied on a dataset.
 
     Attributes
     ----------
-    features_transform : type?  # AB
-        description?  # AB
-    targets_transform : type?  # AB
-        description?  # AB
+    features_transform : ArrayTransform
+        Transform that will be applied to the features
+    targets_transform : ArrayTransform
+        Transform that will be applied to the targets
     """
     def __init__(self, features_transform, targets_transform=None):
         self.transforms = {}
@@ -128,14 +131,15 @@ class DatasetTransformer:
             targets_transform = deepcopy(features_transform)
         self.transforms["targets"] = targets_transform
 
-    def add_features_transform(self, transform):
+    def add_features_transform(self, transform: ArrayTransform):
         """
-        description.  # AB
+        Add a transform to the list of transforms that will be
+        applied on the features of a dataset
 
         Parameters
         ----------
-        transform : type?  # AB
-            description?  # AB
+        transform : ArrayTransform
+            Transform to be added to the list of transforms
         """
         feature_t = self.transforms["features"]
         if not isinstance(feature_t, ComposeTransforms):
@@ -148,12 +152,13 @@ class DatasetTransformer:
 
     def add_targets_transform(self, transform):
         """
-        description.  # AB
+        Add a transform to the list of transforms that will be
+        applied on the targets of a dataset
 
         Parameters
         ----------
-        transform : type?  # AB
-            description?  # AB
+        transform : ArrayTransform
+            Transform to be added to the list of target transforms
         """
         target_t = self.transforms["targets"]
         if not isinstance(target_t, ComposeTransforms):
@@ -166,18 +171,21 @@ class DatasetTransformer:
 
     def fit(self, x: torch.utils.data.Dataset):
         """
-        description.  # AB
+        Call the fit method of all array transforms in the list
+        of features and target transforms on the passed Dataset.
+        # TODO Arthur check whether we actually still use this
 
         Parameters
         ----------
         x : torch.utils.data.Dataset
-            description?  # AB
+            Pytorch Dataset to use for fitting.
 
         Returns
         -------
         self : DatasetTransformer
-            description?  # AB
+            The DatasetTransformer after applying the fitting.
         """
+        # TODO Arthur check this
         features, targets = x[:]
         self.transforms["features"].fit(features)
         self.transforms["targets"].fit(targets)
@@ -189,13 +197,13 @@ class DatasetTransformer:
 
         Parameters
         ----------
-        x : tupule of ?  # AB
-            description?  # AB
+        x : tuple of (numpy array, numpy array)
+            Arrays of features and targets on which to apply the transforms
 
         Returns
         -------
-        new_features, new_targets : tupule of?  # AB
-            description?  # AB
+        new_features, new_targets : tuple of (numpy array, numpy array)
+            Transformed features and transformed targets
         """
         features, targets = x
         new_features = self.transforms["features"].transform(features)
@@ -204,7 +212,9 @@ class DatasetTransformer:
 
     def get_features_coords(self, coords):
         """
-        Apply features transform to input coords.
+        Get the coordinates of the transformed features. These might change for instance
+        if we apply a crop transform to the features.
+        #TODO Arthur Can we find a nicer way to achieve this? Say using missing values?
 
         Parameters
         ----------
@@ -294,6 +304,10 @@ class ArrayTransform(ABC):
     def transform(self, x):
         pass
 
+    @abstractmethod
+    def transform_coordinate(self, coord, dim):
+        pass
+
 
 class ComposeTransforms(ArrayTransform):
     def __init__(self, *transforms):
@@ -321,6 +335,7 @@ class ComposeTransforms(ArrayTransform):
     def transform_coordinate(self, coord, dim):
         x = coord
         for transform in self.transforms:
+            # TODO arthur line below is ugly
             if isinstance(transform, (CropToNewShape, CyclicRepeat)):
                 x = transform.transform_coordinate(coord, dim)
         return x
@@ -697,7 +712,7 @@ class RawDataFromXrDataset(Dataset):
 
 
 class DatasetWithTransform:
-    def __init__(self, dataset, transform):
+    def __init__(self, dataset, transform: DatasetTransformer):
         self.dataset = dataset
         self.transform = transform
 
