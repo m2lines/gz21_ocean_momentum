@@ -23,14 +23,13 @@ from data.pangeo_catalog import get_patch
 import logging
 import tempfile
 
-
-
-# logging config
+# obtain logging config from LOGGING_LEVEL environment variable
+# e.g. `LOGGING_LEVEL=20 python cmip26.py ...`
+# common numeric values: https://docs.python.org/3/library/logging.html#levels
 logging_level = os.environ.get('LOGGING_LEVEL')
 if logging_level is not None:
     logging.basicConfig(level=int(logging_level))
 logger = logging.getLogger(__name__)
-
 
 # Script parameters
 CATALOG_URL = 'https://raw.githubusercontent.com/pangeo-data/pangeo-datastore\
@@ -41,6 +40,7 @@ DESCRIPTION = 'Read data from the CM2.6 and \
         experiment within a specific run.'
 
 data_location = tempfile.mkdtemp()
+logger.info(f"working dir: {data_location}")
 
 # Parse the command-line parameters
 parser = argparse.ArgumentParser(description=DESCRIPTION)
