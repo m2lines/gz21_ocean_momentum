@@ -145,3 +145,6 @@ Update analysis code so that it produces the nice figures in the paper
 
 
 Add something about how to load the NN independently.
+
+# License
+Provided under the MIT license. See `LICENSE` for license text.
