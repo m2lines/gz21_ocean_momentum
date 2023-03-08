@@ -28,8 +28,7 @@ import tempfile
 # logging config
 logging_level = os.environ.get('LOGGING_LEVEL')
 if logging_level is not None:
-    logging_level = getattr(logging, logging_level)
-    logging.basicConfig(level=logging_level)
+    logging.basicConfig(level=int(logging_level))
 logger = logging.getLogger(__name__)
 
 
