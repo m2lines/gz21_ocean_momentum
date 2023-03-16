@@ -1,3 +1,10 @@
-mlruns/*
+# general Python build files
 __pycache__/*
 *.pyc
+/*.egg-info/
+
+# IDE project directories
+/.idea/
+
+# MLflow output
+/mlruns/*
