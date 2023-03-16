@@ -41,7 +41,7 @@ DESCRIPTION = 'Read data from the CM2.6 and \
         apply coarse graining. Stores the resulting dataset into an MLFLOW \
         experiment within a specific run.'
 
-data_location = tempfile.mkdtemp(dir='/scratch/ag7531/temp/')
+data_location = tempfile.mkdtemp()
 
 # Parse the command-line parameters
 parser = argparse.ArgumentParser(description=DESCRIPTION)
