@@ -22,7 +22,7 @@ def get_patch(
     ntimes: int = None,
     bounds: list = None,
     CO2_level=0,
-    *selected_vars
+    *selected_vars,
 ):
     """
     Return a tuple with a patch of uv velocities along with the grid details.

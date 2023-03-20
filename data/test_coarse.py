@@ -12,6 +12,7 @@ from .coarse import spatial_filter_dataset, spatial_filter, eddy_forcing
 
 class TestEddyForcing:
     "Class to test eddy forcing routines."
+
     def test_spatial_filter(self):
         """
         Check that number of dimensions stay the same through spatial_filter().

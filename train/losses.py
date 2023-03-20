@@ -21,27 +21,30 @@ class VarianceMode(Enum):
     precision = 1
 
 
-
 # DEPRECIATED
 class HeteroskedasticGaussianLoss(_Loss):
     def forward(self, input: torch.Tensor, target: torch.Tensor):
         # Split the target into mean (first half of channels) and scale
         mean, precision = torch.split(input, 2, dim=1)
         if not torch.all(precision > 0):
-            raise ValueError('Got a non-positive variance value. \
+            raise ValueError(
+                "Got a non-positive variance value. \
                              Pre-processed variance tensor was: \
-                                 {}'.format(torch.min(precision)))
-        term1 = - 1 / 2 * torch.log(precision)
-        term2 = 1 / 2 * (target - mean)**2 * precision
+                                 {}".format(
+                    torch.min(precision)
+                )
+            )
+        term1 = -1 / 2 * torch.log(precision)
+        term2 = 1 / 2 * (target - mean) ** 2 * precision
         return (term1 + term2).mean()
-
 
 
 class HeteroskedasticGaussianLossV2(_Loss):
     """Class for Gaussian likelihood"""
 
-    def __init__(self, n_target_channels: int = 1, bias: float = 0.,
-                 mode=VarianceMode.precision):
+    def __init__(
+        self, n_target_channels: int = 1, bias: float = 0.0, mode=VarianceMode.precision
+    ):
         super().__init__()
         self.n_target_channels = n_target_channels
         self.bias = bias
@@ -55,7 +58,7 @@ class HeteroskedasticGaussianLossV2(_Loss):
 
     @property
     def channel_names(self):
-        return ['S_x', 'S_y', 'S_xscale', 'S_yscale']
+        return ["S_x", "S_y", "S_xscale", "S_yscale"]
 
     @property
     def precision_indices(self):
@@ -65,15 +68,19 @@ class HeteroskedasticGaussianLossV2(_Loss):
         # Split the target into mean (first half of channels) and scale
         mean, precision = torch.split(input, self.n_target_channels, dim=1)
         if not torch.all(precision > 0):
-            raise ValueError('Got a non-positive variance value. \
+            raise ValueError(
+                "Got a non-positive variance value. \
                              Pre-processed variance tensor was: \
-                                 {}'.format(torch.min(precision)))
+                                 {}".format(
+                    torch.min(precision)
+                )
+            )
         if self.mode is VarianceMode.precision:
-            term1 = - torch.log(precision)
-            term2 = 1 / 2 * (target - (mean + self.bias))**2 * precision**2
+            term1 = -torch.log(precision)
+            term2 = 1 / 2 * (target - (mean + self.bias)) ** 2 * precision**2
         elif self.mode is VarianceMode.variance:
             term1 = torch.log(precision)
-            term2 = 1 / 2 * (target - (mean + self.bias))**2 / precision**2
+            term2 = 1 / 2 * (target - (mean + self.bias)) ** 2 / precision**2
         return term1 + term2
 
     def forward(self, input: torch.Tensor, target: torch.Tensor):
@@ -110,5 +117,7 @@ class HeteroskedasticGaussianLossV3(_Loss):
         return self.base_loss.forward(input, target)
 
     def pointwise_likelihood(self, input: torch.Tensor, target: torch.Tensor):
-        raw_loss = self._base_loss(input, target[:, :self.n_target_channels, ...])
-        return raw_loss + torch.log(target[:, self.n_target_channels: self.n_target_channels + 1, ...])
+        raw_loss = self._base_loss(input, target[:, : self.n_target_channels, ...])
+        return raw_loss + torch.log(
+            target[:, self.n_target_channels : self.n_target_channels + 1, ...]
+        )
