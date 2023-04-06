@@ -22,13 +22,14 @@ def call_only_once(func):
 
     Parameters
     ----------
-    func : type?  # AB
-        description?  # AB
+    func : Callable
+        Function to be decorated
 
     Returns
     -------
-    new_func : type?  # AB
-        description?  # AB
+    new_func : Callable
+        Same function, but wrapped to ensure it cannot be called twice
+        one the same arguments
     """
     func.called = []
 
@@ -52,10 +53,10 @@ class FeaturesTargetsDataset(Dataset):
     ----------
     features : ndarray
         Numpy array of features with the first dimension indexing
-        various samples
+        independent samples
     targets : ndarray
         Numpy array of target values with the first dimension indexing
-        various samples
+        independent samples
     """
 
     def __init__(self, features: np.ndarray, targets: np.ndarray):
@@ -74,8 +75,8 @@ class FeaturesTargetsDataset(Dataset):
 
         Returns
         -------
-        (self.features[index], self.targets[index]) : tuple of ?  # AB
-            description?  # AB
+        (self.features[index], self.targets[index]) : tuple of numpy arrays, both with shape (2, H, W)
+            Features, the coarse velocities, and targets, the diagnosed subgrid forcing
         """
         return (self.features[index], self.targets[index])
 
@@ -101,11 +102,11 @@ def prod(l):
     Parameters
     ----------
     l : iterable
-        description?  # AB
+        iterable over which we request a product
 
     Returns
     -------
-    l[0] * prod(l[1:]) : type?  # AB
+    l[0] * prod(l[1:]) : float
         product of all elements, or 1 if len(l)=0
     """
     if len(l) == 0:
@@ -252,17 +253,17 @@ class DatasetTransformer:
 
     def __call__(self, x):
         """
-        description?  # AB
+        Apply the transform to the passed data
 
         Parameters
         ----------
-        x : type  # AB
-            description?  # AB
+        x : numpy array
+            data to be transformed
 
         Returns
         -------
-        self.transform(x) : type?  # AB
-            description?  # AB
+        self.transform(x) : numpy array
+            transformed data
         """
         return self.transform(x)
 
@@ -272,19 +273,19 @@ class DatasetTransformer:
         """
         return self.transforms["targets"].inverse_transform(target)
 
-    def inverse_transform(self, x: Dataset):
+    def inverse_transform(self, x):
         """
         getter for target and feature of a particular index.
 
         Parameters
         ----------
-        x : type?  # AB torch.utils.Dataset in hints, but tuple in function?
-            description?  # AB
+        x : tuple of (numpy array, numpy array)
+            data on which we apply the inverse transform
 
         Returns
         -------
-        FeaturesTargetsDataset(new_features, new_targets) : type?  # AB
-            description?  # AB
+        FeaturesTargetsDataset(new_features, new_targets) : FeaturesTargetsDataset
+            Features and targets of inverse-transformed data
         """
         features, targets = x
         new_features = self.transforms["features"].inverse_transform(features)

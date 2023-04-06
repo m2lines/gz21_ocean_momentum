@@ -11,14 +11,19 @@ from subgrid.train import train
 
 def load_model_cls(model_module_name: str, model_cls_name: str):
     """
-    Load a model from a models module.
+    Dynamically load a neural network class (or a model) from a models module.
 
     Attributes
     ----------
     model_module_name : str
-        Description?  # AB
+        module name where the class is defined
     model_cls_name : str
-        Description?  # AB
+        class name of the model
+
+    Returns
+    -------
+    model_cls: subclass of Module
+        Class that defines the model
     """
     try:
         module = importlib.import_module(model_module_name)
@@ -40,9 +45,10 @@ def select_and_load():
 
     Returns
     -------
-    net : TYPE?  # AB
-        Description?  # AB
+    net : Module
+        Trained neural network selected by the user.
     """
+    # FIXME the experiment will depend on local implementation...
     models_experiment_id, _ = select_experiment("21")
     cols = [
         "metrics.test loss",

@@ -31,7 +31,7 @@ class DetectOutputSizeMixin:
 
         Returns
         -------
-        dummy_out.size(3) : type?  # AB
+        dummy_out.size(3) : int
             width of the output tensor
         """
         # TODO: following 2 lines can be combined for speedup as
@@ -42,10 +42,6 @@ class DetectOutputSizeMixin:
         #      If so I think this should really be contained in FullyCNN.
         #      We can discuss and I am happy to perform the refactor.
         dummy_out = self(dummy_in)
-
-        # temporary fix for student loss  # AB Is this still a temp. fix?
-        if isinstance(dummy_out, tuple):
-            dummy_out = dummy_out[0]
         return dummy_out.size(3)
 
     # TODO: protect this with `@no_grad` decorator to conserve memory/time etc.
@@ -60,7 +56,7 @@ class DetectOutputSizeMixin:
 
         Returns
         -------
-        dummy_out.size(2) : type?  # AB
+        dummy_out.size(2) : int
             height of the output tensor
         """
         # TODO: following 2 lines can be combined for speedup as
@@ -68,10 +64,6 @@ class DetectOutputSizeMixin:
         dummy_in = torch.zeros((1, self.n_in_channels, input_height, input_width))
         dummy_in = dummy_in.to(device=self.device)
         dummy_out = self(dummy_in)
-
-        # temporary fix for student loss  # AB Is this still a temp. fix?
-        if isinstance(dummy_out, tuple):
-            dummy_out = dummy_out[0]
         return dummy_out.size(2)
 
     @property
@@ -81,8 +73,8 @@ class DetectOutputSizeMixin:
 
         Returns
         -------
-        type?  # AB
-            description?  # AB
+        Device
+            Device where the neural network lives
         """
         # TODO: This can probably just be `return self.parameters[0].device`
         params = list(self.parameters())[0]

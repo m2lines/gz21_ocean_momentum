@@ -81,12 +81,12 @@ def get_patch(
 
 def get_grid():
     """
-    Description?.  # AB
+    Obtain the CM2.6 grid information, necessary for instance to compute derivatives
 
     Returns
     -------
-    grid_data : type?  # AB
-        description?  # AB
+    grid_data : xarray Dataset
+        Grid information as an xarray dataset
     """
     catalog = intake.open_catalog(CATALOG_URL)
     s_grid = catalog.ocean.GFDL_CM2_6.GFDL_CM2_6_grid
@@ -98,14 +98,15 @@ def get_grid():
 
 def get_whole_data(url, c02_level):
     """
-    Description?.  # AB
+    Obtain all surface data and grid data for a given CO2 level.
 
     Parameters
     ----------
-    url : type?  # AB
-        description?  # AB
-    c02_level : type?  # AB
-        description?  # AB
+    url : str
+        url where to download the CM2.6 data from. Should correspond to an
+        intake catalog, made available by PANGEO.
+    c02_level : 0 or 1
+        0 for pre-industrial level, 1 for 1 percent increase per year
 
     Returns
     -------
@@ -116,26 +117,6 @@ def get_whole_data(url, c02_level):
     """
     data, grid = get_patch(url, None, None, c02_level, "usurf", "vsurf")
     return data, grid
-
-
-def get_cm2_5_grid():
-    """
-    Description?.  # AB
-
-    Returns
-    -------
-    grid : xarray Dataset
-        description?  # AB
-    dx_u : type?  # AB
-        description?  # AB
-    dy_u : type?  # AB
-        description?  # AB
-    """
-    grid = xr.open_dataset("/home/arthur/ocean.static.nc")
-    dy_u = np.diff(grid["yu_ocean"]) / 360 * 2 * np.pi * 6400 * 1e3
-    # dx_u = np.diff(grid['xu_ocean']) * np.cos(grid['yu_ocean'] / 360 * 2 * np.pi)
-    dx_u = None
-    return grid, dx_u, dy_u
 
 
 if __name__ == "__main__":

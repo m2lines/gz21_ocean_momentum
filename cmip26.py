@@ -115,17 +115,23 @@ if params.factor != 0 and not debug_mode:
 
     def func(block):
         """
-        Description?.  # AB
+        Description: Apply coarsening operations + computations of subgrid
+            momentum forcing to a chunk of data along the time axis.
 
         Parameters
         ----------
-        block : type?  # AB
-            description?  # AB
+        block :
+            description: an xarray dataset containing variables usurf and vsurf
+            for the two components of surface velocities.
 
         Returns
         -------
-        eddy_forcing : type?  # AB
-            description?  # AB
+        eddy_forcing : xr.Dataset
+            Dataset containing 4 variables:
+            - usurf and vsurf, the two components of the coarse-grained & filtered
+            surface velocities
+            - S_x and S_y, the two components of the diagnosed subgrid momentum
+            forcing
         """
         return eddy_forcing(block, grid_data, scale=scale_m)
 

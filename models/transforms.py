@@ -12,6 +12,7 @@ TODO
 ----
 - Not immediately clear that ABC (abstract base class) is useful here?
 - Seem to define lots of child classes to work to a fial point, can this be reduced?
+Arthur replies: Yeah, in the end I only used the Precision Transform, removing the rest
 """
 
 from abc import ABC, abstractmethod
@@ -31,51 +32,45 @@ class Transform(nn.Module, ABC):
     """
 
     # AB This does nothing, should it be defined in later classes directly?
+    # Arthur replies: this is to force implementation of this method, but overall, this might be all too complicated
+    # for something quite simple. Might want to make things simpler later on.
     @abstractmethod
     def transform(self, input):
         """Does nothing."""
         pass
 
     def forward(self, input_):
-        # AB Do we need this method if it only applies the transform method?
         """
         Apply self.transform to input.
 
         Parameters
         ----------
-        input_ : type?  # AB
-            description  # AB
+        input_ : tensor
+            tensor output by the neural network, should have shape (N, C, H, W)
         """
         return self.transform(input_)
-
-    # AB This does nothing, should it be defined in later classes directly?
-    @abstractmethod
-    def __repr__(self):
-        """Does nothing."""
-        pass
 
 
 class PrecisionTransform(Transform):
     """
-    Class description?  # AB
+    General class for a transform that acts on the precision
+    channels of the outputs. The min value is a Parameter
+    of the neural network that can be trained during the SGD.
 
     Attributes
     ----------
     min_value : float
-      description?  # AB
+      minimum positive value for the output precision
 
     Methods
     -------
-    min_value : type?  # AB
-        description?  # AB
-    indices : type?  # AB
-        description?  # AB
     transform
     transform_precision
     """
 
     def __init__(self, min_value=0.1):
         super().__init__()
+        # TODO Arthur should this not just be = min_value, we already convert to parameter in the setter
         self.min_value = nn.Parameter(torch.tensor(min_value))
 
     @property
@@ -98,23 +93,19 @@ class PrecisionTransform(Transform):
         self._indices = values
 
     def transform(self, input_):
-        # AB is this docstring correct? It looks to me like it
         """
-        Split into sections of size 2 along channel dimension.
-
-        What is this method for?, longer description of purpose?  # AB
-        Note: the split argument is the size of the sections, not the number of them,
-        although this does not matter for 4 channels.
+        Applies the transform_precision method to precision channels,
+        specified by the indices property
 
         Parameters
         ----------
-        input_ : type?  # AB
-            description?  # AB
+        input_ : tensor
+            tensor output by the neural network
 
         Returns
         -------
-        result : type?  # AB
-            description?  # AB
+        result : tensor
+            tensor with precision channels transformed to be positive
         """
         result = torch.clone(input_)
         result[:, self.indices, :, :] = (
@@ -125,13 +116,15 @@ class PrecisionTransform(Transform):
     @staticmethod
     @abstractmethod
     def transform_precision(precision):
-        """Does nothing."""
+        """Does nothing, to be implemented in subclasses"""
         pass
 
 
 class MixedPrecisionTransform(PrecisionTransform):
     """
-    Class description?  # AB
+    Scales the precision channel inverse proportionally to the mean channels.
+    # TODO do not think this is used anymore in the final paper, but need to double check.
+    # TODO check whether there is a potential issue with the lack of ordering in indices.
 
     Methods
     -------
@@ -145,12 +138,12 @@ class MixedPrecisionTransform(PrecisionTransform):
     @property
     def mean_indices(self):
         """
-        description?  # AB
+        Indices of the output channels corresponding to the means (usually 0 and 1)
 
         Returns
         -------
         : list
-            description  # AB
+            List of the indices in the output corresponding to the means.
         """
         indices_set = set(self.indices)
         range_set = set(list(range(4)))
@@ -158,17 +151,19 @@ class MixedPrecisionTransform(PrecisionTransform):
 
     def transform(self, input_):
         """
-        Description?  # AB
+        Applies the transform to precision channels in two steps:
+        1. Apply a simple precision transform (for instance a softplus)
+        2. Scales inverse-proportionally to the mean channel
 
         Parameters
         ----------
-        input_ : type?  # AB
-            description?  # AB
+        input_ : tensor
+            tensor output by the neural network
 
         Returns
         -------
-        result : type?  # AB
-            description?  # AB
+        result : tensor
+            tensor with the precision channels made positive
         """
         result = super().transform(input_)
         result = torch.clone(result)
@@ -182,22 +177,17 @@ class MixedPrecisionTransform(PrecisionTransform):
 
 class SoftPlusTransform(PrecisionTransform):
     """
-    Class description?  # AB
+    Class used to apply a simple softplus on the precision channels
 
     Attributes
     ----------
     min_value : float
-      description?  # AB
+      min value for the precision
 
     Methods
     -------
-    mean_indices
     transform_precision
     """
-
-    # AB This repeats the __init__ for PrecisionTransform so is unneccessary?
-    def __init__(self, min_value=0.1):
-        super().__init__(min_value)
 
     @staticmethod
     def transform_precision(precision):
@@ -209,12 +199,13 @@ class SoftPlusTransform(PrecisionTransform):
 
 class MixedSoftPlusTransform(MixedPrecisionTransform):
     """
-    Class description?  # AB
+    Class used to apply a softplus on each precision channels, followed
+    by an inverse scaling from the class MixedPrecisionTransform.
 
     Attributes
     ----------
     min_value : float
-      description?  # AB
+      Minimum positive value for the precision
 
     Methods
     -------
@@ -231,21 +222,17 @@ class MixedSoftPlusTransform(MixedPrecisionTransform):
 
 class SquareTransform(PrecisionTransform):
     """
-    Class description?  # AB
+    Class used to apply a simple square value to the precision channels
 
     Attributes
     ----------
     min_value : float
-      description?  # AB
+      minimum value of the final precision
 
     Methods
     -------
     transform_precision
     """
-
-    # AB This repeats the __init__ for PrecisionTransform so is unneccessary?
-    def __init__(self, min_value=0.1):
-        super().__init__(min_value)
 
     @staticmethod
     def transform_precision(precision):
@@ -253,53 +240,3 @@ class SquareTransform(PrecisionTransform):
 
     def __repr__(self):
         return "".join(("SquareTransform(", str(self.min_value), ")"))
-
-
-class MeanTransform(Transform):
-    """
-    Class description?  # AB
-
-    Methods
-    -------
-    transform
-    """
-
-    def transform(self, input):
-        result = torch.clone(input)
-        result[:, 0:2, :, :] = torch.tan(result[:, 0:2, :, :])
-        return result
-
-    def __repr__(self):
-        return self.__class__.__name__
-
-
-class ComposeTransform(Transform):
-    """
-    Class description?  # AB
-
-    Methods
-    -------
-    transform
-    """
-
-    def __init__(self, transforms):
-        super().__init__()
-        self.transforms = transforms
-
-    def transform(self, input):
-        for transform in self.transforms:
-            input = transform(input)
-        return input
-
-    def __repr__(self):
-        return " o ".join([transform.__repr__() for transform in self.transforms])
-
-
-class MeanPrecisionTransform(ComposeTransform):
-    """Class description?"""  # AB
-
-    def __init__(self):
-        transform_1 = SoftPlusTransform()
-        transform_1.indices = [2, 3]
-        transform_2 = MeanTransform()
-        super().__init__((transform_1, transform_2))
