@@ -5,5 +5,6 @@
 #$ -l h_vmem=10G   # Request 1GB RAM
 
 cd ..
+# bashrc defines the environment variable GOOGLE_APPLICATION_CREDENTIALS for GCP bucket access
 source ~/.bashrc
 poetry run mlflow run --experiment-name data-global --env-manager local -P lat_min=-85 -P lat_max=85 -P long_min=-280 -P long_max=80 -P factor=4 -P chunk_size=1 -P CO2=1 -P global=0 -P ntimes=100 .

@@ -27,7 +27,7 @@ def load_training_datasets(ds: xr.Dataset, config_fname: str):
     results = []
     with open(config_fname) as f:
         try:
-            subdomains = yaml.load(f)
+            subdomains = yaml.full_load(f)
         except FileNotFoundError as e:
             raise type(e)('Configuration file of subdomains not found')
         for subdomain in subdomains:

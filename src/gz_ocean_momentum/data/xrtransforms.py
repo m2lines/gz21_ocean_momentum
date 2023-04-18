@@ -13,7 +13,6 @@ from dask import delayed
 import dask.array as da
 import numpy as np
 from typing import List
-from regression.functions import bz
 
 
 class Transform(ABC):
@@ -337,8 +336,3 @@ class FormulaTransform(Transform):
 
     def __repr__(self):
         return 'FormulaTranform()'
-
-
-class BZFormulaTransform(FormulaTransform):
-    def __init__(self):
-        super().__init__(bz)

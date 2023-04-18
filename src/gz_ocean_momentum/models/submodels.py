@@ -7,8 +7,7 @@ Created on Wed Nov  4 13:34:58 2020
 """
 
 from src.gz_ocean_momentum.data.xrtransforms import (ScalingTransform, SeasonalStdizer,
-                                                     ChainedTransform, TargetedTransform,
-                                                     BZFormulaTransform)
+                                                     ChainedTransform, TargetedTransform,)
 
 velocity_vars = ['usurf', 'vsurf']
 forcing_vars = ['S_x', 'S_y']
@@ -27,5 +26,3 @@ transform2 = ChainedTransform((velocity_scaler, forcing_scaler,
                                monthly_stdizer_means_stds))
 
 transform3 = ChainedTransform((velocity_scaler, forcing_scaler))
-
-transform4 = ChainedTransform((transform3, BZFormulaTransform()))
