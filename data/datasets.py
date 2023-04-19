@@ -125,6 +125,7 @@ class DatasetTransformer:
     targets_transform : ArrayTransform
         Transform that will be applied to the targets
     """
+
     def __init__(self, features_transform, targets_transform=None):
         self.transforms = {}
         self.transforms["features"] = features_transform
@@ -1041,9 +1042,7 @@ class MixedDataFromXrDataset(MixedDatasets):
     def n_features(self):
         n_features = [d.n_features for d in self.datasets]
         if not self.all_equal(n_features):
-            raise ValueError(
-                "All datasets do not have the same number of features"
-            )
+            raise ValueError("All datasets do not have the same number of features")
         else:
             return n_features[0]
 
@@ -1051,9 +1050,7 @@ class MixedDataFromXrDataset(MixedDatasets):
     def n_targets(self):
         n_targets = [d.n_targets for d in self.datasets]
         if not self.all_equal(n_targets):
-            raise ValueError(
-                "All datasets do not have the same number of targets"
-            )
+            raise ValueError("All datasets do not have the same number of targets")
         return n_targets[0]
 
     @property

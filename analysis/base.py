@@ -23,16 +23,16 @@ class TestDataset:
         self.ds[name] = value
 
     def errors(self, normalized=False):
-        sx_error = self['S_xpred'] - self['S_x']
-        sy_error = self['S_ypred'] - self['S_y']
+        sx_error = self["S_xpred"] - self["S_x"]
+        sy_error = self["S_ypred"] - self["S_y"]
         if normalized:
-            sx_error *= self['S_xscale']
-            sy_error *= self['S_yscale']
-        return xr.Dataset({'S_x': sx_error, 'S_y': sy_error})
+            sx_error *= self["S_xscale"]
+            sy_error *= self["S_yscale"]
+        return xr.Dataset({"S_x": sx_error, "S_y": sy_error})
 
     def rmse(self, dim: str, normalized=False):
         errors = self.errors(normalized)
-        return np.sqrt((errors['S_x']**2 + errors['S_y']**2).mean(dim=dim))
+        return np.sqrt((errors["S_x"] ** 2 + errors["S_y"] ** 2).mean(dim=dim))
 
     def __getattr__(self, attr_name):
         if hasattr(self.ds, attr_name):
@@ -41,7 +41,7 @@ class TestDataset:
             raise AttributeError()
 
     def __setattr__(self, name, value):
-        if name != 'ds' and hasattr(self.ds, name):
+        if name != "ds" and hasattr(self.ds, name):
             setattr(self.ds, name, value)
         else:
             self.__dict__[name] = value
@@ -54,9 +54,9 @@ def get_test_datasets(run_id: str):
     test_outputs = list()
     for a in artifacts:
         basename = os.path.basename(a.path)
-        print('.', basename, '.')
-        if basename.startswith('test_output_'):
-            print('loading')
+        print(".", basename, ".")
+        if basename.startswith("test_output_"):
+            print("loading")
             ds = xr.open_zarr(client.download_artifacts(run_id, basename))
             test_outputs.append(TestDataset(ds))
     return test_outputs
@@ -72,7 +72,7 @@ class DataQuantiles:
         return obj._data_quantiles
 
     def __set__(self, obj, value):
-        raise NotImplementedError('Cannot set the data quantiles manually.')
+        raise NotImplementedError("Cannot set the data quantiles manually.")
 
 
 class QuantileCompare:
@@ -80,7 +80,7 @@ class QuantileCompare:
     distribution"""
 
     data_quantiles = DataQuantiles()
-    default_dim = 'time'
+    default_dim = "time"
 
     def __init__(self, distribution=norm, quantiles=[]):
         self.quantiles = quantiles
@@ -108,19 +108,19 @@ class QuantileCompare:
         self._data_quantiles_computed = False
 
     def _update_quantiles(self):
-        if hasattr(self, 'distribution'):
+        if hasattr(self, "distribution"):
             for k in self.quantiles.keys():
                 self.quantiles[k] = self.distribution.ppf(k)
 
     def _update_data_quantiles(self):
-        if not hasattr(self, 'data'):
-            raise AttributeError('The data has not been set.')
-        self._data_quantiles = {k: self.data.quantile(k, dim=self.dim)
-                                for k in self.quantiles.keys()}
+        if not hasattr(self, "data"):
+            raise AttributeError("The data has not been set.")
+        self._data_quantiles = {
+            k: self.data.quantile(k, dim=self.dim) for k in self.quantiles.keys()
+        }
 
     def qq_diff(self):
-        return {k: self.data_quantiles[k] - v
-                for k,v in self.quantiles.items()}
+        return {k: self.data_quantiles[k] - v for k, v in self.quantiles.items()}
 
     @property
     def data(self):

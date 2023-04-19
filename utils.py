@@ -12,20 +12,22 @@ import pandas as pd
 import pickle
 import subgrid.models as models
 import sys
-sys.modules['models'] = models
+
+sys.modules["models"] = models
+
 
 class TaskInfo:
     def __init__(self, name: str):
         self.name = name
 
     def __enter__(self):
-        print(f'Starting task: {self.name}')
+        print(f"Starting task: {self.name}")
 
     def __exit__(self, *args):
-        print(f'Task completed: {self.name}')
+        print(f"Task completed: {self.name}")
 
 
-def select_experiment(default_selection: str = ''):
+def select_experiment(default_selection: str = ""):
     """
     Prompt user to select an experiment among all experiments in store. Return
     the name of the selected experiment.
@@ -40,13 +42,14 @@ def select_experiment(default_selection: str = ''):
     list_of_exp = client_.list_experiments()
     dict_of_exp = {exp.experiment_id: exp.name for exp in list_of_exp}
     for id_, name in dict_of_exp.items():
-        print(id_, ': ', name)
-    selection = input('Select the id of an experiment: ') or default_selection
+        print(id_, ": ", name)
+    selection = input("Select the id of an experiment: ") or default_selection
     return selection, dict_of_exp[selection]
 
 
-def select_run(sort_by=None, cols=None, merge=None,
-               default_selection: str = '', *args, **kargs) -> object:
+def select_run(
+    sort_by=None, cols=None, merge=None, default_selection: str = "", *args, **kargs
+) -> object:
     """
     Allows to select a run from the tracking store interactively.
 
@@ -85,7 +88,7 @@ def select_run(sort_by=None, cols=None, merge=None,
     mlflow_runs = mlflow.search_runs(*args, **kargs)
     if cols is None:
         cols = list()
-    cols = ['run_id', 'experiment_id'] + cols
+    cols = ["run_id", "experiment_id"] + cols
     if sort_by is not None:
         mlflow_runs.sort_values(by=sort_by)
         cols.append(sort_by)
@@ -99,19 +102,27 @@ def select_run(sort_by=None, cols=None, merge=None,
         for name, key_left, key_right in merge:
             experiment = mlflow.get_experiment_by_name(name)
             df2 = mlflow.search_runs(experiment_ids=experiment.experiment_id)
-            mlflow_runs = pd.merge(mlflow_runs, df2, left_on=key_left,
-                                   right_on=key_right, suffixes=('', 'y'))
+            mlflow_runs = pd.merge(
+                mlflow_runs,
+                df2,
+                left_on=key_left,
+                right_on=key_right,
+                suffixes=("", "y"),
+            )
     if len(mlflow_runs) == 0:
-        raise Exception('No data found. Check that you correctly set \
-                        the store')
+        raise Exception(
+            "No data found. Check that you correctly set \
+                        the store"
+        )
     print(mlflow_runs[cols])
-    id_ = int(input('Run id?') or default_selection)
+    id_ = int(input("Run id?") or default_selection)
     if id_ < 0:
         return 0
     return mlflow_runs.loc[id_, :]
 
+
 def pickle_artifact(run_id: str, path: str):
     client = mlflow.tracking.MlflowClient()
     file = client.download_artifacts(run_id, path)
-    f = open(file, 'rb')
+    f = open(file, "rb")
     return pickle.load(f)

@@ -149,7 +149,7 @@ def eddy_forcing(
     -------
     forcing : xarray Dataset
         Dataset containing the low-resolution velocity field and forcing.
-    """    # Replace nan values with zeros.
+    """  # Replace nan values with zeros.
     if nan_or_zero == "zero":
         u_v_dataset = u_v_dataset.fillna(0.0)
     if scale_mode == "factor":

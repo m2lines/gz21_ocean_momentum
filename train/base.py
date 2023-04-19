@@ -64,8 +64,10 @@ class Trainer:
     @criterion.setter
     def criterion(self, criterion):
         if self._locked:
-            raise Exception('The criterion of the trainer cannot be \
-                            changed after training has started.')
+            raise Exception(
+                "The criterion of the trainer cannot be \
+                            changed after training has started."
+            )
         self._criterion = criterion
 
     @property
@@ -83,8 +85,9 @@ class Trainer:
     def register_metric(self, metric_name, metric):
         self._metrics[metric_name] = metric
 
-    def train_for_one_epoch(self, dataloader: DataLoader, optimizer,
-                            scheduler=None, clip: float = None) -> float:
+    def train_for_one_epoch(
+        self, dataloader: DataLoader, optimizer, scheduler=None, clip: float = None
+    ) -> float:
         """Trains the neural network for one epoch.
 
         Training uses the data provided through the dataloader passed as an
@@ -124,7 +127,7 @@ class Trainer:
             running_loss.update(loss.item(), X.size(0))
             running_loss_.update(loss.item(), X.size(0))
             # Print current loss
-            loss_text = 'Loss value {}'.format(running_loss_.average)
+            loss_text = "Loss value {}".format(running_loss_.average)
             if print_every(loss_text, self.print_loss_every, i_batch):
                 # Every time we print we reset the running average
                 running_loss_.reset()
@@ -185,8 +188,8 @@ class Trainer:
         else:
             self._counter += 1
             if self._counter >= self._early_stopping and self._early_stopping:
-                return 'EARLY_STOPPING'
+                return "EARLY_STOPPING"
         # Return loss
-        return running_loss.value, {metric_name: metric.value for 
-                                    metric_name, metric in
-                                    self.metrics.items()}
+        return running_loss.value, {
+            metric_name: metric.value for metric_name, metric in self.metrics.items()
+        }
