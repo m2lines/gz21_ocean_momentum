@@ -1,3 +1,7 @@
+# 2023-04-19 raehik: this has exploded and no longer works. why.
+# moved to a flake:
+# https://www.reddit.com/r/NixOS/comments/sbi7iz/python_buildfhsuserenv/
+
 # This file is to help Nix users develop the package.
 # With Nix installed, run the following commands in this directory:
 #
@@ -14,7 +18,7 @@
 
 (pkgs.buildFHSUserEnv {
   name = "gz21-ocean-momentum-cnn-devshell";
-  runScript = "zsh";
+  #runScript = "zsh"; # explodes. why.
   targetPkgs = pkgs: (with pkgs; [
     pkgs.python3
     pkgs.python3Packages.pip
