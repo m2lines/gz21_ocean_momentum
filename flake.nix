@@ -27,6 +27,9 @@
            pkgs.poetry
 
            pkgs.zlib # numpy
+
+           # utils
+           pkgs.black
          ];
        }).env;
      });

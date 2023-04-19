@@ -28,7 +28,7 @@ import tempfile
 # obtain logging config from LOGGING_LEVEL environment variable
 # e.g. `LOGGING_LEVEL=20 python cmip26.py ...`
 # common numeric values: https://docs.python.org/3/library/logging.html#levels
-logging_level = os.environ.get('LOGGING_LEVEL')
+logging_level = os.environ.get("LOGGING_LEVEL")
 if logging_level is not None:
     logging.basicConfig(level=int(logging_level))
 logger = logging.getLogger(__name__)

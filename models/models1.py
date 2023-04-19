@@ -152,6 +152,7 @@ class FullyCNN(DetectOutputSizeMixin, nn.Sequential):
             subblock.append(nn.BatchNorm2d(conv.out_channels))
         return subblock
 
+
 # TODO move into a proper test
 if __name__ == "__main__":
     net = FullyCNN()
