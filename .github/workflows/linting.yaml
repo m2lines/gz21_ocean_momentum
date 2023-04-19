@@ -21,7 +21,14 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: "3.10"
-    - run: pip install black pylint pydocstyle
+
+    - name: Install linting tools
+      run: pip install black pylint pydocstyle
+
+    - name: Install dependencies (required for pylint)
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install .
 
     # annotate each step with `if: always` to run all regardless
     - name: Assert that code matches Black code style
