@@ -30,7 +30,7 @@ dependencies = [
     "intake-xarray",
     "gcsfs",
 
-    # "torch>=1.13.1",
+    "torch>=1.13.1",
     # "progressbar>=2.5"
 ]
 
