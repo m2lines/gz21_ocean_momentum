@@ -1,7 +1,7 @@
 # general Python build files
 __pycache__/*
 *.pyc
-/*.egg-info/
+*.egg-info/
 
 # IDE project directories
 /.idea/
