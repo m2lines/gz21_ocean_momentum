@@ -59,7 +59,7 @@ include-package-data = true
 #[tool.setuptools.packages]
 #find = {}
 [tool.setuptools.packages.find]
-where = ["."]  # list of folders that contain the packages (["."] by default)
+where = ["src"]  # list of folders that contain the packages (["."] by default)
 include = ["gz21_ocean_momentum_cnn", "gz21_ocean_momentum_cnn.*"]  # package names should match these glob patterns (["*"] by default)
 #exclude = ["gz21_ocean_momentum_cnn.tests*", "examples.py"]  # exclude packages matching these glob patterns (empty by default)
 namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
