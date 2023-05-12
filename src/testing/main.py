@@ -72,7 +72,7 @@ batch_size = script_params.batch_size
 n_splits = script_params.n_splits
 
 # Location used to write generated data before it is logged through MLFlow
-data_location = tempfile.mkdtemp(dir="/scratch/ag7531/temp/")
+data_location = tempfile.mkdtemp()
 model_output_dir = "model_output"
 
 # Select the device

@@ -205,7 +205,7 @@ print_loss_every = params.printevery
 MODEL_NAME = "trained_model.pth"
 
 # Directories where temporary data will be saved
-data_location = tempfile.mkdtemp(dir="/scratch/ag7531/temp/")
+data_location = tempfile.mkdtemp()
 print("Created temporary dir at  ", data_location)
 
 FIGURES_DIRECTORY = "figures"

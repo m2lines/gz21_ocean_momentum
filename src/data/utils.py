@@ -64,7 +64,9 @@ def load_training_datasets(ds: xr.Dataset, config_fname: str):
     with open(config_fname, encoding="utf-8") as config_file:
         try:
             # AB TODO check that safe_load() is OK rather than load()
-            subdomains = yaml.safe_load(config_file)
+            # TODO 2023-05-12 raehik: `full_load()` used in another changeset.
+            #subdomains = yaml.safe_load(config_file)
+            subdomains = yaml.full_load(config_file)
         except FileNotFoundError as e:
             raise type(e)("Configuration file of subdomains not found")
         for subdomain in subdomains:

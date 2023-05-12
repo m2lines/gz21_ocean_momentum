@@ -10,7 +10,7 @@ import mlflow
 from mlflow.tracking import client
 import pandas as pd
 import pickle
-import models # local module. any nicer syntax here? (not .models)
+import gz21_ocean_momentum.models as models
 import sys
 
 sys.modules["models"] = models # what are we doing here anyway
