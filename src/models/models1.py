@@ -1,3 +1,5 @@
+# 2023-05-12 raehik: try to replace with fully_conv_net. should be identical.
+
 # -*- coding: utf-8 -*-
 """
 Module of PyTorch ML models.

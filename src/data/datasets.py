@@ -114,6 +114,23 @@ def prod(l):
     return l[0] * prod(l[1:])
 
 
+class ArrayTransform(ABC):
+    def __call__(self, x):
+        return self.transform(x)
+
+    @abstractmethod
+    def fit(self, x):
+        pass
+
+    @abstractmethod
+    def transform(self, x):
+        pass
+
+    @abstractmethod
+    def transform_coordinate(self, coord, dim):
+        pass
+
+
 class DatasetTransformer:
     """
     Class to describe a transform that can be applied on a dataset.
@@ -292,23 +309,6 @@ class DatasetTransformer:
         new_features = self.transforms["features"].inverse_transform(features)
         new_targets = self.transforms["targets"].inverse_transform(targets)
         return FeaturesTargetsDataset(new_features, new_targets)
-
-
-class ArrayTransform(ABC):
-    def __call__(self, x):
-        return self.transform(x)
-
-    @abstractmethod
-    def fit(self, x):
-        pass
-
-    @abstractmethod
-    def transform(self, x):
-        pass
-
-    @abstractmethod
-    def transform_coordinate(self, coord, dim):
-        pass
 
 
 class ComposeTransforms(ArrayTransform):

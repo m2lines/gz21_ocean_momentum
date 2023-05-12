@@ -31,7 +31,7 @@ dependencies = [
     "gcsfs",
 
     "torch>=1.13.1",
-    # "progressbar>=2.5"
+    "progressbar>=2.5" # testing/utils (but imported by trainScript)
 ]
 
 authors = [

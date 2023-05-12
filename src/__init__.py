@@ -19,7 +19,7 @@ def load_paper_net(device: str = "gpu"):
     """
     Load the neural network from the paper
     """
-    model_module_name = "subgrid.models.models1"
+    model_module_name = "subgrid.models.fully_conv_net"
     model_cls_name = "FullyCNN"
     model_cls = load_model_cls(model_module_name, model_cls_name)
     net = model_cls(2, 4)

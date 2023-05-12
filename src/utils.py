@@ -10,10 +10,10 @@ import mlflow
 from mlflow.tracking import client
 import pandas as pd
 import pickle
-import subgrid.models as models
+import models # local module. any nicer syntax here? (not .models)
 import sys
 
-sys.modules["models"] = models
+sys.modules["models"] = models # what are we doing here anyway
 
 
 class TaskInfo:
