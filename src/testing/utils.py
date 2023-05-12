@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# TODO 2023-05-12 raehik: in `testing/`, but also used by `trainScript.py`
 # -*- coding: utf-8 -*-
 """
 Created on Tue Jun  9 17:58:33 2020

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Script that performs training of a model on data."""
 import os
@@ -128,7 +129,7 @@ parser.add_argument(
 parser.add_argument(
     "--model_module_name",
     type=str,
-    default="models.models1",
+    default="models.fully_conv_net",
     help="Name of the module containing the nn model",
 )
 parser.add_argument(
