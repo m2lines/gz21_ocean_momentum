@@ -1,3 +1,26 @@
+# Stochastic-Deep Learning Parameterization of Ocean Momentum Forcing
+
+This repository provides a subgrid model of ocean momentum forcing, based on a
+convolutional neural network (CNN) trained on high-resolution data from CM2.6.
+This model can then be coupled into larger GCMs, e.g., at coarser granularity to provide
+high-fidelity parameterization of ocean momentum forcing.
+
+The model is based on the paper [Stochastic-Deep Learning Parameterization of Ocean Momentum Forcing,
+Arthur P. Guillaumin, Laure Zanna](https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2021MS002534).
+The exact version of the code use to produce said paper can be found on [Zenodo](https://zenodo.org/record/5076046#.ZF4ulezMLy8).
+The present repository provides a version of this model which is design for others to reproduce, replicate,
+and reuse.
+
+__This repository is currently work-in-progress following a process of refreshing
+the code and making it available for easy reuse by others__
+
+# License and How to Cite this Software
+
+# Contributing
+
+We are not currently accepting contributions outside of the M2LInES and ICCS projects until we have
+reached a code release milestone.
+
 # General code documentation
 
 In order to keep track of script runs, we have used MLFLOW (https://mlflow.org/) to organize our code. In particular we define three important types
@@ -69,7 +92,7 @@ mlflow run git@github.com:arthurBarthe/subgrid.git --experiment-name data-global
 
 The CLI parameters one may want to change are:
 - experiment-name: the name of the data experiment under which the run will be saved. This will be used later on to recover the generated data for
-either training or testing. 
+either training or testing.
 - factor: the factor definining the low-resolution grid of the generated data with respect to the high-resolution grid.
 - CO2: 0 for control, 1 for 1% increase per year dataset.
 
@@ -92,7 +115,7 @@ mlflow run git@github.com:Zanna-ResearchTeam/subgrid.git --experiment-name new_m
 
 This uses the last version of the code on github rather than the local version. Most of the CLI parameters can be kept as such. Some one might want to change are:
 - experiment-name: name of the experiment under which the run will be recorded. In particular, this will be used to recover the trained neural network.
-- exp_id: id of the experiment containing the run that generated the forcing data. 
+- exp_id: id of the experiment containing the run that generated the forcing data.
 - run_id: id of the run that generated the forcing data that will be used for training.
 - loss_cls_name: name of the class that defines the loss. This class should be defined in train/losses.py in order for the script to find it. Currently the
 main available options are:
