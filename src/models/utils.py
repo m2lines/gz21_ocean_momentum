@@ -5,8 +5,10 @@ import importlib
 import logging
 import torch
 import mlflow
-from subgrid.utils import select_experiment, select_run, pickle_artifact
-from subgrid.train import train
+from gz21_ocean_momentum.utils import select_experiment, select_run, pickle_artifact
+# TODO raehik 2023-05-12: this is used in dynamic module loading. not sure I've
+# done it correctly
+import gz21_ocean_momentum.train as train
 
 
 def load_model_cls(model_module_name: str, model_cls_name: str):
