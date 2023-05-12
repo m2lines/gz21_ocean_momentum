@@ -11,7 +11,6 @@ from data.xrtransforms import (
     SeasonalStdizer,
     ChainedTransform,
     TargetedTransform,
-    BZFormulaTransform,
 )
 
 velocity_vars = ["usurf", "vsurf"]
@@ -30,5 +29,3 @@ transform2 = ChainedTransform(
 )
 
 transform3 = ChainedTransform((velocity_scaler, forcing_scaler))
-
-transform4 = ChainedTransform((transform3, BZFormulaTransform()))
