@@ -87,8 +87,10 @@ sbatch /home/ag7531/jobs/job-forcingdata.sh
 Generating coarse velocity data and diagnosed forcing is achieved by running the following command:
 
 ```
-mlflow run git@github.com:arthurBarthe/subgrid.git --experiment-name data-global --no-conda -P lat_min=-85 -P lat_max=85 -P long_min=-280 -P long_max=80 -P factor=4 -P chunk_size=1 -P CO2=1 -P global=1
+mlflow run git@github.com:arthurBarthe/subgrid.git --experiment-name data-global --env-manager=local -P lat_min=-85 -P lat_max=85 -P long_min=-280 -P long_max=80 -P factor=4 -P chunk_size=1 -P CO2=1 -P global=1
 ```
+
+For older MLflow versions, replace `--env-manager=local` with `--no-conda`.
 
 The CLI parameters one may want to change are:
 - experiment-name: the name of the data experiment under which the run will be saved. This will be used later on to recover the generated data for
