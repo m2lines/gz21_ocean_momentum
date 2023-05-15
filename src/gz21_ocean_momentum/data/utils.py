@@ -65,6 +65,7 @@ def load_training_datasets(ds: xr.Dataset, config_fname: str):
         try:
             # AB TODO check that safe_load() is OK rather than load()
             # TODO 2023-05-12 raehik: `full_load()` used in another changeset.
+            # safe_load gives errors.
             #subdomains = yaml.safe_load(config_file)
             subdomains = yaml.full_load(config_file)
         except FileNotFoundError as e:
