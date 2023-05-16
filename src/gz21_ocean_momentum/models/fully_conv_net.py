@@ -21,8 +21,8 @@ from torch import Tensor
 from torch.nn import Sequential, Conv2d
 
 
-from blocks_2d import ConvBlock
-from base import DetectOutputSizeMixin
+from .blocks_2d import ConvBlock
+from .base import DetectOutputSizeMixin
 
 
 class FullyCNN(DetectOutputSizeMixin, Sequential):
