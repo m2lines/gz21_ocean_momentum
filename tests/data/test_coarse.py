@@ -7,7 +7,7 @@ import xarray as xr
 import numpy as np
 from numpy import ma
 import matplotlib.pyplot as plt
-from .coarse import spatial_filter_dataset, spatial_filter, eddy_forcing
+from gz21_ocean_momentum.data.coarse import spatial_filter_dataset, spatial_filter, eddy_forcing
 
 
 class TestEddyForcing:
