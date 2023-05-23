@@ -1,14 +1,18 @@
 # Stochastic-Deep Learning Parameterization of Ocean Momentum Forcing
 
 This repository provides a subgrid model of ocean momentum forcing, based on a
-convolutional neural network (CNN) trained on high-resolution data from CM2.6.
+convolutional neural network (CNN) trained on high-resolution
+surface velocity data from CM2.6.
 This model can then be coupled into larger GCMs, e.g., at coarser granularity to provide
 high-fidelity parameterization of ocean momentum forcing.
+The parameterization output by the CNN consists of a Gaussian distribution
+specified by 2 parameters (mean and standard deviation), which allows for
+stochastic implementations in online models.
 
 The model is based on the paper [Stochastic-Deep Learning Parameterization of Ocean Momentum Forcing,
 Arthur P. Guillaumin, Laure Zanna](https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2021MS002534).
-The exact version of the code use to produce said paper can be found on [Zenodo](https://zenodo.org/record/5076046#.ZF4ulezMLy8).
-The present repository provides a version of this model which is design for others to reproduce, replicate,
+The exact version of the code used to produce said paper can be found on [Zenodo](https://zenodo.org/record/5076046#.ZF4ulezMLy8).
+The present repository provides a version of this model which is designed for others to reproduce, replicate,
 and reuse.
 
 __This repository is currently work-in-progress following a process of refreshing
