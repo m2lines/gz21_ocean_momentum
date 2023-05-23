@@ -153,12 +153,3 @@ class FullyCNN(DetectOutputSizeMixin, nn.Sequential):
         if self.batch_norm:
             subblock.append(nn.BatchNorm2d(conv.out_channels))
         return subblock
-
-
-# TODO move into a proper test
-if __name__ == "__main__":
-    net = FullyCNN()
-    net._final_transformation = lambda x: x
-    input_ = torch.randint(0, 10, (17, 2, 35, 30)).to(dtype=torch.float)
-    input_[0, 0, 0, 0] = np.nan
-    output = net(input_)
