@@ -31,6 +31,7 @@ dependencies = [
     "gcsfs",
 
     "matplotlib", # analysis, examples
+    "cartopy", # analysis (plotting data)
 
     "torch>=1.13.1",
     "progressbar>=2.5" # testing/utils (but imported by trainScript)
