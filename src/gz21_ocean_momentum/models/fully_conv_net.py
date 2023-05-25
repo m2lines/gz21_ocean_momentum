@@ -43,6 +43,15 @@ class FullyCNN(DetectOutputSizeMixin, Sequential):
 
     """
 
+    _n_in_channels: int
+
+    def get_n_in_channels():
+        """Return the input channels to model.
+
+        Used by internal methods.
+        """
+        return self._n_in_channels
+
     def __init__(
         self,
         in_chans: int = 2,
@@ -63,6 +72,10 @@ class FullyCNN(DetectOutputSizeMixin, Sequential):
             ConvBlock(32, 32, 3, padding_3, batch_norm),
             Conv2d(32, out_chans, 3, padding=padding_3),
         )
+
+        # store in_chans as attribute
+        self._n_in_channels = in_chans
+
 
     @staticmethod
     def _process_padding(padding: Optional[str] = None) -> Tuple[int, int]:
