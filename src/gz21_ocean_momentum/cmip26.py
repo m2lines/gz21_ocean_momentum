@@ -138,12 +138,6 @@ forcing = forcing.sel(
     xu_ocean=slice(bounds[2], bounds[3]), yu_ocean=slice(bounds[0], bounds[1])
 )
 
-# chunk_sizes = list(map(int, params.chunk_size.split('/')))
-# while len(chunk_sizes) < 3:
-#     chunk_sizes.append('auto')
-# forcing = forcing.chunk(dict(zip(('time', 'xu_ocean', 'yu_ocean'),
-#                                  chunk_sizes)))
-
 for var in forcing:
     forcing[var].encoding = {}
 forcing = forcing.chunk(dict(time=1))
