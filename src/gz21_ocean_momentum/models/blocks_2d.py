@@ -15,7 +15,7 @@ class ConvBlock(Sequential):
         The number of input channels the block should take.
     out_chans : int
         The number of input channels the block should produce.
-    kernal_size : int
+    kernel_size : int
         The size (in pixels) of the convolutional kernel.
     padding : int
         The size of the padding to apply to the output.

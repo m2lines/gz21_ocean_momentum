@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Module of PyTorch ML models.
+Fully convolution network (FCN) for modelling ocean momentum.
 
 TODOs:
 ------
@@ -16,23 +16,22 @@ BUGS
 -when we run less than 100 epochs the figures from previous runs are
 logged.
 """
+
 from typing import Optional, Tuple
 from torch import Tensor
 from torch.nn import Sequential, Conv2d
-
+import torch
 
 from .blocks_2d import ConvBlock
-from .base import DetectOutputSizeMixin
 
-
-class FullyCNN(DetectOutputSizeMixin, Sequential):
+class FullyCNN(torch.nn.Sequential):
     """
-    Fully Convolutional Neural Net used for modelling ocean momentum.
+    Fully convolution network (FCN) for modelling ocean momentum.
 
     Attributes
     ----------
     in_chans : int
-        Number of input chanels to model
+        Number of input channels to model
     out_chans : int
         Number of output channels from model
     padding : str, optional
@@ -45,7 +44,7 @@ class FullyCNN(DetectOutputSizeMixin, Sequential):
 
     _n_in_channels: int
 
-    def get_n_in_channels():
+    def get_n_in_channels(self):
         """Return the input channels to model.
 
         Used by internal methods.
@@ -59,8 +58,15 @@ class FullyCNN(DetectOutputSizeMixin, Sequential):
         padding: Optional[str] = None,
         batch_norm=False,
     ):
-        """Build ``FullyCNN``."""
-        padding_3, padding_5 = self._process_padding(padding)
+
+        if padding is None:
+            padding_3 = 0
+            padding_5 = 0
+        elif padding == "same":
+            padding_3 = 1
+            padding_5 = 2
+        else:
+            raise ValueError(f"Unsupported padding value (expected None or \"some\"): {padding}")
 
         super().__init__(
             ConvBlock(in_chans, 128, 5, padding_5, batch_norm),
@@ -75,36 +81,6 @@ class FullyCNN(DetectOutputSizeMixin, Sequential):
 
         # store in_chans as attribute
         self._n_in_channels = in_chans
-
-
-    @staticmethod
-    def _process_padding(padding: Optional[str] = None) -> Tuple[int, int]:
-        """Process the padding argument.
-
-        Parameters
-        ----------
-        padding : str or None
-            Use-supplied padding argument.
-
-        Returns
-        -------
-        padding_3 : int
-            Stuff.
-        padding_5 : int
-            Stuff.
-
-        Raises
-        ------
-        ValueError
-            If ``padding`` is not ``None`` or ``same``.
-
-        """
-        if padding is None:
-            return 0, 0
-        if padding == "same":
-            return 1, 2
-
-        raise ValueError(f"Unknown value '{padding}' for padding parameter.")
 
     @property
     def final_transformation(self):
@@ -146,3 +122,65 @@ class FullyCNN(DetectOutputSizeMixin, Sequential):
             input with final_transformation operation performed
         """
         return self.final_transformation(super().forward(batch))
+
+
+    # TODO: protect this with `@no_grad` decorator to conserve memory/time etc.
+    def output_width(self, input_height, input_width):
+        """
+        Generate a tensor and run forward model to get output width.
+
+        Parameters
+        ----------
+        input_height, output_height : int
+            The dimensions of the model input tensor
+
+        Returns
+        -------
+        dummy_out.size(3) : int
+            width of the output tensor
+        """
+        # TODO: following 2 lines can be combined for speedup as
+        #       e.g. `torch.zeros(10, 10, device=self.device)`
+        dummy_in = torch.zeros((1, self.get_n_in_channels(), input_height, input_width))
+        dummy_in = dummy_in.to(device=self.get_device())
+        # AB - Self here is assuming access to a neural net forward method?
+        #      If so I think this should really be contained in FullyCNN.
+        #      We can discuss and I am happy to perform the refactor.
+        dummy_out = self(dummy_in)
+        return dummy_out.size(3)
+
+    # TODO: protect this with `@no_grad` decorator to conserve memory/time etc.
+    def output_height(self, input_height, input_width):
+        """
+        Generate a tensor and run forward model to get output height.
+
+        Parameters
+        ----------
+        input_height, output_height : int
+            The dimensions of the model input tensor
+
+        Returns
+        -------
+        dummy_out.size(2) : int
+            height of the output tensor
+        """
+        # TODO: following 2 lines can be combined for speedup as
+        #       e.g. `torch.zeros(10, 10, device=self.device)`
+        dummy_in = torch.zeros((1, self.get_n_in_channels(), input_height, input_width))
+        dummy_in = dummy_in.to(device=self.get_device())
+        dummy_out = self(dummy_in)
+        return dummy_out.size(2)
+
+    def get_device(self):
+        """
+        Return the device model uses.
+
+        Returns
+        -------
+        Device
+            Device where the neural network lives
+        """
+        # TODO: This can probably just be `return self.parameters[0].device`
+        # TODO 2023-05-30 raehik: where does `self.parameters()` come from??
+        params = list(self.parameters())[0]
+        return params.device
