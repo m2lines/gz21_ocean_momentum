@@ -11,3 +11,6 @@ __pycache__/*
 
 # Jupyter notebook cache files
 .ipynb_checkpoints/
+
+# pyproject.toml, should be specific to user's choice
+pyproject.toml
