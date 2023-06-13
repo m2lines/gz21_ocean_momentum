@@ -18,10 +18,18 @@ and reuse.
 __This repository is currently work-in-progress following a process of refreshing
 the code and making it available for easy reuse by others__
 
-# License and How to Cite this Software
+# Using this software
+The model is packaged with `pyproject.toml`/setuptools. For local development and
+testing, run `pip install -e .` in the root directory.
 
-# Contributing
+An alternate `pyproject.toml` file is provided for building with Poetry. To use,
+rename `pyproject-poetry.toml` to `pyproject.toml` (clobbering the existing
+file) and use Poetry as normal.
 
+## License
+Provided under the MIT license. See `LICENSE` for license text.
+
+## Contributing
 We are not currently accepting contributions outside of the M2LInES and ICCS projects until we have
 reached a code release milestone.
 
@@ -174,6 +182,3 @@ Update analysis code so that it produces the nice figures in the paper
 
 
 Add something about how to load the NN independently.
-
-# License
-Provided under the MIT license. See `LICENSE` for license text.
