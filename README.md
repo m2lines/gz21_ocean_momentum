@@ -19,12 +19,15 @@ __This repository is currently work-in-progress following a process of refreshin
 the code and making it available for easy reuse by others__
 
 # Using this software
-The model is packaged with `pyproject.toml`/setuptools. For local development and
-testing, run `pip install -e .` in the root directory.
+## Editing locally
+The model is packaged with `pyproject.toml` and setuptools. For local
+development and testing, run `pip install -e .` in the root directory.
 
 An alternate `pyproject.toml` file is provided for building with Poetry. To use,
 rename `pyproject-poetry.toml` to `pyproject.toml` (clobbering the existing
-file) and use Poetry as normal.
+file) and use Poetry as normal. Note that the Poetry build is not actively
+supported-- if it fails, check that the dependencies are up to date with the
+setuptools `pyproject.toml`.
 
 ## License
 Provided under the MIT license. See `LICENSE` for license text.
