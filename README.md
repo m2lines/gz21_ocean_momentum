@@ -109,7 +109,10 @@ Relevant parameters:
 * `factor`: the factor definining the low-resolution grid of the generated data
   with respect to the high-resolution grid.
 * `CO2`: 0 for control, 1 for 1% increase per year dataset.
-* `global`: TODO "make data cyclic along longitude"
+* `global`: TODO "make data cyclic along longitude". Set to 0; currently fails when set to 1.
+* `ntimes`: the number of days to process, knowing that the data set is at a
+  time resolution of one per day. If not specified, uses the complete dataset.
+* `lat_min`, `lat_max`, `lon_min`, `lon_max`: the spatial domain to process.
 
 Direct call (without MLflow) example:
 
