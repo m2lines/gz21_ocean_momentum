@@ -69,7 +69,6 @@ version = "0.2.0"
 description = "TODO"
 authors = ["Sébastien Eustace <sebastien@eustace.io>"]
 readme = "README.md"
-packages = [{include = "poetry_demo"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -88,7 +87,7 @@ intake-xarray = "*"
 gcsfs = "*"
 
 torch = "^1.13.1"
-progressbar = "^2.5"
+progressbar2 = "^4.2.0"
 
 [build-system]
 #requires = ["setuptools >= 61"]
