@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 version = "0.2.0"
 
-name = "gz21_ocean_momentum_cnn"
+name = "gz21_ocean_momentum"
 description = "TODO"
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -48,8 +48,8 @@ maintainers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/m2lines/GZ21_ocean_momentum_CNN"
-"Bug Tracker" = "https://github.com/m2lines/GZ21_ocean_momentum_CNN/issues"
+"Homepage" = "https://github.com/m2lines/GZ21_ocean_momentum"
+"Bug Tracker" = "https://github.com/m2lines/GZ21_ocean_momentum/issues"
 
 [project.optional-dependencies]
 TEST = ["pytest"]
@@ -63,6 +63,6 @@ include-package-data = true
 #find = {}
 [tool.setuptools.packages.find]
 where = ["src"]  # list of folders that contain the packages (["."] by default)
-include = ["gz21_ocean_momentum_cnn", "gz21_ocean_momentum_cnn.*"]  # package names should match these glob patterns (["*"] by default)
-#exclude = ["gz21_ocean_momentum_cnn.tests*", "examples.py"]  # exclude packages matching these glob patterns (empty by default)
+include = ["gz21_ocean_momentum", "gz21_ocean_momentum.*"]  # package names should match these glob patterns (["*"] by default)
+#exclude = ["gz21_ocean_momentum.tests*", "examples.py"]  # exclude packages matching these glob patterns (empty by default)
 namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
