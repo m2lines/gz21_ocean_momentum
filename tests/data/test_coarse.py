@@ -53,6 +53,27 @@ class TestEddyForcing:
 
         assert data["a"].values == pytest.approx(filtered_data["a"].values)
 
+    def test_eddy_forcing_chunks(self):
+        """
+        Check that the computations are done along the spatial dimensions.
+        """
+        data = np.stack(np.zeros(100, 100), np.ones(100, 100), axis=0)
+        a1 = xr.DataArray(data=data,
+                       dims = ['time', 'x', 'y'],
+                       coords = {'time' : np.arange(1000) * 3,
+                                 'x' : np.arange(100) * 10,
+                                 'y' : np.arange(100) * 11})
+        a2 = xr.DataArray(data = data,
+                       dims = ['time', 'x', 'y'],
+                       coords = {'time' : np.arange(1000) * 3,
+                                 'x' : np.arange(100) * 10,
+                                 'y' : np.arange(100) * 11})
+        ds = xr.Dataset({'usurf' : a1, 'vsurf' : a2})
+        forcing = eddy_forcing(ds, 40)
+        usurf_0, usurf_1 = forcing.usurf.isel(time=0), forcing.usurf.isel(time=1)
+        assert np.all(usurf_0 == 0)
+        assert not np.all(usurf_1 == 0)
+
     # def test_spatial_filter_dataset(self):
     #     a1 = xr.DataArray(data = np.zeros((10, 4, 4)),
     #                    dims = ['time', 'x', 'y'],
