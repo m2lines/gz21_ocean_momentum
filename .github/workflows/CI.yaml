@@ -13,8 +13,8 @@ on:
     - reopened
 
 jobs:
-  linux-build:
-    name: Build & test (${{ matrix.python-version }} | ${{ matrix.os }})
+  linux-test:
+    name: ${{ matrix.os }} / test / Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.10", "3.9", "3.8"]
+        python-version: ["3.11", "3.10", "3.9"]
 
     steps:
     - uses: actions/checkout@v3
@@ -34,11 +34,11 @@ jobs:
     - name: Install system dependencies
       run: sudo apt install libgeos-dev
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install mypy>=1.0 pytest
-        python -m pip install .
+    - name: Install Python dependencies
+      run: pip install .
+
+    - name: Install Python testing dependencies
+      run: pip install mypy pytest
 
     - name: mypy
       if: always()
@@ -48,8 +48,8 @@ jobs:
       if: always()
       run: pytest .
 
-  mac-build:
-    name: Build & test (${{ matrix.python-version }} | ${{ matrix.os }})
+  mac-test:
+    name: ${{ matrix.os }} / test / Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -57,7 +57,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["macos-latest"]
-        python-version: ["3.10"]
+        python-version: ["3.11"]
 
     steps:
     - uses: actions/checkout@v3
@@ -69,11 +69,11 @@ jobs:
     - name: Install system dependencies
       run: brew install geos
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install mypy>=1.0 pytest
-        python -m pip install .
+    - name: Install Python dependencies
+      run: pip install .
+
+    - name: Install Python testing dependencies
+      run: pip install mypy pytest
 
     - name: Run tests
       if: always()
