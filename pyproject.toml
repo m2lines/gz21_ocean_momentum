@@ -44,7 +44,6 @@ authors = [
 maintainers = [
   { name="Ben Orchard", email="thefirstmuffinman@gmail.com" },
   { name="Jack Atkinson", email="jack.atkinson1000@gmail.com" },
-  { name="Jim Denholm", email="jd949@cam.ac.uk" },
 ]
 
 [project.urls]
