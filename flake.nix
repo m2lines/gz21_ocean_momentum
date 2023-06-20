@@ -27,6 +27,7 @@
            pkgs.poetry
 
            pkgs.zlib # numpy
+           pkgs.geos # cartopy
 
            # utils
            pkgs.black
