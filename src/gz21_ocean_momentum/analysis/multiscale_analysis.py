@@ -7,9 +7,9 @@ Script to analyze the outputs from the 'multiscale' experiment, corresponding
 to the script testing/multiscale.py.
 """
 
-from analysis.loadmlflow import LoadMLFlow
-from analysis.utils import select_run, view_predictions, DisplayMode
-import mlflow
+from gz21_ocean_momentum.analysis.loadmlflow import LoadMLFlow
+from gz21_ocean_momentum.analysis.utils import select_run, view_predictions, DisplayMode
+import mlflow # type: ignore
 
 # We'll run this locally
 mlflow.set_tracking_uri("file:///d:\\Data sets\\NYU\\mlruns")
