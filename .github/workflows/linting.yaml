@@ -13,6 +13,24 @@ on:
     - reopened
 
 jobs:
+  mypy:
+    name: mypy
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+
+    - name: Install system dependencies
+      run: sudo apt install libgeos-dev
+
+    - name: Install Python dependencies
+      run: pip install -e .
+
+    - run: pip install mypy
+
+    - name: mypy
+      run: mypy --strict .
+
   various:
     name: various (Black, pylint, pydocstyle)
     runs-on: ubuntu-latest
