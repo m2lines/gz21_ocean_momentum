@@ -19,6 +19,18 @@ __This repository is currently work-in-progress following a process of refreshin
 the code and making it available for easy reuse by others__
 
 # Using this software
+## System dependencies
+`libgeos` is required. To install on Ubuntu:
+
+    sudo apt install libgeos-dev
+
+On MacOS, via Homebrew:
+
+    brew install geos
+
+On Windows, consider using MSYS2 to install the library in a Linux-esque manner:
+https://packages.msys2.org/package/mingw-w64-x86_64-geos
+
 ## Editing locally
 The model is packaged with `pyproject.toml` and setuptools. For local
 development and testing, run `pip install -e .` in the root directory.
