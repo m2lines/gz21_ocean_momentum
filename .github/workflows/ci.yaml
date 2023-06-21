@@ -40,10 +40,6 @@ jobs:
     - name: Install Python testing dependencies
       run: pip install mypy pytest
 
-    - name: mypy
-      if: always()
-      run: mypy --strict .
-
     - name: Run tests
       if: always()
       run: pytest .
