@@ -12,12 +12,8 @@ BUGS
 only one figure.
 """
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # type: ignore
 from os.path import join
-
-data_location = "/data/ag7531/"
-figures_directory = "figures"
-
 
 def allow_hold_on(f):
     """Decorator that allows to specify a hold_on parameter that makes the
@@ -84,7 +80,7 @@ class TimeSeriesForPoint:
         plt.title("Prediction errors for point {}, {}".format(*self.point))
         plt.show()
 
-    def save_fig(self):
+    def save_fig(self, figures_directory: str, data_location: str):
         if not self._fig:
             self.plot_pred_vs_true()
         plt.savefig(join(data_location, figures_directory, self.name))
