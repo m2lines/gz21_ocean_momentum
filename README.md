@@ -135,14 +135,14 @@ sbatch /home/ag7531/jobs/job-training3.2.sh
 ```
 
 Training is achieved by running trainScript.py. This scripts accepts a range of CLI parameters. The simplest way to run the code is via the following MLFLOW command,
-which runs this script as an MLFLOW project.
+which runs this script as an MLFLOW project, which has a number of options explained below.
 
 ```
 mlflow run . --experiment-name train -e train --env_manager=local -P exp_id=<data_experiment_id> -P run_id=<data_run_id> -P learning_rate=0/5e-4/15/5e-5/30/5e-6 -P n_epochs=200 -P weight_decay=0.00 -P train_split=0.8 \
 -P test_split=0.85 -P model_module_name=models.models1 -P model_cls_name=FullyCNN -P batchsize=4 -P transformation_cls_name=SoftPlusTransform -P submodel=transform3 -P loss_cls_name=HeteroskedasticGaussianLossV2
 ```
+Most of the CLI parameters can be kept as such although `data_experiment_id` and `data_run_id` must be chosen. Others are:
 
-This uses the last version of the code on github rather than the local version. Most of the CLI parameters can be kept as such. Some one might want to change are:
 - experiment-name: name of the experiment under which the run will be recorded. In particular, this will be used to recover the trained neural network.
 - exp_id: id of the experiment containing the run that generated the forcing data.
 - run_id: id of the run that generated the forcing data that will be used for training.
