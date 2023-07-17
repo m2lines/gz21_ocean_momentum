@@ -58,6 +58,13 @@ On MacOS, via Homebrew:
 On Windows, consider using MSYS2 to install the library in a Linux-esque manner:
 https://packages.msys2.org/package/mingw-w64-x86_64-geos
 
+### Running unit tests
+There are a handful of unit tests using pytest, in the `tests` directory. These
+assert some operations and methods used in the stages. They may be run in the
+regular method:
+
+    pytest
+
 ### Running stages
 TODO. Needs work.
 
