@@ -58,22 +58,19 @@ On MacOS, via Homebrew:
 On Windows, consider using MSYS2 to install the library in a Linux-esque manner:
 https://packages.msys2.org/package/mingw-w64-x86_64-geos
 
-## Contributing
-We are not currently accepting contributions outside of the M2LInES and ICCS projects until we have
-reached a code release milestone.
+### Running stages
+TODO. Needs work.
 
-## License
-This repository is provided under the MIT license. See `LICENSE` for license
-text and copyright information.
-
----
-
+```
 For older MLflow versions, replace `--env-manager=local` with `--no-conda`.
 
 The CLI parameters one may want to change are:
-- experiment-name: the name of the data experiment under which the run will be saved. This will be used later on to recover the generated data for
-either training or testing.
-- factor: the factor definining the low-resolution grid of the generated data with respect to the high-resolution grid.
+
+- experiment-name: the name of the data experiment under which the run will be
+  saved. This will be used later on to recover the generated data for either
+  training or testing.
+- factor: the factor definining the low-resolution grid of the generated data
+  with respect to the high-resolution grid.
 - CO2: 0 for control, 1 for 1% increase per year dataset.
 
 Most of the CLI parameters can be kept as such. Some one might want to change are:
@@ -100,3 +97,12 @@ Another important way to modify the way the script runs consists in modifying
 the domains used for training. These are defined in `training_subdomain.yaml` in
 terms of their coordinates. Note that at run time domains will be truncated to
 the size of the smallest domain in terms of number of points.
+```
+
+## Contributing
+We are not currently accepting contributions outside of the M2LInES and ICCS projects until we have
+reached a code release milestone.
+
+## License
+This repository is provided under the MIT license. See `LICENSE` for license
+text and copyright information.
