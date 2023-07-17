@@ -28,7 +28,7 @@ The model is written in Python, using PyTorch for the CNN. We provide 3 separate
   * model training: train model on processed data
   * model testing: tests the trained model on an unseen region
 
-For more details, see the `docs` directory.
+For more details on each of the stages, see the `docs` directory.
 
 ## Usage
 ### Dependencies
@@ -60,6 +60,8 @@ https://packages.msys2.org/package/mingw-w64-x86_64-geos
 
 ### Running stages
 TODO. Needs work.
+
+See `docs` directory for more details.
 
 ```
 For older MLflow versions, replace `--env-manager=local` with `--no-conda`.
