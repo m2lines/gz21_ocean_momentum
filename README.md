@@ -17,16 +17,16 @@ paper can be found on [Zenodo][gz21-paper-code-zenodo]. The present repository
 provides a version of this model which is designed for others to reproduce,
 replicate, and reuse.
 
-__This repository is currently work-in-progress following a process of refreshing
-the code and making it available for easy reuse by others.__
+_This repository is currently work-in-progress following a process of
+refreshing the code and making it available for easy reuse by others._
 
 ## Architecture
 The model is written in Python, using PyTorch for the CNN. We provide 3 separate
 "stages", which are run using different commands and arguments:
 
-  * data processing: downloads part of CM2.6 dataset and processes
-  * model training: train model on processed data
-  * model testing: tests the trained model on an unseen region
+* data processing: downloads part of CM2.6 dataset and processes
+* model training: train model on processed data
+* model testing: tests the trained model on an unseen region
 
 For more details on each of the stages, see the `docs` directory.
 
@@ -66,51 +66,79 @@ regular method:
     pytest
 
 ### Running stages
-TODO. Needs work.
+Execute these commands from the repository root.
 
 See `docs` directory for more details.
 
-```
-For older MLflow versions, replace `--env-manager=local` with `--no-conda`.
+MLflow parameters:
 
-The CLI parameters one may want to change are:
+* `experiment-name`: "tag" to use for MLflow experiment. Used to share artifacts
+  between stages, i.e. you should run the training stage with a name you used to
+  run the data processing stage.
 
-- experiment-name: the name of the data experiment under which the run will be
-  saved. This will be used later on to recover the generated data for either
-  training or testing.
-- factor: the factor definining the low-resolution grid of the generated data
+For old MLflow versions (TODO: which?), replace the `--env-manager=local` flag
+with `--no-conda`
+
+#### Data processing
+Relevant parameters:
+
+* `factor`: the factor definining the low-resolution grid of the generated data
   with respect to the high-resolution grid.
-- CO2: 0 for control, 1 for 1% increase per year dataset.
+* `CO2`: 0 for control, 1 for 1% increase per year dataset.
+* `global`: TODO
 
-Most of the CLI parameters can be kept as such. Some one might want to change are:
+Direct call (without MLflow) example:
 
-- `experiment-name`: name of the experiment under which the run will be
-  recorded. In particular, this will be used to recover the trained neural
-  network.
-- `exp_id`: id of the experiment containing the run that generated the forcing
+    python src/gz21_ocean_momentum/cmip26.py -85 85 -280 80 --factor 4 --ntimes 10
+
+MLflow call example:
+
+```
+mlflow run . --experiment-name <name>--env-manager=local \
+-P lat_min=-25 -P lat_max=25 -P long_min=-280 -P long_max=80 \
+-P factor=4 \
+-P CO2=1 -P global=0 \
+-P ntimes=100 \
+-P chunk_size=1
+```
+
+#### Training
+MLflow call example:
+
+```
+mlflow run . --experiment-name raehik -e train --env-manager=local \
+-P exp_id=692154129919725696 -P run_id=c57b36da385e4fc4a967e7790192ecb2 \
+-P learning_rate=0/5e-4/15/5e-5/30/5e-6 -P n_epochs=200 -P weight_decay=0.00 -P train_split=0.8 \
+-P test_split=0.85 -P model_module_name=models.models1 -P model_cls_name=FullyCNN -P batchsize=4 \
+-P transformation_cls_name=SoftPlusTransform -P submodel=transform3 \
+-P loss_cls_name=HeteroskedasticGaussianLossV2
+```
+
+Relevant parameters:
+
+* `exp_id`: id of the experiment containing the run that generated the forcing
   data.
-- `run_id`: id of the run that generated the forcing data that will be used for
+* `run_id`: id of the run that generated the forcing data that will be used for
   training.
-- `loss_cls_name`: name of the class that defines the loss. This class should be
+* `loss_cls_name`: name of the class that defines the loss. This class should be
   defined in train/losses.py in order for the script to find it. Currently the
   main available options are:
-  - `HeteroskedasticGaussianLossV2`: this corresponds to the loss used in the
+  * `HeteroskedasticGaussianLossV2`: this corresponds to the loss used in the
     paper
-  - `BimodalGaussianLoss`: a Gaussian loss defined using two Gaussian modes
-- `model_module_name`: name of the module that contains the class defining the
+  * `BimodalGaussianLoss`: a Gaussian loss defined using two Gaussian modes
+* `model_module_name`: name of the module that contains the class defining the
   NN used
-- `model_cls_name`: name of the class defining the NN used, should be defined in
+* `model_cls_name`: name of the class defining the NN used, should be defined in
   the module specified by model_module_name
 
 Another important way to modify the way the script runs consists in modifying
 the domains used for training. These are defined in `training_subdomain.yaml` in
 terms of their coordinates. Note that at run time domains will be truncated to
 the size of the smallest domain in terms of number of points.
-```
 
 ## Contributing
-We are not currently accepting contributions outside of the M2LInES and ICCS projects until we have
-reached a code release milestone.
+We are not currently accepting contributions outside of the M2LInES and ICCS
+projects until we have reached a code release milestone.
 
 ## License
 This repository is provided under the MIT license. See `LICENSE` for license
