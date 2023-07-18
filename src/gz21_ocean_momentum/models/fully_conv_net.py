@@ -76,6 +76,8 @@ class FullyCNN(DetectOutputSizeMixin, Sequential):
         # store in_chans as attribute
         self._n_in_channels = in_chans
 
+        self._final_transformation = lambda x: x
+
 
     @staticmethod
     def _process_padding(padding: Optional[str] = None) -> Tuple[int, int]:

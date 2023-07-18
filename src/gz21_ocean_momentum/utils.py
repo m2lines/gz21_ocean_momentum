@@ -6,8 +6,12 @@ Created on Mon Nov  2 12:50:18 2020
 @author: arthur
 """
 
+import os
 import mlflow
 from mlflow.tracking import client
+import torch
+import random
+import numpy as np
 import pandas as pd
 import pickle
 import gz21_ocean_momentum.models as models
@@ -126,3 +130,14 @@ def pickle_artifact(run_id: str, path: str):
     file = client.download_artifacts(run_id, path)
     f = open(file, "rb")
     return pickle.load(f)
+
+
+def seed_all(seed: int = 0):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    # seed torch
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = True
