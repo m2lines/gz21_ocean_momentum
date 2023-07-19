@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from gz21_ocean_momentum.models.fully_conv_net import *
-import torch
 import numpy as np
+import torch
+
+from gz21_ocean_momentum.models.fully_conv_net import *
+
 
 def test_construct_valid():
     """Construct a valid FullyCNN instance.

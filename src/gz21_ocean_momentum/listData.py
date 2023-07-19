@@ -7,11 +7,11 @@ Created on Tue Feb 25 09:39:23 2020
 Script that lists the data runs with the relevant information
 """
 
-import mlflow
-from mlflow.tracking import MlflowClient
-import xarray as xr
 import matplotlib.pyplot as plt
-from analysis.utils import select_run, select_experiment
+import mlflow
+import xarray as xr
+from analysis.utils import select_experiment, select_run
+from mlflow.tracking import MlflowClient
 
 
 def show_data_sample(forcing, index: int):

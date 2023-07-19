@@ -5,15 +5,16 @@ Created on Thu Apr  2 23:08:26 2020
 
 @author: arthur
 In this module we define custom loss functions. In particular we define
-a loss function based on the Gaussian likelihood with two parameters, 
+a loss function based on the Gaussian likelihood with two parameters,
 mean and precision.
 """
-import torch
-from torch.nn.modules.loss import _Loss
-from enum import Enum
 from abc import ABC
+from enum import Enum
+
 import numpy as np
+import torch
 from torch.autograd import Function
+from torch.nn.modules.loss import _Loss
 
 
 class VarianceMode(Enum):

@@ -3,9 +3,10 @@
 """Routines for coarsening a dataset."""
 
 import logging
+
+import numpy as np
 import xarray as xr
 from scipy.ndimage import gaussian_filter
-import numpy as np
 
 
 def advections(u_v_field: xr.Dataset, grid_data: xr.Dataset):

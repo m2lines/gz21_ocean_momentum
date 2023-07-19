@@ -1,45 +1,34 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Script that performs training of a model on data."""
+import argparse
+import copy
+import importlib
 import os
 import os.path
-import copy
-import argparse
-import importlib
 import pickle
 import tempfile
-from dask.diagnostics import ProgressBar
-import numpy as np
-import mlflow
 
+import mlflow
+import models.submodels
+import models.transforms
+import numpy as np
 import torch
-from torch.utils.data import DataLoader
+import train.losses
+from dask.diagnostics import ProgressBar
+# These imports are used to create the training datasets
+from data.datasets import (ComposeTransforms, ConcatDataset_,
+                           DatasetTransformer, DatasetWithTransform,
+                           RawDataFromXrDataset, Subset_)
+from data.utils import load_data_from_run, load_training_datasets
+from testing.metrics import MaxMetric, MSEMetric
+from testing.utils import create_test_dataset
 from torch import optim
 from torch.optim.lr_scheduler import MultiStepLR
-
-# These imports are used to create the training datasets
-from data.datasets import (
-    DatasetWithTransform,
-    DatasetTransformer,
-    RawDataFromXrDataset,
-    ConcatDataset_,
-    Subset_,
-    ComposeTransforms,
-)
-from data.utils import load_training_datasets, load_data_from_run
-
-# Some utils functions
-from train.utils import (
-    DEVICE_TYPE,
-    learning_rates_from_string,
-)
+from torch.utils.data import DataLoader
 from train.base import Trainer
-from testing.utils import create_test_dataset
-from testing.metrics import MSEMetric, MaxMetric
-import train.losses
-import models.transforms
-import models.submodels
-
+# Some utils functions
+from train.utils import DEVICE_TYPE, learning_rates_from_string
 from utils import TaskInfo
 
 torch.autograd.set_detect_anomaly(True)

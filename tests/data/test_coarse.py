@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 """Unit tests for the data/coarse.py module"""
 
+import matplotlib.pyplot as plt
+import numpy as np
 import pytest
 import xarray as xr
-import numpy as np
 from numpy import ma
-import matplotlib.pyplot as plt
-from gz21_ocean_momentum.data.coarse import spatial_filter_dataset, spatial_filter, eddy_forcing
+
+from gz21_ocean_momentum.data.coarse import (eddy_forcing, spatial_filter,
+                                             spatial_filter_dataset)
 
 
 class TestEddyForcing:

@@ -6,18 +6,19 @@ Created on Tue Jun  9 17:58:33 2020
 
 @author: arthur
 """
-import numpy as np
-import xarray as xr
-import torch
-from torch.utils.data import Sampler
-import progressbar
-import mlflow
 import pickle
+
+import dask
+import dask.array as da
+import mlflow
+import numpy as np
+import progressbar
+import torch
+import xarray as xr
+from torch.utils.data import Sampler
 
 # Use dask for large datasets that won't fit in RAM
 
-import dask.array as da
-import dask
 
 
 class BatchSampler(Sampler):

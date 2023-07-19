@@ -8,15 +8,16 @@ In this script we read the updates for a telegram bot and let the user
 start a program by text.
 """
 
-import requests
+import hashlib
 import json
-import sys
-from telegram import send_message
+import logging
 import subprocess
+import sys
 import time
 from os.path import join
-import hashlib
-import logging
+
+import requests
+from telegram import send_message
 
 with open("/home/ag7531/.bot_token") as f:
     token = f.readline().strip()

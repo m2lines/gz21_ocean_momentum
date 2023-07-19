@@ -5,11 +5,11 @@ Created on Thu Nov 21 22:11:09 2019
 
 @author: Arthur
 """
-import setuptools
 from distutils.core import setup
-from Cython.Build import cythonize
-import numpy
 
+import numpy
+import setuptools
+from Cython.Build import cythonize
 
 setup(
     name="utils",

@@ -10,7 +10,7 @@ from torch.nn import Module, MSELoss
 from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import DataLoader
 
-from .utils import print_every, RunningAverage
+from .utils import RunningAverage, print_every
 
 
 class Trainer:

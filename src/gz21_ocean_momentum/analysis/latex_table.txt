@@ -1,6 +1,6 @@
 \begin{table}[]
 \begin{tabular}{lcccc}
-subdomain & latitude range               & longitude range & training & validation \\ 
+subdomain & latitude range               & longitude range & training & validation \\
 
 {}  &     {}           &         {}        & X        & X \\
 

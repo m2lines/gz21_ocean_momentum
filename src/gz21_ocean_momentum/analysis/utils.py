@@ -4,22 +4,21 @@ Created on Tue Feb  4 14:00:45 2020
 
 @author: Arthur
 """
-import numpy as np
-import mlflow
-from mlflow.tracking import client
-import matplotlib.pyplot as plt
-from matplotlib import colors
-import matplotlib.animation as animation
-from matplotlib.patches import Rectangle
-import pandas as pd
-from analysis.analysis import TimeSeriesForPoint
-import xarray as xr
-from scipy.ndimage import gaussian_filter
-from data.pangeo_catalog import get_patch, get_whole_data
-from cartopy.crs import PlateCarree
-
-
 from enum import Enum
+
+import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+import mlflow
+import numpy as np
+import pandas as pd
+import xarray as xr
+from analysis.analysis import TimeSeriesForPoint
+from cartopy.crs import PlateCarree
+from data.pangeo_catalog import get_patch, get_whole_data
+from matplotlib import colors
+from matplotlib.patches import Rectangle
+from mlflow.tracking import client
+from scipy.ndimage import gaussian_filter
 
 CATALOG_URL = "https://raw.githubusercontent.com/pangeo-data/pangeo-datastore\
 /master/intake-catalogs/master.yaml"

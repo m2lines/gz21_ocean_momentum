@@ -7,9 +7,9 @@ This script modifies the .yaml files so that the uri for the artifacts
 location is correctly modified.
 """
 
-import sys
 import os
-from os.path import join, isdir, basename
+import sys
+from os.path import basename, isdir, join
 
 if len(sys.argv) > 1:
     experiment = sys.argv[1]

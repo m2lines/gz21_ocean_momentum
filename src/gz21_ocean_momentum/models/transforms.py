@@ -16,6 +16,7 @@ Arthur replies: Yeah, in the end I only used the Precision Transform, removing t
 """
 
 from abc import ABC, abstractmethod
+
 import torch
 from torch import nn
 from torch.nn.functional import softplus

@@ -10,20 +10,17 @@ Reads data from the CM2.6 and apply coarse graining.
 Stores the resulting dataset into an MLFLOW
 experiment within a specific run.
 """
-import os
-import logging
-import tempfile
 import argparse
+import logging
+import os
+import tempfile
 
+import mlflow
 import xarray as xr
 from dask.diagnostics import ProgressBar
-import mlflow
-
-from data.utils import cyclize_dataset
 from data.coarse import eddy_forcing
 from data.pangeo_catalog import get_patch
-import logging
-import tempfile
+from data.utils import cyclize_dataset
 
 # obtain logging config from LOGGING_LEVEL environment variable
 # e.g. `LOGGING_LEVEL=20 python cmip26.py ...`

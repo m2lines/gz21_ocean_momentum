@@ -7,7 +7,7 @@ Analysis script.
 
 TODO
 -Allow to load a trained model to do some tests on it. For instance I'd like
-to check what a zero input gives, see if it can explain the behaviour on 
+to check what a zero input gives, see if it can explain the behaviour on
 the east border, and see if we can correct that by enforcing zero bias on all
 layers.
 -also show the input field for analysis
@@ -20,14 +20,14 @@ import matplotlib
 
 matplotlib.use("tkagg")
 
-import matplotlib.pyplot as plt
-
-import numpy as np
-from .utils import select_run, view_predictions, DisplayMode
-from .utils import play_movie
-import mlflow
-from mlflow.tracking import MlflowClient
 import argparse
+
+import matplotlib.pyplot as plt
+import mlflow
+import numpy as np
+from mlflow.tracking import MlflowClient
+
+from .utils import DisplayMode, play_movie, select_run, view_predictions
 
 # Parse parameter
 parser = argparse.ArgumentParser()

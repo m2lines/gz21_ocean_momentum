@@ -7,13 +7,14 @@ Created on Wed Oct 28 17:21:16 2020
 @author: arthur
 """
 
-import xarray as xr
-from abc import ABC, abstractmethod
 import pickle
-from dask import delayed
+from abc import ABC, abstractmethod
+from typing import List
+
 import dask.array as da
 import numpy as np
-from typing import List
+import xarray as xr
+from dask import delayed
 
 
 class Transform(ABC):

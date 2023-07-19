@@ -288,4 +288,3 @@ dependencies:
   - zlib=1.2.11
   - zstd=1.3.7
 prefix: /home/arthur/anaconda3/envs/pangeo
-

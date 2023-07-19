@@ -5,10 +5,11 @@ Created on Thu Jun 11 11:13:35 2020
 
 @author: arthur
 """
+import os.path
+
+import mlflow
 import numpy as np
 import xarray as xr
-import mlflow
-import os.path
 from scipy.stats import norm
 
 

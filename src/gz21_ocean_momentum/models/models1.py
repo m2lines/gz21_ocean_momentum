@@ -18,12 +18,12 @@ BUGS
 -when we run less than 100 epochs the figures from previous runs are
 logged.
 """
+import numpy as np
 import torch
 from torch import nn
-from torch.nn.modules.utils import _pair
 from torch.nn.functional import pad
+from torch.nn.modules.utils import _pair
 
-import numpy as np
 from .base import DetectOutputSizeMixin
 
 

@@ -5,15 +5,15 @@ Routines for handling datasets.
 TODO:
 - balance the weights when mixing data sets
 """
-import warnings
 import bisect
-from copy import deepcopy
+import warnings
 from abc import ABC, abstractmethod
+from copy import deepcopy
 
 import numpy as np
 import torch
-from torch.utils.data import Dataset, ConcatDataset, Subset
 import xarray as xr
+from torch.utils.data import ConcatDataset, Dataset, Subset
 
 
 def call_only_once(func):
@@ -1154,9 +1154,9 @@ class MultipleTimeIndices(Dataset):
 
 
 if __name__ == "__main__":
+    from numpy.random import randint
     from xarray import DataArray
     from xarray import Dataset as xrDataset
-    from numpy.random import randint
 
     da = DataArray(
         data=randint(0, 10, (20, 32, 48)), dims=("time", "yu_ocean", "xu_ocean")

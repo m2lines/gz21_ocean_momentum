@@ -1,7 +1,7 @@
 """Simple two-dimensional blocks."""
 from typing import List
 
-from torch.nn import Sequential, Module, Conv2d, ReLU, BatchNorm2d
+from torch.nn import BatchNorm2d, Conv2d, Module, ReLU, Sequential
 
 
 class ConvBlock(Sequential):

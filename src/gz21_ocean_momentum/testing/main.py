@@ -5,7 +5,7 @@ Created on Tue Jan 28 20:25:09 2020
 @author: Arthur
 Here we test a trained model on an unseen region. The user is prompted to
 select a trained model within a list and a new region to test that model.
-Fine-tuning is an option through the n_epochs parameter of the script. 
+Fine-tuning is an option through the n_epochs parameter of the script.
 If n_epochs takes is default value 0, no fine-tuning is performed.
 
 We allow for different modes of training:
@@ -14,44 +14,34 @@ We allow for different modes of training:
     - training of batch norm layers only
 
 """
-from copy import deepcopy
-from sys import modules
+import argparse
+import logging
 import os.path
 import tempfile
-import logging
+from copy import deepcopy
+from sys import modules
 
-import torch
-import numpy as np
 import mlflow
-from torch.utils.data import DataLoader
-import xarray as xr
-from utils import select_run, select_experiment, TaskInfo
-from train.utils import learning_rates_from_string
-from data.datasets import (
-    RawDataFromXrDataset,
-    DatasetTransformer,
-    Subset_,
-    DatasetWithTransform,
-    ComposeTransforms,
-    MultipleTimeIndices,
-    DatasetPartitioner,
-)
-from train.base import Trainer
-import train.losses
-from testing.utils import create_large_test_dataset, BatchSampler, pickle_artifact
-from testing.metrics import MSEMetric, MaxMetric
-from models.utils import load_model_cls
-from models.transforms import SoftPlusTransform
-
-import argparse
-
-
-from dask.diagnostics import ProgressBar
-from other.telegram import send_message
-
-from data.xrtransforms import SeasonalStdizer
 import models.submodels
-
+import numpy as np
+import torch
+import train.losses
+import xarray as xr
+from dask.diagnostics import ProgressBar
+from data.datasets import (ComposeTransforms, DatasetPartitioner,
+                           DatasetTransformer, DatasetWithTransform,
+                           MultipleTimeIndices, RawDataFromXrDataset, Subset_)
+from data.xrtransforms import SeasonalStdizer
+from models.transforms import SoftPlusTransform
+from models.utils import load_model_cls
+from other.telegram import send_message
+from testing.metrics import MaxMetric, MSEMetric
+from testing.utils import (BatchSampler, create_large_test_dataset,
+                           pickle_artifact)
+from torch.utils.data import DataLoader
+from train.base import Trainer
+from train.utils import learning_rates_from_string
+from utils import TaskInfo, select_experiment, select_run
 
 # Parse arguments
 parser = argparse.ArgumentParser()

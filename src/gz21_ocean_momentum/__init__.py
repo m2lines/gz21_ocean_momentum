@@ -5,10 +5,12 @@ Created on Mon Nov 25 18:28:27 2019
 @author: Arthur
 """
 import logging
-import torch
-import mlflow
-from .models.utils import load_model_cls, pickle_artifact
 from pathlib import Path
+
+import mlflow
+import torch
+
+from .models.utils import load_model_cls, pickle_artifact
 
 MODEL_RUN_ID = "dc74cea68a7f4c7e98f9228649a97135"
 

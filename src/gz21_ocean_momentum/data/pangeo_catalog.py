@@ -3,9 +3,8 @@
 """Routines for fetching data from pangeo and converting to xarray Dataset."""
 
 import intake
-import xarray as xr
 import numpy as np
-
+import xarray as xr
 from intake.config import conf
 
 # TODO variable currently unused? Remove? Or is it setting environment variable?

@@ -11,9 +11,10 @@ BUGS
 -decorator allow_hold_on only works when the function is supposed to generate
 only one figure.
 """
-import numpy as np
-import matplotlib.pyplot as plt
 from os.path import join
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 data_location = "/data/ag7531/"
 figures_directory = "figures"

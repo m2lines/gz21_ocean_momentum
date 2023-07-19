@@ -8,11 +8,12 @@ TODOS
 -write a generic loadmlflow class from which more specific classes can inherit
 from
 """
-import torch
-from os.path import join
-import numpy as np
-import warnings
 import json
+import warnings
+from os.path import join
+
+import numpy as np
+import torch
 from mlflow.tracking import MlflowClient
 
 

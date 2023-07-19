@@ -17,12 +17,12 @@ BUGS
 logged.
 """
 from typing import Optional, Tuple
+
 from torch import Tensor
-from torch.nn import Sequential, Conv2d
+from torch.nn import Conv2d, Sequential
 
-
-from .blocks_2d import ConvBlock
 from .base import DetectOutputSizeMixin
+from .blocks_2d import ConvBlock
 
 
 class FullyCNN(DetectOutputSizeMixin, Sequential):
@@ -75,7 +75,6 @@ class FullyCNN(DetectOutputSizeMixin, Sequential):
 
         # store in_chans as attribute
         self._n_in_channels = in_chans
-
 
     @staticmethod
     def _process_padding(padding: Optional[str] = None) -> Tuple[int, int]:

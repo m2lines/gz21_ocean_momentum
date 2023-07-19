@@ -10,10 +10,11 @@ transform that ensures that the metric is calculated independently of the
 normalization applied.
 """
 
+from abc import ABC, abstractmethod
+
 import numpy as np
 import torch
 from torch.nn.functional import mse_loss
-from abc import ABC, abstractmethod
 
 
 class Metric(ABC):

@@ -6,14 +6,16 @@ Created on Mon Nov  2 12:50:18 2020
 @author: arthur
 """
 
-import mlflow
-from mlflow.tracking import client
-import pandas as pd
 import pickle
-import gz21_ocean_momentum.models as models
 import sys
 
-sys.modules["models"] = models # what are we doing here anyway
+import mlflow
+import pandas as pd
+from mlflow.tracking import client
+
+import gz21_ocean_momentum.models as models
+
+sys.modules["models"] = models  # what are we doing here anyway
 
 
 class TaskInfo:
