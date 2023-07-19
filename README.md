@@ -96,8 +96,8 @@ with `--no-conda`
 #### Data processing
 The [`cmip26.py`](src/gz21_ocean_momentum/cmip26.py) script runs the data
 processing stage. It generates coarse surface velocities and diagnosed forcings
-from the CM2.6 dataset. You may configure certain parameters such as bounds
-(lat/lon) and CO2 level.
+from the CM2.6 dataset and saves them to disk. You may configure certain
+parameters such as bounds (lat/lon) and CO2 level.
 
 **You must configure GCP credentials to download the CM2.6 dataset used.**
 See [`docs/data.md`](docs/data.md) for more details.
