@@ -94,9 +94,10 @@ For old MLflow versions (TODO: which?), replace the `--env-manager=local` flag
 with `--no-conda`
 
 #### Data processing
-The `cmip26.py` script runs the data processing stage. It generates coarse
-surface velocities and diagnosed forcings from the CM2.6 dataset. You may
-configure certain parameters such as bounds (lat/lon) and CO2 level.
+The [`cmip26.py`](src/gz21_ocean_momentum/cmip26.py) script runs the data
+processing stage. It generates coarse surface velocities and diagnosed forcings
+from the CM2.6 dataset. You may configure certain parameters such as bounds
+(lat/lon) and CO2 level.
 
 **You must configure GCP credentials to download the CM2.6 dataset used.**
 See [`docs/data.md`](docs/data.md) for more details.
@@ -124,10 +125,11 @@ mlflow run . --experiment-name <name>--env-manager=local \
 ```
 
 #### Training
-The `trainScript.py` script runs the model training stage. You may configure
-various training parameters through command-line arguments, such as number of
-training epochs, loss functions, and training data. (You will want to select the
-output from a data processing stage for the latter.)
+The [`trainScript.py`](src/gz21_ocean_momentum/trainScript.py) script runs the
+model training stage. You may configure various training parameters through
+command-line arguments, such as number of training epochs, loss functions, and
+training data. (You will want to select the output from a data processing stage
+for the latter.)
 
 MLflow call example:
 
@@ -164,8 +166,9 @@ coordinates. Note that at run time domains will be truncated to the size of the
 smallest domain in terms of number of points.
 
 #### Testing
-The `testing/main.py` script runs the model testing stage. You select a trained
-model and a region (which should be new/unseen) to test it on.
+The [`testing/main.py`](src/gz21_ocean_momentum/testing/main.py) script runs the
+model testing stage. You select a trained model and a region (which should be
+new/unseen) to test it on.
 
 ## Contributing
 We are not currently accepting contributions outside of the M2LInES and ICCS
