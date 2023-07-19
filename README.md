@@ -39,6 +39,14 @@ With `pip` installed, run the following in the root directory:
 
     pip install -e
 
+To avoid any conflicts with local packages, we recommend using a virtual
+environment. In the root directory:
+
+    virtualenv venv
+    source venv/bin/activate
+
+See [virtualenv docs](https://virtualenv.pypa.io/en/latest/) for more details.
+
 *(An alternate `pyproject.toml` file is provided for building with Poetry. To
 use, rename `pyproject-poetry.toml` to `pyproject.toml` (clobbering the existing
 file) and use Poetry as normal. Note that the Poetry build is not actively
