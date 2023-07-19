@@ -10,9 +10,9 @@ forcing. The parameterization output by the CNN consists of a Gaussian
 distribution specified by 2 parameters (mean and standard deviation), which
 allows for stochastic implementations in online models.
 
-The model is based on the paper [Stochastic-Deep Learning Parameterization of
-Ocean Momentum Forcing, Arthur P. Guillaumin, Laure
-Zanna][gz21-paper-agupubs]. The exact version of the code used to produce said
+The model is based on the paper [Arthur P. Guillaumin, Laure Zanna (2021).
+Stochastic-deep learning parameterization of ocean momentum
+forcing][gz21-paper-agupubs]. The exact version of the code used to produce said
 paper can be found on [Zenodo][gz21-paper-code-zenodo]. The present repository
 provides a version of this model which is designed for others to reproduce,
 replicate, and reuse.
@@ -152,7 +152,7 @@ Relevant parameters:
   defined in train/losses.py in order for the script to find it. Currently the
   main available options are:
   * `HeteroskedasticGaussianLossV2`: this corresponds to the loss used in the
-    paper
+    2021 paper
   * `BimodalGaussianLoss`: a Gaussian loss defined using two Gaussian modes
 * `model_module_name`: name of the module that contains the class defining the
   NN used
@@ -169,6 +169,12 @@ smallest domain in terms of number of points.
 The [`testing/main.py`](src/gz21_ocean_momentum/testing/main.py) script runs the
 model testing stage. You select a trained model and a region (which should be
 new/unseen) to test it on.
+
+### Jupyter Notebooks
+The [examples/jupyter-notebooks](examples/jupyter-notebooks/) folder stores
+notebooks developed during early project development, some of which were used to
+generate figures used in the 2021 paper. See the readme in the folder for
+details.
 
 ## Contributing
 We are not currently accepting contributions outside of the M2LInES and ICCS
