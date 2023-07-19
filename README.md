@@ -28,7 +28,7 @@ The model is written in Python, using PyTorch for the CNN. We provide 3 separate
 * model training: train model on processed data
 * model testing: tests the trained model on an unseen region
 
-For more details on each of the stages, see the `docs` directory.
+For more details on each of the stages, see the [`docs`](docs/) directory.
 
 ## Usage
 ### Dependencies
@@ -47,11 +47,11 @@ environment. In the root directory:
 
 See [virtualenv docs](https://virtualenv.pypa.io/en/latest/) for more details.
 
-*(An alternate `pyproject.toml` file is provided for building with Poetry. To
-use, rename `pyproject-poetry.toml` to `pyproject.toml` (clobbering the existing
-file) and use Poetry as normal. Note that the Poetry build is not actively
-supported-- if it fails, check that the dependencies are up to date with the
-setuptools `pyproject.toml`.)*
+*(An alternate `pyproject.toml` file is provided for building with
+[Poetry](https://python-poetry.org/). To use, rename `pyproject-poetry.toml` to
+`pyproject.toml` (overwriting the existing file) and use Poetry as normal. Note
+that the Poetry build is not actively supported-- if it fails, check that the
+dependencies are up to date with the setuptools `pyproject.toml`.)*
 
 #### System
 Some graphing code uses cartopy, which requires [GEOS](https://libgeos.org/). To
@@ -63,37 +63,50 @@ On MacOS, via Homebrew:
 
     brew install geos
 
-On Windows, consider using MSYS2 to install the library in a Linux-esque manner:
-https://packages.msys2.org/package/mingw-w64-x86_64-geos
+On Windows, consider using MSYS2 to install the library in a Linux-esque manner.
+The [mingw-w64-x86_64-geos](https://packages.msys2.org/package/mingw-w64-x86_64-geos)
+package should be appropriate. If this doesn't work or isn't suitable, cartopy
+or GEOS might have more ideas in their documentation.
 
 ### Running unit tests
-There are a handful of unit tests using pytest, in the `tests` directory. These
-assert some operations and methods used in the stages. They may be run in the
-regular method:
+There are a handful of unit tests using pytest, in the [`tests`](tests/)
+directory. These assert some operations and methods used in the stages. They may
+be run in the regular method:
 
     pytest
 
 ### Running stages
 Execute these commands from the repository root.
 
-See `docs` directory for more details.
+See [`docs`](docs/) directory for more details.
 
 MLflow parameters:
 
 * `experiment-name`: "tag" to use for MLflow experiment. Used to share artifacts
   between stages, i.e. you should run the training stage with a name you used to
   run the data processing stage.
+* `exp_id`: TODO: one way MLflow distinguishes runs. May need to set to share
+  artifacts between stages...?
+* `run_id`: TODO: one way MLflow distinguishes runs. May need to set to share
+  artifacts between stages...?
 
 For old MLflow versions (TODO: which?), replace the `--env-manager=local` flag
 with `--no-conda`
 
 #### Data processing
+The `cmip26.py` script runs the data processing stage. It generates coarse
+surface velocities and diagnosed forcings from the CM2.6 dataset. You may
+configure certain parameters such as bounds (lat/lon) and CO2 level.
+
+**You must configure GCP credentials to download the CM2.6 dataset used.**
+See [`docs/data.md`](docs/data.md) for more details.
+
 Relevant parameters:
 
 * `factor`: the factor definining the low-resolution grid of the generated data
   with respect to the high-resolution grid.
 * `CO2`: 0 for control, 1 for 1% increase per year dataset.
-* `global`: TODO
+* `global`: TODO "make data cyclic along longitude"
 
 Direct call (without MLflow) example:
 
@@ -111,10 +124,15 @@ mlflow run . --experiment-name <name>--env-manager=local \
 ```
 
 #### Training
+The `trainScript.py` script runs the model training stage. You may configure
+various training parameters through command-line arguments, such as number of
+training epochs, loss functions, and training data. (You will want to select the
+output from a data processing stage for the latter.)
+
 MLflow call example:
 
 ```
-mlflow run . --experiment-name raehik -e train --env-manager=local \
+mlflow run . --experiment-name <name> -e train --env-manager=local \
 -P exp_id=692154129919725696 -P run_id=c57b36da385e4fc4a967e7790192ecb2 \
 -P learning_rate=0/5e-4/15/5e-5/30/5e-6 -P n_epochs=200 -P weight_decay=0.00 -P train_split=0.8 \
 -P test_split=0.85 -P model_module_name=models.models1 -P model_cls_name=FullyCNN -P batchsize=4 \
@@ -137,17 +155,22 @@ Relevant parameters:
 * `model_module_name`: name of the module that contains the class defining the
   NN used
 * `model_cls_name`: name of the class defining the NN used, should be defined in
-  the module specified by model_module_name
+  the module specified by `model_module_name`
 
 Another important way to modify the way the script runs consists in modifying
-the domains used for training. These are defined in `training_subdomain.yaml` in
-terms of their coordinates. Note that at run time domains will be truncated to
-the size of the smallest domain in terms of number of points.
+the domains used for training. These are defined in
+[`training_subdomains.yaml`](training_subdomains.yaml) in terms of their
+coordinates. Note that at run time domains will be truncated to the size of the
+smallest domain in terms of number of points.
+
+#### Testing
+The `testing/main.py` script runs the model testing stage. You select a trained
+model and a region (which should be new/unseen) to test it on.
 
 ## Contributing
 We are not currently accepting contributions outside of the M2LInES and ICCS
 projects until we have reached a code release milestone.
 
 ## License
-This repository is provided under the MIT license. See `LICENSE` for license
-text and copyright information.
+This repository is provided under the MIT license. See [`LICENSE`](LICENSE) for
+license text and copyright information.

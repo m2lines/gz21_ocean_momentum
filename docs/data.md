@@ -1,8 +1,4 @@
 # Notes on the data processing stage
-The `cmip26.py` script runs the data processing stage. It generates coarse
-surface velocities and diagnosed forcings from the CM2.6 dataset. You may
-configure certain parameters such as bounds (lat/lon) and CO2 level.
-
 ## Notes on the CM2.6 dataset
 ### Requester Pays
 We use the CM2.6 dataset hosted on the Pangeo Cloud Datastore. Though public, it
