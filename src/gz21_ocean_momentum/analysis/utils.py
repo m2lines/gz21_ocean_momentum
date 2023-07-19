@@ -14,6 +14,7 @@ from matplotlib.patches import Rectangle
 import pandas as pd
 from analysis.analysis import TimeSeriesForPoint
 import xarray as xr
+from typing import Optional
 from scipy.ndimage import gaussian_filter
 from data.pangeo_catalog import get_patch, get_whole_data
 from cartopy.crs import PlateCarree
@@ -165,7 +166,7 @@ def view_predictions(
     fig.canvas.mpl_connect("button_press_event", onClick)
 
 
-def sample(data: np.ndarray, step_time: int = 1, nb_per_time: int = 5):
+def sample(data: np.ndarray, step_time: int = 1, nb_per_time: int = 5, random_state: Optional[int] = None):
     """Samples points from the data, where it is assumed that the data
     is 4-D, with the first dimension representing time , the second
     the channel, and the others representing spatial dimensions.
@@ -185,6 +186,9 @@ def sample(data: np.ndarray, step_time: int = 1, nb_per_time: int = 5):
     :nb_per_time: int,
         Number of points used (chosen randomly according to a uniform
         distribution over the spatial domain) for each image.
+        
+    :random_state: int, optional,
+        Random state used for the random number generator.
 
 
     Returns
@@ -194,6 +198,7 @@ def sample(data: np.ndarray, step_time: int = 1, nb_per_time: int = 5):
     """
     if data.ndim != 4:
         raise ValueError("The data is expected to have 4 dimensions.")
+    np.random.seed(random_state)
     n_times, n_channels, n_x, n_y = data.shape
     time_indices = np.arange(0, n_times, step_time)
     x_indices = np.random.randint(0, n_x, (time_indices.shape[0], 2, nb_per_time))
