@@ -37,13 +37,15 @@ Python 3 is required.
 #### Python
 With `pip` installed, run the following in the root directory:
 
-    pip install -e
+    pip install -e .
 
 To avoid any conflicts with local packages, we recommend using a virtual
 environment. In the root directory:
 
     virtualenv venv
     source venv/bin/activate
+
+Alternatively, if you are using python to virtual environments using the `venv` module then the first line above can be replaced by `python -m venv venv`.
 
 See [virtualenv docs](https://virtualenv.pypa.io/en/latest/) for more details.
 
