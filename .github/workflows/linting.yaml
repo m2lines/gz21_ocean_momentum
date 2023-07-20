@@ -56,7 +56,7 @@ jobs:
       uses: psf/black@stable
     - name: Lint with pylint
       if: always()
-      run: pylint .
+      run: pylint $(find -type f -name *.py)
     - name: Lint with pydocstyle
       if: always()
       run: pydocstyle --convention=numpy .
