@@ -45,7 +45,7 @@ environment. In the root directory:
     virtualenv venv
     source venv/bin/activate
 
-Alternatively, if you are using python to virtual environments using the `venv` module then the first line above can be replaced by `python -m venv venv`.
+Alternatively, if you are using python to manage virtual environments using the `venv` module, then the first line above can be replaced by `python -m venv venv` (where the second `venv` is the virtual environment name).
 
 See [virtualenv docs](https://virtualenv.pypa.io/en/latest/) for more details.
 
