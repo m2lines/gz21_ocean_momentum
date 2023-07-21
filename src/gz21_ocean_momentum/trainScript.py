@@ -385,7 +385,7 @@ mlflow.log_param("n_epochs_actual", i_epoch + 1)
 net.cpu()
 full_path = os.path.join(data_location, MODELS_DIRECTORY, MODEL_NAME)
 torch.save(net.state_dict(), full_path)
-net.cuda(device)
+net.to(device=device)
 
 # Save other parts of the model
 # TODO this should not be necessary
