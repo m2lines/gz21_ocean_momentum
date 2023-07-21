@@ -31,7 +31,6 @@ dependencies = [
     "gcsfs",
 
     "torch>=1.13.1",
-    # "progressbar>=2.5"
 ]
 
 authors = [
@@ -88,7 +87,7 @@ intake-xarray = "*"
 gcsfs = "*"
 
 torch = "^1.13.1"
-progressbar = "^2.5"
+progressbar2 = "^4.2.0"
 
 [build-system]
 #requires = ["setuptools >= 61"]
