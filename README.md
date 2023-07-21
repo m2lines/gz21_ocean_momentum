@@ -37,7 +37,7 @@ Python 3 is required.
 #### Python
 With `pip` installed, run the following in the root directory:
 
-    pip install -e
+    pip install -e .
 
 To avoid any conflicts with local packages, we recommend using a virtual
 environment. In the root directory:
@@ -46,6 +46,8 @@ environment. In the root directory:
     source venv/bin/activate
 
 See [virtualenv docs](https://virtualenv.pypa.io/en/latest/) for more details.
+
+Alternatively, if you are using python to manage virtual environments using the `venv` module, then the first line above can be replaced by `python -m venv venv` (where the second `venv` is the virtual environment name).
 
 *(An alternate `pyproject.toml` file is provided for building with
 [Poetry](https://python-poetry.org/). To use, rename `pyproject-poetry.toml` to
