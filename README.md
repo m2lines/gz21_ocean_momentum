@@ -160,6 +160,8 @@ Relevant parameters:
   NN used
 * `model_cls_name`: name of the class defining the NN used, should be defined in
   the module specified by `model_module_name`
+* `train_split`: use `0->N` percent of the dataset for training
+* `test_split`: use `N->100` percent of the dataset for testing
 
 Another important way to modify the way the script runs consists in modifying
 the domains used for training. These are defined in
