@@ -28,7 +28,7 @@ class TestEddyForcing:
         xs = np.arange(5)
         ys = np.arange(5) * 2
         times = np.arange(100)
-        xs_, ys_ = np.meshgrid(xs, ys)
+        xs_, ys_ = np.meshgrid(xs, ys, indexing='ij')
         dxs = np.ones_like(xs_)
         dys = np.ones_like(ys_) * 2
 
@@ -57,20 +57,42 @@ class TestEddyForcing:
         """
         Check that the computations are done along the spatial dimensions.
         """
-        data = np.stack(np.zeros(100, 100), np.ones(100, 100), axis=0)
-        a1 = xr.DataArray(data=data,
-                       dims = ['time', 'x', 'y'],
-                       coords = {'time' : np.arange(1000) * 3,
-                                 'x' : np.arange(100) * 10,
-                                 'y' : np.arange(100) * 11})
-        a2 = xr.DataArray(data = data,
-                       dims = ['time', 'x', 'y'],
-                       coords = {'time' : np.arange(1000) * 3,
-                                 'x' : np.arange(100) * 10,
-                                 'y' : np.arange(100) * 11})
-        ds = xr.Dataset({'usurf' : a1, 'vsurf' : a2})
-        forcing = eddy_forcing(ds, 40)
+        xs = np.arange(100)
+        ys = np.arange(100) * 2
+        times = np.arange(2)
+        xs_, ys_ = np.meshgrid(xs, ys)
+        dxs = np.ones_like(xs_)
+        dys = np.ones_like(ys_) * 2
+
+        dxs = xr.DataArray(
+                dxs, dims=("xu_ocean", "yu_ocean"), coords={"xu_ocean": xs, "yu_ocean": ys}
+        )
+        dys = xr.DataArray(
+                dys, dims=("xu_ocean", "yu_ocean"), coords={"xu_ocean": xs, "yu_ocean": ys}
+        )
+        grid_info = xr.Dataset({"dxu": dxs, "dyu": dys})
+        data = xr.Dataset(
+                {
+                    "usurf": xr.DataArray(
+                            np.stack((np.zeros((100, 100)),
+                                      np.ones((100, 100))), axis=0),
+                            dims=("time", "xu_ocean", "yu_ocean"),
+                            coords={"time": times, "xu_ocean": xs, "yu_ocean": ys},
+                    ),
+                    "vsurf": xr.DataArray(
+                            np.stack((np.zeros((100, 100)),
+                                      np.ones((100, 100))), axis=0),
+                            dims=("time", "xu_ocean", "yu_ocean"),
+                            coords={"time": times, "xu_ocean": xs, "yu_ocean": ys},
+                    ),
+                }
+        )
+        forcing = eddy_forcing(data, grid_info, 4)
         usurf_0, usurf_1 = forcing.usurf.isel(time=0), forcing.usurf.isel(time=1)
+        # remove nan values at the boundaries from the test
+        usurf_0 = usurf_0.data[~np.isnan(usurf_0)]
+        usurf_1 = usurf_1.data[~np.isnan(usurf_1)]
+        print(usurf_0)
         assert np.all(usurf_0 == 0)
         assert not np.all(usurf_1 == 0)
 
