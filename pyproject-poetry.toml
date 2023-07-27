@@ -1,6 +1,6 @@
-[build-system]
-requires = ["setuptools >= 61"]
-build-backend = "setuptools.build_meta"
+# Note that this file contains build instructions for both setuptools (via the
+# shared build tool syntax) and Poetry (via Poetry-specific configuration).
+# In particular, dependencies must be repeated. Keep these in sync.
 
 [project]
 version = "0.2.0"
@@ -30,11 +30,7 @@ dependencies = [
     "intake-xarray",
     "gcsfs",
 
-    "matplotlib>=3.7", # analysis, examples
-    "cartopy>=0.21", # analysis (plotting data)
-
     "torch>=1.13.1",
-    "progressbar2>=4.2.0" # testing/utils (but imported by trainScript)
 ]
 
 authors = [
@@ -61,7 +57,40 @@ include-package-data = true
 #[tool.setuptools.packages]
 #find = {}
 [tool.setuptools.packages.find]
-where = ["src"]  # list of folders that contain the packages (["."] by default)
+where = ["."]  # list of folders that contain the packages (["."] by default)
 include = ["gz21_ocean_momentum", "gz21_ocean_momentum.*"]  # package names should match these glob patterns (["*"] by default)
 #exclude = ["gz21_ocean_momentum.tests*", "examples.py"]  # exclude packages matching these glob patterns (empty by default)
 namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
+
+[tool.poetry]
+name = "gz21_ocean_momentum"
+version = "0.2.0"
+description = "TODO"
+authors = ["Sébastien Eustace <sebastien@eustace.io>"]
+readme = "README.md"
+packages = [{include = "poetry_demo"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+# general, likely used all over
+scipy = "*"
+xarray = "*"
+dask = "*"
+mlflow-skinny = "*"
+
+# data download
+intake = "*"
+requests = "*"
+aiohttp = "*"
+intake-xarray = "*"
+gcsfs = "*"
+
+torch = "^1.13.1"
+progressbar2 = "^4.2.0"
+
+[build-system]
+#requires = ["setuptools >= 61"]
+#build-backend = "setuptools.build_meta"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

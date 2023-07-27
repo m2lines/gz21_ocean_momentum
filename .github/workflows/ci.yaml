@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  # run on every push to main
+  push:
+    branches:
+    - main
+  # run on every push (not commit) to a PR, plus open/reopen
+  pull_request:
+    types:
+    - synchronize
+    - opened
+    - reopened
+
+jobs:
+  linux-test:
+    name: ${{ matrix.os }} / test / Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # continue testing other configurations even if a matrix job fails
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest"]
+        python-version: ["3.11", "3.10", "3.9"]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install system dependencies
+      run: sudo apt install libgeos-dev
+
+    - name: Install Python dependencies
+      run: pip install -e .
+
+    - name: Install Python testing dependencies
+      run: pip install mypy pytest
+
+    - name: Run tests
+      if: always()
+      run: pytest .
+
+  mac-test:
+    name: ${{ matrix.os }} / test / Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # continue testing other configurations even if a matrix job fails
+      fail-fast: false
+      matrix:
+        os: ["macos-latest"]
+        python-version: ["3.11"]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install system dependencies
+      run: brew install geos
+
+    - name: Install Python dependencies
+      run: pip install -e .
+
+    - name: Install Python testing dependencies
+      run: pip install mypy pytest
+
+    - name: Run tests
+      if: always()
+      run: pytest .
