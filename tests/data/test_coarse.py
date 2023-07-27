@@ -110,8 +110,8 @@ class TestEddyForcing:
 
         scale_m = 1
 
-        xs = np.arange(100)
-        ys = np.arange(100) * 2
+        xs = np.random.rand(100)
+        ys = np.random.rand(100) * 2
         times = np.arange(2)
         xs_, ys_ = np.meshgrid(xs, ys)
         dxs = np.ones_like(xs_)
