@@ -64,6 +64,7 @@ class TestEddyForcing:
         dxs = np.ones_like(xs_)
         dys = np.ones_like(ys_) * 2
 
+        # TODO renamed vars. confusing
         dxs = xr.DataArray(
                 dxs, dims=("xu_ocean", "yu_ocean"), coords={"xu_ocean": xs, "yu_ocean": ys}
         )
@@ -95,6 +96,94 @@ class TestEddyForcing:
         print(usurf_0)
         assert np.all(usurf_0 == 0)
         assert not np.all(usurf_1 == 0)
+
+    def test_eddy_forcing_chunking(self):
+        """
+        Assert that applying eddy_forcing using different chunking gives the
+        same result.
+
+        The original implementation used `xarray.map_blocks`. Somewhere along
+        the way, the behaviour of this function changed, ballooning memory
+        usage. We removed this call and swapped some things up-- this test
+        asserts that our change doesn't impact behaviour.
+        """
+
+        scale_m = 1
+
+        xs = np.arange(100)
+        ys = np.arange(100) * 2
+        times = np.arange(2)
+        xs_, ys_ = np.meshgrid(xs, ys)
+        dxs = np.ones_like(xs_)
+        dys = np.ones_like(ys_) * 2
+
+        # TODO overlapping vars. confusing
+        dxs = xr.DataArray(
+                dxs, dims=("xu_ocean", "yu_ocean"), coords={"xu_ocean": xs, "yu_ocean": ys}
+        )
+        dys = xr.DataArray(
+                dys, dims=("xu_ocean", "yu_ocean"), coords={"xu_ocean": xs, "yu_ocean": ys}
+        )
+        grid_info = xr.Dataset({"dxu": dxs, "dyu": dys})
+
+        data = xr.Dataset(
+                {
+                    "usurf": xr.DataArray(
+                            np.stack((np.zeros((100, 100)),
+                                      np.ones((100, 100))), axis=0),
+                            dims=("time", "xu_ocean", "yu_ocean"),
+                            coords={"time": times, "xu_ocean": xs, "yu_ocean": ys},
+                    ),
+                    "vsurf": xr.DataArray(
+                            np.stack((np.zeros((100, 100)),
+                                      np.ones((100, 100))), axis=0),
+                            dims=("time", "xu_ocean", "yu_ocean"),
+                            coords={"time": times, "xu_ocean": xs, "yu_ocean": ys},
+                    ),
+                }
+        )
+
+        # new forcing: apply
+        forcing_new = eddy_forcing(
+            data, grid_info, scale=scale_m,
+            method='mean', scale_mode='factor')
+
+        # new forcing: post-chunk
+        for var in forcing_new:
+          forcing_new[var].encoding = {}
+        forcing_new = forcing_new.chunk(dict(time=1))
+
+        # old forcing: helper
+        def f(block):
+            """
+            Description: Apply coarsening operations + computations of subgrid
+                momentum forcing to a chunk of data along the time axis.
+            Parameters
+            ----------
+            block :
+                description: an xarray dataset containing variables usurf and vsurf
+                for the two components of surface velocities.
+            Returns
+            -------
+            eddy_forcing : xr.Dataset
+                Dataset containing 4 variables:
+                - usurf and vsurf, the two components of the coarse-grained & filtered
+                surface velocities
+                - S_x and S_y, the two components of the diagnosed subgrid momentum
+                forcing
+            """
+            return eddy_forcing(block, grid_info, scale=scale_m)
+
+        # old forcing: apply
+        template = data.coarsen(
+            {"xu_ocean": int(scale_m), "yu_ocean": int(scale_m)},
+            boundary="trim").mean()
+        template2 = template.copy()
+        template2 = template2.rename({"usurf": "S_x", "vsurf": "S_y"})
+        template = xr.merge((template, template2))
+        forcing_old = xr.map_blocks(f, data, template=template)
+
+        assert forcing_new == forcing_old
 
     # def test_spatial_filter_dataset(self):
     #     a1 = xr.DataArray(data = np.zeros((10, 4, 4)),
