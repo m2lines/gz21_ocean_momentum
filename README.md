@@ -129,6 +129,9 @@ mlflow run . --experiment-name <name>--env-manager=local \
 -P chunk_size=1
 ```
 
+Some preprocessed data is hosted on HuggingFace at
+[datasets/M2LInES/gfdl-cmip26-gz21-ocean-forcing](https://huggingface.co/datasets/M2LInES/gfdl-cmip26-gz21-ocean-forcing).
+
 #### Training
 The [`trainScript.py`](src/gz21_ocean_momentum/trainScript.py) script runs the
 model training stage. You may configure various training parameters through
