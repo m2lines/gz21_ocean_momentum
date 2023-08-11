@@ -122,7 +122,7 @@ MLflow call example:
 
 ```
 mlflow run . --experiment-name <name>--env-manager=local \
--P lat_min=-25 -P lat_max=25 -P long_min=-280 -P long_max=80 \
+-P lat_min=-80 -P lat_max=80 -P long_min=-280 -P long_max=80 \
 -P factor=4 \
 -P CO2=1 -P global=0 \
 -P ntimes=100 \
@@ -174,6 +174,15 @@ the domains used for training. These are defined in
 [`training_subdomains.yaml`](training_subdomains.yaml) in terms of their
 coordinates. Note that at run time domains will be truncated to the size of the
 smallest domain in terms of number of points.
+
+*Note:* Ensure that the spatial subdomains defined in `training_subdomains.yaml`
+are contained in the domain of the forcing data you use. If they aren't, you may
+get a Python error along the lines of:
+
+```
+RuntimeError: Calculated padded input size per channel: <smaller than 5 x 5>.
+Kernel size: (5 x 5). Kernel size can't be greater than actual input size
+```
 
 #### Testing
 The [`testing/main.py`](src/gz21_ocean_momentum/testing/main.py) script runs the
