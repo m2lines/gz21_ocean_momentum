@@ -112,38 +112,8 @@ logger.debug("Mapping blocks")
 debug_mode = os.environ.get("DEBUG_MODE")
 if params.factor != 0 and not debug_mode:
     scale_m = params.factor
-
-    def func(block):
-        """
-        Description: Apply coarsening operations + computations of subgrid
-            momentum forcing to a chunk of data along the time axis.
-
-        Parameters
-        ----------
-        block :
-            description: an xarray dataset containing variables usurf and vsurf
-            for the two components of surface velocities.
-
-        Returns
-        -------
-        eddy_forcing : xr.Dataset
-            Dataset containing 4 variables:
-            - usurf and vsurf, the two components of the coarse-grained & filtered
-            surface velocities
-            - S_x and S_y, the two components of the diagnosed subgrid momentum
-            forcing
-        """
-        return eddy_forcing(block, grid_data, scale=scale_m)
-
-    template = patch_data.coarsen(
-        {"xu_ocean": int(scale_m), "yu_ocean": int(scale_m)}, boundary="trim"
-    ).mean()
-    template2 = template.copy()
-    template2 = template2.rename({"usurf": "S_x", "vsurf": "S_y"})
-    template = xr.merge((template, template2))
-    forcing = xr.map_blocks(func, patch_data, template=template)
-    # forcing = eddy_forcing(patch_data, grid_data, scale=scale_m, method='mean',
-    #                        scale_mode='factor')
+    forcing = eddy_forcing(patch_data, grid_data, scale=scale_m, method='mean',
+                           scale_mode='factor')
 elif not debug_mode:
     scale_m = params.scale * 1e3
     forcing = eddy_forcing(patch_data, grid_data, scale=scale_m, method="mean")
@@ -168,11 +138,9 @@ forcing = forcing.sel(
     xu_ocean=slice(bounds[2], bounds[3]), yu_ocean=slice(bounds[0], bounds[1])
 )
 
-# chunk_sizes = list(map(int, params.chunk_size.split('/')))
-# while len(chunk_sizes) < 3:
-#     chunk_sizes.append('auto')
-# forcing = forcing.chunk(dict(zip(('time', 'xu_ocean', 'yu_ocean'),
-#                                  chunk_sizes)))
+for var in forcing:
+    forcing[var].encoding = {}
+forcing = forcing.chunk(dict(time=1))
 
 logger.info("Preparing forcing data")
 logger.debug(forcing)
