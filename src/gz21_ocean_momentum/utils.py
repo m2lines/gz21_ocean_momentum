@@ -119,7 +119,7 @@ def select_run(
                         the store"
         )
     print(mlflow_runs[cols])
-    id_ = int(input("Run id?") or default_selection)
+    id_ = int(input("Select row number (first column)") or default_selection)
     if id_ < 0:
         return 0
     return mlflow_runs.loc[id_, :]

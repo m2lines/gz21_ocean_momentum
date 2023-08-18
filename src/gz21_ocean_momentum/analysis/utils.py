@@ -18,7 +18,9 @@ from typing import Optional
 from scipy.ndimage import gaussian_filter
 from data.pangeo_catalog import get_patch, get_whole_data
 from cartopy.crs import PlateCarree
+import yaml
 
+from data.utils import load_training_datasets
 
 from enum import Enum
 
@@ -582,8 +584,7 @@ def apply_complete_mask(array, pred, uv_plotter):
     return array
 
 
-def plot_training_subdomains(
-    run_id,
+def plot_training_subdomains(   
     global_plotter: GlobalPlotter,
     alpha=0.5,
     bg_variable=None,
@@ -595,15 +596,13 @@ def plot_training_subdomains(
     **plot_kwd_args,
 ):
     """
-    Plots the training subdomains used for a given training run. Retrieves
-    those subdomains from the run's parameters. Additionally, provide the
+    Plots the training subdomains used for a training run. Retrieves
+    those subdomains from the training_subdomains.yaml file. Additionally, provide the
     latex code of a table with the latitudes and longitudes of each
     subdomain.
 
     Parameters
     ----------
-    run_id : str
-        Id of the training run.
     global_plotter : GlobalPlotter
         DESCRIPTION.
     alpha : TYPE, optional
@@ -618,12 +617,8 @@ def plot_training_subdomains(
     None.
 
     """
-    # First retrieve the run's data
-    run = mlflow.get_run(run_id)
-    run_params = run.data.params
-    data_ids = run_params["source.run_id"].split("/")
     # retrieve the latex code for the table from file
-    with open("analysis/latex_table.txt") as f:
+    with open("/home/marion/workspace/gz21_ocean_momentum/src/gz21_ocean_momentum/analysis/latex_table.txt") as f:
         lines = f.readlines()
         latex_start = "".join(lines[:3])
         latex_line = lines[4]
@@ -632,32 +627,37 @@ def plot_training_subdomains(
     subdomain_names = "ABCDE"
     # Plot the map
     ax = global_plotter.plot(bg_variable, *plot_args, **plot_kwd_args)
-    for i, data_id in enumerate(data_ids):
-        # Recover the coordinates of the rectangular subdomain
-        run = mlflow.get_run(data_id)
-        run_params = run.data.params
-        lat_min, lat_max = run_params["lat_min"], run_params["lat_max"]
-        lon_min, lon_max = run_params["long_min"], run_params["long_max"]
-        lat_min, lat_max = float(lat_min), float(lat_max)
-        lon_min, lon_max = float(lon_min), float(lon_max)
-        x, y = lon_min, lat_min
-        width, height = lon_max - lon_min, lat_max - lat_min
-        ax.add_patch(
-            Rectangle(
-                (x, y),
-                width,
-                height,
-                facecolor=facecolor,
-                edgecolor=edgecolor,
-                linewidth=linewidth,
-                fill=fill,
-                alpha=alpha,
+    
+    # Recover the coordinates of the rectangular subdomain
+    with open('../../training_subdomains.yaml', encoding="utf-8") as config_file:
+        subdomains = yaml.full_load(config_file)
+        for i in range(len(subdomains)):
+            lat_min = dict(subdomains[i][1])['lat_min']
+            lat_max = dict(subdomains[i][1])['lat_max']
+            lon_min = dict(subdomains[i][1])['lon_min']
+            lon_max = dict(subdomains[i][1])['lon_max']
+
+            lat_min, lat_max = float(lat_min), float(lat_max)
+            lon_min, lon_max = float(lon_min), float(lon_max)
+            x, y = lon_min, lat_min
+            width, height = lon_max - lon_min, lat_max - lat_min
+            ax.add_patch(
+                Rectangle(
+                    (x, y),
+                    width,
+                    height,
+                    facecolor=facecolor,
+                    edgecolor=edgecolor,
+                    linewidth=linewidth,
+                    fill=fill,
+                    alpha=alpha,
+                )
             )
-        )
-        # Add the table line
-        lat_range = str(lat_min) + "\\degree, " + str(lat_max) + "\\degree"
-        lon_range = str(lon_min) + "\\degree, " + str(lon_max) + "\\degree"
-        latex_lines.append(latex_line.format(subdomain_names[i], lat_range, lon_range))
+            # Add the table line
+            lat_range = str(lat_min) + "\\degree, " + str(lat_max) + "\\degree"
+            lon_range = str(lon_min) + "\\degree, " + str(lon_max) + "\\degree"
+            latex_lines.append(latex_line.format(subdomain_names[i], lat_range, lon_range))
+            
     latex_lines = "".join(latex_lines)
     latex = "".join((latex_start, latex_lines, latex_end))
     print(latex)
