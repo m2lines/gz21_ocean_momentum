@@ -11,6 +11,7 @@ import tempfile
 from dask.diagnostics import ProgressBar
 import numpy as np
 import mlflow
+import xarray as xr
 
 import torch
 from torch.utils.data import DataLoader
@@ -100,12 +101,18 @@ description = (
     "Allows to set training parameters via the CLI."
 )
 parser = argparse.ArgumentParser(description=description)
+
+# access input forcing data via MLflow
 parser.add_argument(
-    "exp_id",
+    "--exp_id",
     type=int,
     help="Experiment id of the source dataset containing the " "training data.",
 )
-parser.add_argument("run_id", type=str, help="Run id of the source dataset")
+parser.add_argument("--run_id", type=str, help="Run id of the source dataset")
+
+# access input forcing data via absolute filepath
+parser.add_argument("--forcing-data-path", type=str, help="Filepath of the forcing data")
+
 parser.add_argument("--batchsize", type=int, default=8)
 parser.add_argument("--n_epochs", type=int, default=100)
 parser.add_argument(
@@ -161,13 +168,35 @@ parser.add_argument(
 )
 params = parser.parse_args()
 
+def try_get_forcing_data_filepath(params):
+    """
+    Try to get the forcing data filepath to use from the provided command line
+    options.
 
-# ------------------------------------------------------
-# LOG THE EXPERIMENT_ID AND RUN_ID OF THE SOURCE DATASET
-# ------------------------------------------------------
-mlflow.log_param("source.experiment_id", params.exp_id)
-mlflow.log_param("source.run_id", params.run_id)
+    Returns a filepath which should be a zarr dataset. Correctness is not
+    asserted, so the filepath may not exist or may not be a valid zarr dataset.
 
+    TODO bit wonky the way we do mutual exclusion.
+    """
+    if params.run_id is not None and params.exp_id is not None:
+        if params.forcing_data_path is not None:
+            raise argparse.ArgumentError("overlapping options provided (--forcing-data-path and --exp-id)")
+
+        # got run_id and exp_id: try to use
+        # TODO we don't actually use exp_id
+        mlflow.log_param("source.exp_id", params.exp_id)
+        mlflow.log_param("source.run_id", params.run_id)
+
+        mlflow_client = mlflow.tracking.MlflowClient()
+        return mlflow_client.download_artifacts(params.run_id, "forcing")
+
+    if params.forcing_data_path is not None:
+        return params.forcing_data_path
+
+    # if we get here, neither options were provided
+    raise argparse.ArgumentError("require one of --forcing-data-path or --run-id")
+
+forcings_path = try_get_forcing_data_filepath(params)
 
 # --------------------------
 # SET UP TRAINING PARAMETERS
@@ -226,7 +255,7 @@ print("Selected device type: ", device_type.value)
 # LOAD TRAINING DATA
 # ------------------
 # Extract the run ids for the datasets to use in training
-global_ds = load_data_from_run(params.run_id)
+global_ds = xr.open_zarr(forcings_path)
 # Load data from the store, according to experiment id and run id
 xr_datasets = load_training_datasets(global_ds, "training_subdomains.yaml")
 # Split into train and test datasets
