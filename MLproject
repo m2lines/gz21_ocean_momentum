@@ -5,6 +5,7 @@ name: cmip2_6
 entry_points:
   main:
     parameters:
+      tmpdir: {type: string, default: None}
       ntimes : {type: float, default: 10000}
       CO2: {type: float, default: 0}
       lat_min : float
@@ -14,7 +15,11 @@ entry_points:
       factor: {type: float, default: 0}
       chunk_size: {type: string, default: 50}
       global: {type: str, default: 0}
-    command: "python src/gz21_ocean_momentum/cmip26.py {lat_min} {lat_max} {long_min} {long_max} --CO2 {CO2} --ntimes {ntimes} --factor {factor} --chunk_size {chunk_size} --global_ {global}" 
+    command: "python src/gz21_ocean_momentum/cmip26.py
+        {lat_min} {lat_max} {long_min} {long_max}
+        --CO2 {CO2} --ntimes {ntimes} --factor {factor}
+        --chunk_size {chunk_size} --global_ {global}
+        --tmpdir {tmpdir}"
 
   train:
     parameters:

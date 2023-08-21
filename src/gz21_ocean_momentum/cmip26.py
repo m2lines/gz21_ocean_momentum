@@ -23,7 +23,6 @@ from data.utils import cyclize_dataset
 from data.coarse import eddy_forcing
 from data.pangeo_catalog import get_patch
 import logging
-import tempfile
 
 # obtain logging config from LOGGING_LEVEL environment variable
 # e.g. `LOGGING_LEVEL=20 python cmip26.py ...`
@@ -43,11 +42,14 @@ DESCRIPTION = "Read data from the CM2.6 and \
         apply coarse graining. Stores the resulting dataset into an MLFLOW \
         experiment within a specific run."
 
-data_location = tempfile.mkdtemp()
-logger.info(f"working dir: {data_location}")
-
 # Parse the command-line parameters
 parser = argparse.ArgumentParser(description=DESCRIPTION)
+parser.add_argument(
+    "--tmpdir",
+    default=None,
+    type=str,
+    help="directory to place temporary working directory in (may need many GB free)"
+)
 parser.add_argument(
     "bounds",
     type=float,
@@ -85,6 +87,10 @@ parser.add_argument(
 )
 params = parser.parse_args()
 
+if not os.path.isdir(params.tmpdir):
+    raise RuntimeError(f"tmpdir is not an existing directory: {params.tmpdir}")
+data_location = tempfile.mkdtemp(dir=params.tmpdir)
+logger.info(f"working dir: {data_location}")
 
 # Retrieve the patch of data specified in the command-line args
 patch_data, grid_data = get_patch(
