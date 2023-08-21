@@ -18,8 +18,9 @@ entry_points:
 
   train:
     parameters:
-      exp_id : {type: float, default: 0}
-      run_id : {type: string}
+      forcing_data_path: {type: path, default: None}
+      #exp_id : {type: float, default: 0}
+      #run_id : {type: string}
       batchsize : {type : float, default : 8}
       learning_rate : {type : string, default : 0\1e-3}
       n_epochs : {type : float, default : 100}
@@ -35,6 +36,7 @@ entry_points:
       submodel : {type: string, default : transform3}
       features_transform_cls_name : {type : string, default : None}
       targets_transform_cls_name : {type : string, default : None}
-    command: "python src/gz21_ocean_momentum/trainScript.py {exp_id} {run_id} --batchsize {batchsize} --learning_rate {learning_rate} --n_epochs {n_epochs} --train_split {train_split} --test_split {test_split} --time_indices {time_indices} --printevery {print_every} --weight_decay {weight_decay} --model_module_name {model_module_name} --model_cls_name {model_cls_name} --loss_cls_name {loss_cls_name}
+    #command: "python src/gz21_ocean_momentum/trainScript.py {exp_id} {run_id} --batchsize {batchsize} --learning_rate {learning_rate} --n_epochs {n_epochs} --train_split {train_split} --test_split {test_split} --time_indices {time_indices} --printevery {print_every} --weight_decay {weight_decay} --model_module_name {model_module_name} --model_cls_name {model_cls_name} --loss_cls_name {loss_cls_name}
+    command: "python src/gz21_ocean_momentum/trainScript.py --forcing-data-path {forcing_data_path} --batchsize {batchsize} --learning_rate {learning_rate} --n_epochs {n_epochs} --train_split {train_split} --test_split {test_split} --time_indices {time_indices} --printevery {print_every} --weight_decay {weight_decay} --model_module_name {model_module_name} --model_cls_name {model_cls_name} --loss_cls_name {loss_cls_name}
     --transformation_cls_name {transformation_cls_name} --submodel {submodel} --features_transform_cls_name {features_transform_cls_name} --targets_transform_cls_name {targets_transform_cls_name}"
     
