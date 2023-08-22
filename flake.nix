@@ -17,12 +17,12 @@
      rec {
        inherit overlay overlays;
        devShell = (pkgs.buildFHSUserEnv {
-         name = "poetry-env";
+         name = "python";
          runScript = "zsh";
          targetPkgs = pkgs: [
-           pkgs.python3
-           pkgs.python3Packages.pip
-           pkgs.python3Packages.virtualenv
+           pkgs.python311
+           pkgs.python311.pkgs.pip
+           pkgs.python311.pkgs.virtualenv
 
            pkgs.poetry
 
