@@ -65,7 +65,7 @@ def download_cm2_6(
         ) -> Tuple[xr.Dataset, xr.Dataset]:
     """Run data step on CM2.6 dataset."""
     catalog = intake.open_catalog(catalog_url)
-    grid = catalog.ocean.GFDL_CM2_6.GFDL_CM2_6_control_ocean_surface
+    grid = catalog.ocean.GFDL_CM2_6.GFDL_CM2_6_grid
     grid = grid.to_dask()
     if co2_increase:
         surface_fields = catalog.ocean.GFDL_CM2_6.GFDL_CM2_6_control_ocean_surface

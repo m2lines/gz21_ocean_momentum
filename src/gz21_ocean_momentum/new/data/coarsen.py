@@ -118,6 +118,8 @@ def advections(u_v_field: xr.Dataset, grid_data: xr.Dataset):
         "xu_ocean": u_v_field.coords["xu_ocean"],
         "yu_ocean": u_v_field.coords["yu_ocean"],
     }
+    # TODO got "ValueError: zero-size array to reduction operation fmin which has
+    # no identity" when given 0 bounding box
     gradient_x = gradient_x.interp(interp_coords)
     gradient_y = gradient_y.interp(interp_coords)
     u, v = u_v_field["usurf"], u_v_field["vsurf"]
