@@ -1,4 +1,6 @@
+from dataclasses import dataclass
 from typing import assert_never
+from typing import Optional
 from typing import Literal
 from typing import Tuple
 import enum
@@ -21,15 +23,18 @@ class BoundingBox():
     long_min: float
     long_max: float
 
-def download_cmip(
+def preprocess(
         grid,
         surface_fields,
         bounding_box: Optional[BoundingBox],
-        ntimes,
+        ntimes: Optional[int],
         cyclize: bool,
         factor: int,
         *selected_vars: str,
         ) -> Tuple[xr.Dataset, xr.Dataset]:
+    """
+    Perform various preprocessing on a dataset.
+    """
 
     # transform non-primary coords into vars
     grid = grid.reset_coords()[["dxu", "dyu", "wet"]]
@@ -45,18 +50,22 @@ def download_cmip(
     if ntimes is not None:
         surface_fields = surface_fields.isel(time=slice(0, ntimes))
 
-    if len(selected_vars) is not 0:
+    if len(selected_vars) != 0:
         surface_fields = surface_fields[list(selected_vars)]
 
     if cyclize:
-        # make the dataset cyclic along longitude
         logger.info("Cyclic data... Making the dataset cyclic along longitude...")
         surface_fields = cyclize_dataset(surface_fields, "xu_ocean", factor)
         grid = cyclize_dataset(grid, "xu_ocean", factor)
 
-        # Rechunk along the cyclized dimension
+        # rechunk along the cyclized dimension
         surface_fields = surface_fields.chunk({"xu_ocean": -1})
         grid = grid.chunk({"xu_ocean": -1})
+
+    # TODO should this be earlier? later? never? ???
+    logger.debug("Getting grid data locally")
+    # grid data is saved locally, no need for dask
+    grid_data = grid_data.compute()
 
     return surface_fields, grid
 
@@ -65,6 +74,6 @@ def prepare_cmip(resolution_degrading_factor, make_cyclic):
 
 def compute_forcing(resolution_degrading_factor):
     """
-    Returns an xarray.
+    Returns an xarray. (TODO dataset or dataarray?)
     """
     return 0
