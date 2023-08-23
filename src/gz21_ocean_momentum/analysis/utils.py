@@ -4,6 +4,7 @@ Created on Tue Feb  4 14:00:45 2020
 
 @author: Arthur
 """
+import os, sys
 import numpy as np
 import mlflow
 from mlflow.tracking import client
@@ -618,7 +619,7 @@ def plot_training_subdomains(
 
     """
     # retrieve the latex code for the table from file
-    with open("/home/marion/workspace/gz21_ocean_momentum/src/gz21_ocean_momentum/analysis/latex_table.txt") as f:
+    with open("analysis/latex_table.txt") as f:
         lines = f.readlines()
         latex_start = "".join(lines[:3])
         latex_line = lines[4]
