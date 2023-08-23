@@ -154,6 +154,9 @@ parser.add_argument(
 )
 parser.add_argument("--submodel", type=str, default="transform1")
 parser.add_argument(
+    "--device", type=str, default="auto", help="Device to use for training."
+)
+parser.add_argument(
     "--features_transform_cls_name", type=str, default="None", help="Depreciated"
 )
 parser.add_argument(
@@ -216,9 +219,11 @@ for directory in [FIGURES_DIRECTORY, MODELS_DIRECTORY, MODEL_OUTPUT_DIR]:
     _check_dir(os.path.join(data_location, directory))
 
 # Device selection. If available we use the GPU.
-# TODO Allow CLI argument to select the GPU
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-device_type = DEVICE_TYPE.GPU if torch.cuda.is_available() else DEVICE_TYPE.CPU
+device = torch.device(
+    params.device if params.device != "auto" else
+    "cuda:0" if torch.cuda.is_available() else "cpu"
+)
+device_type = DEVICE_TYPE.CPU if device.type == 'cpu' else DEVICE_TYPE.GPU
 print("Selected device type: ", device_type.value)
 
 
