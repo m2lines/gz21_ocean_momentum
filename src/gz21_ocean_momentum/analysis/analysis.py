@@ -14,6 +14,7 @@ only one figure.
 import numpy as np
 import matplotlib.pyplot as plt
 from os.path import join
+from functools import wraps
 
 data_location = "/data/ag7531/"
 figures_directory = "figures"
@@ -23,15 +24,28 @@ def allow_hold_on(f):
     """Decorator that allows to specify a hold_on parameter that makes the
     plotting use the current figure instead of creating a new one."""
 
-    def wrapper_f(*args, **kargs):
-        if "hold_on" in kargs and kargs["hold_on"]:
+    @wraps(f)  # preserves the name and docstring of the function
+    def wrapped(*args, **kargs):
+        if kargs.pop("hold_on", False):
             plt.gcf()
-            del kargs["hold_on"]
         else:
             plt.figure()
         f(*args, **kargs)
 
-    return wrapper_f
+    return wrapped
+
+
+def allow_save_fig(f):
+    """Decorator that allows to specify a save_file parameter that saves the plot."""
+
+    @wraps(f)
+    def wrapped(*args, **kargs):
+        save_file = kargs.pop("save_file", None)
+        f(*args, **kargs)
+        if save_file:  # save_file gives the filename of the saved figure
+            plt.savefig(join(data_location, figures_directory, save_file))
+
+    return wrapped
 
 
 class TimeSeriesForPoint:
@@ -71,6 +85,7 @@ class TimeSeriesForPoint:
         return self._time_series["true values"]
 
     @allow_hold_on
+    @allow_save_fig
     def plot_pred_vs_true(self):
         """Plots the predictions and the true target accross time for the
         instance's point."""
@@ -87,4 +102,4 @@ class TimeSeriesForPoint:
     def save_fig(self):
         if not self._fig:
             self.plot_pred_vs_true()
-        plt.savefig(join(data_location, figures_directory, self.name))
+        plt.savefig(join(data_location, figures_directory, self._name))
