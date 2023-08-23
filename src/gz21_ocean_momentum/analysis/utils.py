@@ -4,7 +4,6 @@ Created on Tue Feb  4 14:00:45 2020
 
 @author: Arthur
 """
-import os, sys
 import numpy as np
 import mlflow
 from mlflow.tracking import client
