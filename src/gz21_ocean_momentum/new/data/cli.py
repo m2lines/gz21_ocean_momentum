@@ -36,4 +36,5 @@ forcings = step.preprocess_and_compute_forcings(
         grid, surface_fields, bounding_box, options.ntimes, options.cyclize,
         options.factor, "usurf", "vsurf")
 
+# TODO: if path exists, gets a zarr.errors.ContainsGroupError
 forcings.to_zarr(options.out_dir)
