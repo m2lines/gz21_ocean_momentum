@@ -1,6 +1,6 @@
-import gz21_ocean_momentum.new.data.step as step
-import gz21_ocean_momentum.new.common.cli as cli
-from   gz21_ocean_momentum.new.common.bounding_box import BoundingBox
+import gz21_ocean_momentum.step.data.lib as step
+import gz21_ocean_momentum.common.cli as cli
+from   gz21_ocean_momentum.common.bounding_box import BoundingBox
 
 import configargparse
 
