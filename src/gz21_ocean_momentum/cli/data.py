@@ -1,4 +1,4 @@
-import gz21_ocean_momentum.step.data.lib as step
+import gz21_ocean_momentum.step.data.lib as lib
 import gz21_ocean_momentum.common.cli as cli
 from   gz21_ocean_momentum.common.bounding_box import BoundingBox
 
@@ -36,7 +36,7 @@ pangeo-data/pangeo-datastore/\
 master/\
 intake-catalogs/master.yaml"
 
-surface_fields, grid = step.download_cm2_6(CATALOG_URL, options.co2_increase)
+surface_fields, grid = lib.download_cm2_6(CATALOG_URL, options.co2_increase)
 
 surface_fields = surface_fields.sel(
     xu_ocean=slice(bounding_box.long_min, bounding_box.long_max),
@@ -48,7 +48,7 @@ grid = grid.sel(
 if options.ntimes is not None:
     surface_fields = surface_fields.isel(time=slice(options.ntimes))
 
-forcings = step.preprocess_and_compute_forcings(
+forcings = lib.preprocess_and_compute_forcings(
         grid, surface_fields, options.cyclize,
         options.factor, "usurf", "vsurf")
 
