@@ -14,13 +14,12 @@ entry_points:
       factor: {type: float, default: 0}
       chunk_size: {type: string, default: 50}
       global: {type: str, default: 0}
-    command: "python src/gz21_ocean_momentum/cmip26.py {lat_min} {lat_max} {long_min} {long_max} --CO2 {CO2} --ntimes {ntimes} --factor {factor} --chunk_size {chunk_size} --global_ {global}" 
+    command: "python src/gz21_ocean_momentum/cmip26.py {lat_min} {lat_max} {long_min} {long_max} --CO2 {CO2} --ntimes {ntimes} --factor {factor} --chunk_size {chunk_size} --global_ {global}"
 
   train:
     parameters:
-      forcing_data_path: {type: path, default: None}
-      #exp_id : {type: float, default: 0}
-      #run_id : {type: string}
+      forcing_data_path: {type: string, default: None}
+      run_id : {type: string, default: None}
       batchsize : {type : float, default : 8}
       learning_rate : {type : string, default : 0\1e-3}
       n_epochs : {type : float, default : 100}
@@ -36,8 +35,8 @@ entry_points:
       submodel : {type: string, default : transform3}
       features_transform_cls_name : {type : string, default : None}
       targets_transform_cls_name : {type : string, default : None}
-        #{exp_id} {run_id}
     command: "python src/gz21_ocean_momentum/trainScript.py
+        --run-id {run_id}
         --forcing-data-path {forcing_data_path}
         --batchsize {batchsize} --learning_rate {learning_rate}
         --n_epochs {n_epochs} --train_split {train_split}

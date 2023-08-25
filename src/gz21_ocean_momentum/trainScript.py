@@ -43,6 +43,8 @@ import models.submodels
 
 from utils import TaskInfo
 
+from typing import Any
+
 torch.autograd.set_detect_anomaly(True)
 
 
@@ -163,33 +165,39 @@ parser.add_argument(
 )
 params = parser.parse_args()
 
-def try_get_forcing_data_filepath(params):
-    """
-    Try to get the forcing data filepath to use from the provided command line
-    options.
+def argparse_get_mlflow_artifact_path_or_direct_or_fail(
+        mlflow_artifact_name: str, params: dict[str, Any]
+        ) -> str:
+    """Obtain a filepath either from an MLflow run ID and artifact name, or a
+    direct path if provided.
 
-    Returns a filepath which should be a zarr dataset. Correctness is not
-    asserted, so the filepath may not exist or may not be a valid zarr dataset.
-    """
-    if params.run_id is not None:
-        if params.forcing_data_path is not None:
-            # got both --run-id and --forcing-data-path: bad
-            raise argparse.ArgumentError("overlapping options provided (--forcing-data-path and --exp-id)")
+    params must have keys run_id and forcing_data_path.
 
-        # got only --run-id: obtain path via MLflow
+    Only one of run_id and path should be non-None.
+
+    Note that the filepath is not checked for validity (but for run_id, MLflow
+    probably will assert that it exists).
+
+    Effectful: errors result in immediate program exit.
+    """
+    if params.run_id is not None and params.run_id != "None":
+        if params.forcing_data_path is not None and params.forcing_data_path != "None":
+            # got run ID and direct path: bad
+            raise TypeError("overlapping options provided (--forcing-data-path and --exp-id)")
+
+        # got only run ID: obtain path via MLflow
         mlflow.log_param("source.run-id", params.run_id)
-
         mlflow_client = mlflow.tracking.MlflowClient()
-        return mlflow_client.download_artifacts(params.run_id, "forcing")
+        return mlflow_client.download_artifacts(params.run_id, mlflow_artifact_name)
 
-    if params.forcing_data_path is not None:
-        # got only --forcing-data-path: use
+    if params.forcing_data_path is not None and params.forcing_data_path != "None":
+        # got only direct path: use
         return params.forcing_data_path
 
     # if we get here, neither options were provided
-    raise argparse.ArgumentError("require one of --forcing-data-path or --run-id")
+    raise TypeError("require one of --run-id or --forcing-data-path")
 
-forcings_path = try_get_forcing_data_filepath(params)
+forcings_path = argparse_get_mlflow_artifact_path_or_direct_or_fail("forcing", params)
 
 # --------------------------
 # SET UP TRAINING PARAMETERS
