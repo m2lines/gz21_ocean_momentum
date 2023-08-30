@@ -16,7 +16,7 @@ class BoundingBox():
     long_min: float
     long_max: float
 
-def load_bounding_boxes_yaml(path: str) -> List[BoundingBox]:
+def load_bounding_boxes_yaml(path: str) -> list[BoundingBox]:
     """Load a YAML file of bounding boxes.
 
     The YAML value must be a list where each element contains `float` fields

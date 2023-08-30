@@ -23,7 +23,7 @@ def path_is_nonexist_or_empty_dir(path) -> bool:
         # path does not exist: all good
         return True
 
-def fail(err_code: int, msg: str, hint: Optional[str]):
+def fail(err_code: int, msg: str, hint: Optional[str] = None):
     """Exit the program with the given message and error code.
 
     Also prints a hint (extra message) afterwards if provided.
