@@ -6,15 +6,14 @@ entry_points:
   main:
     parameters:
       ntimes : {type: float, default: 10000}
-      CO2: {type: float, default: 0}
+      #CO2: {type: float, default: 0} # unclear how to do flags with mlflow
       lat_min : float
       lat_max : float
       long_min : float
       long_max : float
       factor: {type: float, default: 0}
-      chunk_size: {type: string, default: 50}
-      global: {type: str, default: 0}
-    command: "python src/gz21_ocean_momentum/cmip26.py {lat_min} {lat_max} {long_min} {long_max} --CO2 {CO2} --ntimes {ntimes} --factor {factor} --chunk_size {chunk_size} --global_ {global}"
+      #global: {type: str, default: 0} # unclear how to do flags with mlflow
+    command: "python src/gz21_ocean_momentum/cli/data.py --lat-min {lat_min} --lat-max {lat_max} --long-min {long_min} --long-max {long_max} --ntimes {ntimes} --factor {factor}"
 
   train:
     parameters:
@@ -35,9 +34,11 @@ entry_points:
       submodel : {type: string, default : transform3}
       features_transform_cls_name : {type : string, default : None}
       targets_transform_cls_name : {type : string, default : None}
+      subdomains_file: {type: string, default: training_subdomains.yaml}
     command: "python src/gz21_ocean_momentum/trainScript.py
         --run-id {run_id}
         --forcing-data-path {forcing_data_path}
+        --subdomains-file {subdomains_file}
         --batchsize {batchsize} --learning_rate {learning_rate}
         --n_epochs {n_epochs} --train_split {train_split}
         --test_split {test_split} --time_indices {time_indices}
