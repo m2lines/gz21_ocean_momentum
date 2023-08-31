@@ -27,7 +27,6 @@ from data.datasets import (
     Subset_,
     ComposeTransforms,
 )
-from data.utils import load_training_datasets, load_data_from_run
 
 # Some utils functions
 from train.utils import (
@@ -42,6 +41,9 @@ from models import transforms, submodels
 
 
 from utils import TaskInfo
+
+import gz21_ocean_momentum.step.train.lib as lib
+from   gz21_ocean_momentum.common.bounding_box import load_bounding_boxes_yaml
 
 from typing import Any
 
@@ -169,6 +171,9 @@ parser.add_argument(
 parser.add_argument(
     "--targets_transform_cls_name", type=str, default="None", help="Depreciated"
 )
+parser.add_argument(
+    "--subdomains-file", type=str, required=True, help="YAML file describing subdomains to use (bounding boxes. TODO format"
+)
 params = parser.parse_args()
 
 
@@ -265,10 +270,9 @@ print("Selected device type: ", device_type.value)
 # ------------------
 # LOAD TRAINING DATA
 # ------------------
-# Extract the run ids for the datasets to use in training
 global_ds = xr.open_zarr(forcings_path)
-# Load data from the store, according to experiment id and run id
-xr_datasets = load_training_datasets(global_ds, "training_subdomains.yaml")
+subdomains = load_bounding_boxes_yaml(params.subdomains_file)
+xr_datasets = lib.select_subdomains(global_ds, subdomains)
 # Split into train and test datasets
 datasets, train_datasets, test_datasets = [], [], []
 
