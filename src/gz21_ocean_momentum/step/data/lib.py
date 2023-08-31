@@ -44,17 +44,22 @@ def preprocess_and_compute_forcings(
     # calculate eddy-forcing dataset for that particular patch
     return coarsen.eddy_forcing(surface_fields, grid, resolution_degrading_factor)
 
-def download_cm2_6(
-        catalog_url: str,
+def retrieve_cm2_6(
+        catalog_uri: str,
         co2_increase: bool,
         ) -> Tuple[xr.Dataset, xr.Dataset]:
-    catalog = intake.open_catalog(catalog_url)
-    grid = catalog.ocean.GFDL_CM2_6.GFDL_CM2_6_grid
+    """Retrieve the CM2.6 dataset via the given intake catalog URI.
+
+    Will download if given an `http://` URI. Will use local files such as
+    `/home/user/catalog.yaml` directly.
+    """
+    catalog = intake.open_catalog(catalog_uri)
+    grid = catalog.GFDL_CM2_6.GFDL_CM2_6_grid
     grid = grid.to_dask()
     if co2_increase:
-        surface_fields = catalog.ocean.GFDL_CM2_6.GFDL_CM2_6_control_ocean_surface
+        surface_fields = catalog.GFDL_CM2_6.GFDL_CM2_6_control_ocean_surface
     else:
-        surface_fields = catalog.ocean.GFDL_CM2_6.GFDL_CM2_6_one_percent_ocean_surface
+        surface_fields = catalog.GFDL_CM2_6.GFDL_CM2_6_one_percent_ocean_surface
     surface_fields = surface_fields.to_dask()
     return surface_fields, grid
 
