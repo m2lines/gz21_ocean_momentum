@@ -18,6 +18,7 @@ p.add("--cyclize",  action="store_true", help="global data; make cyclic along lo
 p.add("--ntimes",   type=int,   help="number of time points to process, starting from the first. Note that the CM2.6 dataset is daily, so this would be number of days.")
 p.add("--co2-increase", action="store_true", help="use 1%% annual CO2 increase CM2.6 dataset. By default, uses control (no increase)")
 p.add("--factor",   type=int,   required=True, help="resolution degradation factor")
+p.add("--pangeo-catalog-uri", type=str, default="https://raw.githubusercontent.com/pangeo-data/pangeo-datastore/master/intake-catalogs/ocean.yaml", help="URI to Pangeo ocean dataset intake catalog file")
 
 options = p.parse_args()
 
@@ -30,13 +31,7 @@ bounding_box = BoundingBox(
         options.lat_min,  options.lat_max,
         options.long_min, options.long_max)
 
-# TODO: lock version, rather than using master?
-CATALOG_URL = "https://raw.githubusercontent.com/\
-pangeo-data/pangeo-datastore/\
-master/\
-intake-catalogs/master.yaml"
-
-surface_fields, grid = lib.download_cm2_6(CATALOG_URL, options.co2_increase)
+surface_fields, grid = lib.retrieve_cm2_6(options.pangeo_catalog_uri, options.co2_increase)
 
 surface_fields = surface_fields.sel(
     xu_ocean=slice(bounding_box.long_min, bounding_box.long_max),
