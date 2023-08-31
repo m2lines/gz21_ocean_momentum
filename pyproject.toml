@@ -35,6 +35,9 @@ dependencies = [
 
     "torch>=1.13.1",
     "progressbar2>=4.2.0" # inference/utils (but imported by trainScript)
+
+    # new CLI
+    "configargparse>=1.7",
 ]
 
 authors = [
