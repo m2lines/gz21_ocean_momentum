@@ -1,9 +1,7 @@
-name: cmip2_6
-
-# conda_env: conda.yaml
+name: gz21_ocean_momentum
 
 entry_points:
-  main:
+  data:
     parameters:
       ntimes : {type: float, default: 10000}
       #CO2: {type: float, default: 0} # unclear how to do flags with mlflow
