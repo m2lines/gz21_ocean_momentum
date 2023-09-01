@@ -4,6 +4,12 @@ from   gz21_ocean_momentum.common.bounding_box import BoundingBox
 
 import configargparse
 
+import dask.diagnostics
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # up to date as of 2023-09-01
 DEF_CATALOG_URI = "https://raw.githubusercontent.com/pangeo-data/pangeo-datastore/d684158e92fb3f3ad3b34e7dc5bba52b22a3ba80/intake-catalogs/ocean.yaml"
 
@@ -22,6 +28,7 @@ p.add("--ntimes",   type=int,   help="number of time points to process, starting
 p.add("--co2-increase", action="store_true", help="use 1%% annual CO2 increase CM2.6 dataset. By default, uses control (no increase)")
 p.add("--factor",   type=int,   required=True, help="resolution degradation factor")
 p.add("--pangeo-catalog-uri", type=str, default=DEF_CATALOG_URI, help="URI to Pangeo ocean dataset intake catalog file")
+p.add("--verbose", action="store_true", help="be more verbose (e.g. display progress)")
 
 options = p.parse_args()
 
@@ -33,6 +40,12 @@ if not cli.path_is_nonexist_or_empty_dir(options.out_dir):
 bounding_box = BoundingBox(
         options.lat_min,  options.lat_max,
         options.long_min, options.long_max)
+
+logger.info("retrieving CM2.6 dataset via Pangeo Cloud Datastore...")
+if options.co2_increase:
+    logger.info("-> using 1% annual CO2 increase dataset")
+else:
+    logger.info("-> using control dataset (no annual CO2 increase)")
 
 surface_fields, grid = lib.retrieve_cm2_6(options.pangeo_catalog_uri, options.co2_increase)
 
@@ -46,8 +59,14 @@ grid = grid.sel(
 if options.ntimes is not None:
     surface_fields = surface_fields.isel(time=slice(options.ntimes))
 
+if options.verbose:
+    dask.diagnostics.ProgressBar().register()
+
+logger.info("computing forcings...")
+
 forcings = lib.preprocess_and_compute_forcings(
         grid, surface_fields, options.cyclize,
         options.factor, "usurf", "vsurf")
 
+logger.info(f"writing forcings zarr to directory: {options.out_dir}")
 forcings.to_zarr(options.out_dir)
