@@ -1,4 +1,6 @@
 # Jupyter notebooks
+[gz21-paper-code-zenodo]: https://zenodo.org/record/5076046#.ZF4ulezMLy8
+[gz21-paper-agupubs]: https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2021MS002534
 These Jupyter notebooks were created & used during original development of the
 code and associated paper: [Arthur P. Guillaumin, Laure Zanna (2021).
 Stochastic-deep learning parameterization of ocean momentum
