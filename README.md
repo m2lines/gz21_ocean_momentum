@@ -22,30 +22,28 @@ refreshing the code and making it available for easy reuse by others._
 
 ## Architecture
 The model is written in Python, using PyTorch for the CNN. We provide 3 separate
-"stages", which are run using different commands and arguments:
+"steps", which are run using different commands and arguments:
 
 * data processing: downloads part of CM2.6 dataset and processes
 * model training: train model on processed data
 * model testing: tests the trained model on an unseen region
 
-For more details on each of the stages, see the [`docs`](docs/) directory.
+For more details on each of the steps, see the [`docs`](docs/) directory.
 
 ## Usage
 ### Dependencies
 Python 3.9 or newer is required. We primarily test on Python 3.11.
 
-#### Python
 To avoid any conflicts with local packages, we recommend using a virtual
 environment. In the root directory:
 
+    python -m venv venv
+
+or using [virtualenv](https://virtualenv.pypa.io/en/latest/):
+
     virtualenv venv
-    source venv/bin/activate
 
-See [virtualenv docs](https://virtualenv.pypa.io/en/latest/) for more details.
-
-Alternatively, if you are using python to manage virtual environments using the
-`venv` module, then the first line above can be replaced by `python -m venv
-venv` (where the second `venv` is the virtual environment name).
+Then load with `source venv/bin/activate`.
 
 With `pip` installed, run the following in the root directory:
 
@@ -57,106 +55,76 @@ With `pip` installed, run the following in the root directory:
 that the Poetry build is not actively supported-- if it fails, check that the
 dependencies are up-to-date with the setuptools `pyproject.toml`.)*
 
-#### System
-Some graphing code uses cartopy, which requires [GEOS](https://libgeos.org/). To
-install on Ubuntu:
-
-    sudo apt install libgeos-dev
-
-On macOS, via Homebrew:
-
-    brew install geos
-
-On Windows, consider using MSYS2 to install the library in a Linux-esque manner.
-The [mingw-w64-x86_64-geos](https://packages.msys2.org/package/mingw-w64-x86_64-geos)
-package should be appropriate. If this doesn't work or isn't suitable, cartopy
-or GEOS might have more ideas in their documentation.
-
 ### Running unit tests
 There are a handful of unit tests using pytest, in the [`tests`](tests/)
-directory. These assert some operations and methods used in the stages. They may
+directory. These assert some operations and methods used in the steps. They may
 be run in the regular method:
 
     pytest
 
-### Running stages
+### Running steps
 Execute these commands from the repository root.
 
 See [`docs`](docs/) directory for more details.
 
+For command-line option explanation, run the appropriate step with `--help` e.g.
+`python src/gz21_ocean_momentum/cli/data.py --help`.
+
+#### MLflow specifics
 MLflow parameters:
 
 * `experiment-name`: "tag" to use for MLflow experiment. Used to share artifacts
-  between stages, i.e. you should run the training stage with a name you used to
-  run the data processing stage.
+  between steps, i.e. you should run the training step with a name you used to
+  run the data processing step.
 * `exp_id`: TODO: one way MLflow distinguishes runs. May need to set to share
-  artifacts between stages...?
+  artifacts between steps...?
 * `run_id`: TODO: one way MLflow distinguishes runs. May need to set to share
-  artifacts between stages...?
+  artifacts between steps...?
 
-For old MLflow versions (TODO: which?), replace the `--env-manager=local` flag
-with `--no-conda`
+For MLflow versions older than 1.25.0, replace the `--env-manager=local` flag
+with `--no-conda`.
 
-In order to make sure that data in- and output locations are well-defined, the 
-environment variable `MLFLOW_TRACKING_URI` must be set to the intended data location:
+When invoking steps with `mlflow run`, you may need to control the path used for
+`mlruns` (which stores outputs of runs). You may set the `MLFLOW_TRACKING_URI`
+environment variable to achieve this. In Linux:
 
     export MLFLOW_TRACKING_URI="/path/to/data/dir"
 
-in Linux, or 
-```
-%env  MLFLOW_TRACKING_URI /path/to/data/dir
-```
+In a Jupyter Notebook:
 
-in a Jupyter Notebook, or
+    %env MLFLOW_TRACKING_URI /path/to/data/dir
 
-```
+In Python:
+
+```python
 import os
 os.environ['MLFLOW_TRACKING_URI'] = '/path/to/data/dir'
 ```
-in Python.
 
 #### Data processing
-The [`cmip26.py`](src/gz21_ocean_momentum/cmip26.py) script runs the data
-processing stage. It generates coarse surface velocities and diagnosed forcings
-from the CM2.6 dataset and saves them to disk. You may configure certain
-parameters such as bounds (lat/lon) and CO2 level.
+The CLI into the data processing step is at
+[`cli/data.py`](src/gz21_ocean_momentum/cli/data.py). It generates coarse
+surface velocities and diagnosed forcings from the CM2.6 dataset and saves them
+to disk. You may configure certain parameters such as bounds (lat/lon) and CO2
+level.
 
 **You must configure GCP credentials to download the CM2.6 dataset used.**
 See [`docs/data.md`](docs/data.md) for more details.
 
-Relevant parameters:
-
-* `factor`: the factor definining the low-resolution grid of the generated data
-  with respect to the high-resolution grid.
-* `CO2`: 0 for control, 1 for 1% increase per year dataset.
-* `global`: TODO "make data cyclic along longitude". Set to 0; currently fails when set to 1.
-* `ntimes`: the number of days to process, knowing that the data set is at a
-  time resolution of one per day. If not specified, uses the complete dataset.
-* `lat_min`, `lat_max`, `lon_min`, `lon_max`: the spatial domain to process.
-
 Direct call (without MLflow) example:
 
-    python src/gz21_ocean_momentum/cmip26.py -85 85 -280 80 --factor 4 --ntimes 10
-
-MLflow call example:
-
-```
-mlflow run . --experiment-name <name>--env-manager=local \
--P lat_min=-80 -P lat_max=80 -P long_min=-280 -P long_max=80 \
--P factor=4 \
--P CO2=1 -P global=0 \
--P ntimes=100 \
--P chunk_size=1
-```
+    python src/gz21_ocean_momentum/cmip26.py \
+    --lat-min -80 --lat-max 80 --long-min -280 --long-max 80 \
+    --factor 4 --ntimes 100 --co2-increase
 
 Some preprocessed data is hosted on HuggingFace at
 [datasets/M2LInES/gfdl-cmip26-gz21-ocean-forcing](https://huggingface.co/datasets/M2LInES/gfdl-cmip26-gz21-ocean-forcing).
 
 #### Training
 The [`trainScript.py`](src/gz21_ocean_momentum/trainScript.py) script runs the
-model training stage. You may configure various training parameters through
+model training step. You may configure various training parameters through
 command-line arguments, such as number of training epochs, loss functions, and
-training data. (You will want to select the output from a data processing stage
+training data. (You will want to select the output from a data processing step
 for the latter.)
 
 MLflow call example:
