@@ -49,13 +49,6 @@ else:
 
 surface_fields, grid = lib.retrieve_cm2_6(options.pangeo_catalog_uri, options.co2_increase)
 
-surface_fields = surface_fields.sel(
-    xu_ocean=slice(bounding_box.long_min, bounding_box.long_max),
-    yu_ocean=slice(bounding_box.lat_min,  bounding_box.lat_max))
-grid = grid.sel(
-    xu_ocean=slice(bounding_box.long_min, bounding_box.long_max),
-    yu_ocean=slice(bounding_box.lat_min,  bounding_box.lat_max))
-
 if options.ntimes is not None:
     surface_fields = surface_fields.isel(time=slice(options.ntimes))
 
@@ -63,10 +56,17 @@ if options.verbose:
     dask.diagnostics.ProgressBar().register()
 
 logger.info("computing forcings...")
-
 forcings = lib.preprocess_and_compute_forcings(
         grid, surface_fields, options.cyclize,
         options.factor, "usurf", "vsurf")
+
+logger.info("selecting bounding box...")
+surface_fields = surface_fields.sel(
+    xu_ocean=slice(bounding_box.long_min, bounding_box.long_max),
+    yu_ocean=slice(bounding_box.lat_min,  bounding_box.lat_max))
+grid = grid.sel(
+    xu_ocean=slice(bounding_box.long_min, bounding_box.long_max),
+    yu_ocean=slice(bounding_box.lat_min,  bounding_box.lat_max))
 
 logger.info(f"writing forcings zarr to directory: {options.out_dir}")
 forcings.to_zarr(options.out_dir)
