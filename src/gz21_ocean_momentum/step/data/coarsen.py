@@ -77,6 +77,7 @@ def eddy_forcing(
     if nan_or_zero == "zero":
         # Replace zeros with nans for consistency
         forcing_coarse = forcing_coarse.where(forcing_coarse["usurf"] != 0)
+
     u_v_dataset = u_v_dataset.merge(adv)
     filtered_adv = filtered_adv.rename({"adv_x": "f_adv_x", "adv_y": "f_adv_y"})
     adv_filtered = adv_filtered.rename({"adv_x": "adv_f_x", "adv_y": "adv_f_y"})
@@ -91,6 +92,7 @@ def eddy_forcing(
             forcing[["S_x", "S_y"]],
         )
     )
+
     return forcing_coarse
 
 def advections(u_v_field: xr.Dataset, grid_data: xr.Dataset):
@@ -156,7 +158,7 @@ def spatial_filter_dataset(
     # Normalisation term, so that if the quantity we filter is constant
     # over the domain, the filtered quantity is constant with the same value
     norm = xr.apply_ufunc(
-        lambda x: gaussian_filter(x, (sigma, sigma), mode="constant"),
+        lambda x: gaussian_filter(x, sigma, mode="constant"),
         area_u,
         dask="parallelized",
         output_dtypes=[
@@ -195,6 +197,6 @@ def spatial_filter(data: np.ndarray, sigma: float):
     result = np.zeros_like(data)
     for t in range(data.shape[0]):
         data_t = data[t, ...]
-        result_t = gaussian_filter(data_t, (sigma, sigma), mode="constant")
+        result_t = gaussian_filter(data_t, sigma, mode="constant")
         result[t, ...] = result_t
     return result
