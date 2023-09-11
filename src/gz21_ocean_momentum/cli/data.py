@@ -57,7 +57,7 @@ if options.verbose:
 
 logger.info("computing forcings...")
 forcings = lib.preprocess_and_compute_forcings(
-        grid, surface_fields, options.cyclize,
+        surface_fields, grid, options.cyclize,
         options.factor, "usurf", "vsurf")
 
 logger.info("selecting bounding box...")
