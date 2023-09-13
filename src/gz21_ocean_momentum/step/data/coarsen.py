@@ -71,27 +71,18 @@ def eddy_forcing(
     forcing_coarse = forcing.coarsen(
         {"xu_ocean": int(scale_filter), "yu_ocean": int(scale_filter)}, boundary="trim"
     )
-
     forcing_coarse = forcing_coarse.mean()
 
     if nan_or_zero == "zero":
         # Replace zeros with nans for consistency
         forcing_coarse = forcing_coarse.where(forcing_coarse["usurf"] != 0)
 
-    u_v_dataset = u_v_dataset.merge(adv)
-    filtered_adv = filtered_adv.rename({"adv_x": "f_adv_x", "adv_y": "f_adv_y"})
-    adv_filtered = adv_filtered.rename({"adv_x": "adv_f_x", "adv_y": "adv_f_y"})
-    u_v_filtered = u_v_filtered.rename({"usurf": "f_usurf", "vsurf": "f_vsurf"})
-    u_v_dataset = xr.merge(
-        (
-            u_v_dataset,
-            u_v_filtered,
-            adv,
-            filtered_adv,
-            adv_filtered,
-            forcing[["S_x", "S_y"]],
-        )
-    )
+    # Specify input vs output type for each variable of the dataset. Might
+    # be used later on for training or testing.
+    forcing_coarse["S_x"].attrs["type"] = "output"
+    forcing_coarse["S_y"].attrs["type"] = "output"
+    forcing_coarse["usurf"].attrs["type"] = "input"
+    forcing_coarse["vsurf"].attrs["type"] = "input"
 
     return forcing_coarse
 

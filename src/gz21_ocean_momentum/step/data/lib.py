@@ -6,22 +6,19 @@ import intake
 from typing import Optional
 from typing import Tuple
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 def preprocess_and_compute_forcings(
-        grid: xr.Dataset,
         surface_fields: xr.Dataset,
+        grid: xr.Dataset,
         cyclize: bool,
         resolution_degrading_factor: int,
-        *selected_vars: str,
         ) -> xr.Dataset:
     """
     Perform various preprocessing on a dataset.
     """
-
-    # transform non-primary coords into vars
-    grid = grid.reset_coords()[["dxu", "dyu", "wet"]]
-
-    if len(selected_vars) != 0:
-        surface_fields = surface_fields[list(selected_vars)]
 
     if cyclize:
         # TODO logger
@@ -39,7 +36,7 @@ def preprocess_and_compute_forcings(
     # TODO logger
     #logger.debug("Getting grid data locally")
     # grid data is saved locally, no need for dask
-    grid = grid.compute()
+    #grid = grid.compute()
 
     # calculate eddy-forcing dataset for that particular patch
     return coarsen.eddy_forcing(surface_fields, grid, resolution_degrading_factor)
@@ -50,17 +47,29 @@ def retrieve_cm2_6(
         ) -> Tuple[xr.Dataset, xr.Dataset]:
     """Retrieve the CM2.6 dataset via the given intake catalog URI.
 
+    Returns a tuple of `(uv dataset, grid dataset)`.
+
     Will download if given an `http://` URI. Will use local files such as
     `/home/user/catalog.yaml` directly.
     """
+
+    logger.info("retrieving CM2.6 dataset via Pangeo Cloud Datastore...")
+
     catalog = intake.open_catalog(catalog_uri)
     grid = catalog.GFDL_CM2_6.GFDL_CM2_6_grid
     grid = grid.to_dask()
+
+    # transform non-primary coords into vars
+    grid = grid.reset_coords()[["dxu", "dyu", "wet"]]
+
     if co2_increase:
-        surface_fields = catalog.GFDL_CM2_6.GFDL_CM2_6_control_ocean_surface
-    else:
+        logger.info("(using 1% annual CO2 increase dataset)")
         surface_fields = catalog.GFDL_CM2_6.GFDL_CM2_6_one_percent_ocean_surface
+    else:
+        logger.info("(using control dataset -> no annual CO2 increase)")
+        surface_fields = catalog.GFDL_CM2_6.GFDL_CM2_6_control_ocean_surface
     surface_fields = surface_fields.to_dask()
+
     return surface_fields, grid
 
 def _cyclize(ds: xr.Dataset, coord_name: str, nb_points: int):
