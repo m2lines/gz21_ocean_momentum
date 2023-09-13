@@ -50,13 +50,12 @@ def eddy_forcing(
     # u_v_dataset['temp'] = u_v_dataset['surface_temperature'].interp(
     #     interp_coords)
 
-    scale_filter = scale / 2
     # High res advection terms
     adv = advections(u_v_dataset, grid_data)
     # Filtered advections
-    filtered_adv = spatial_filter_dataset(adv, grid_data, scale_filter)
+    filtered_adv = spatial_filter_dataset(adv, grid_data, scale/2)
     # Filtered u,v field and temperature
-    u_v_filtered = spatial_filter_dataset(u_v_dataset, grid_data, scale_filter)
+    u_v_filtered = spatial_filter_dataset(u_v_dataset, grid_data, scale/2)
     # Advection term from filtered velocity field
     adv_filtered = advections(u_v_filtered, grid_data)
     # Forcing
@@ -69,7 +68,7 @@ def eddy_forcing(
 
     # Coarsen
     forcing_coarse = forcing.coarsen(
-        {"xu_ocean": int(scale_filter), "yu_ocean": int(scale_filter)}, boundary="trim"
+        {"xu_ocean": int(scale), "yu_ocean": int(scale)}, boundary="trim"
     )
     forcing_coarse = forcing_coarse.mean()
 
