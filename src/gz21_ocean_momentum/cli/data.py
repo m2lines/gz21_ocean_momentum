@@ -2,6 +2,8 @@ import gz21_ocean_momentum.step.data.lib as lib
 import gz21_ocean_momentum.common.cli as cli
 from   gz21_ocean_momentum.common.bounding_box import BoundingBox
 
+import gz21_ocean_momentum.step.data.coarsen as coarsen
+
 import configargparse
 
 import dask.diagnostics
@@ -49,24 +51,37 @@ else:
 
 surface_fields, grid = lib.retrieve_cm2_6(options.pangeo_catalog_uri, options.co2_increase)
 
-if options.ntimes is not None:
-    surface_fields = surface_fields.isel(time=slice(options.ntimes))
-
-if options.verbose:
-    dask.diagnostics.ProgressBar().register()
-
-logger.info("computing forcings...")
-forcings = lib.preprocess_and_compute_forcings(
-        surface_fields, grid, options.cyclize,
-        options.factor, "usurf", "vsurf")
-
-logger.info("selecting bounding box...")
+logger.info("selecting input data bounding box...")
 surface_fields = surface_fields.sel(
     xu_ocean=slice(bounding_box.long_min, bounding_box.long_max),
     yu_ocean=slice(bounding_box.lat_min,  bounding_box.lat_max))
 grid = grid.sel(
     xu_ocean=slice(bounding_box.long_min, bounding_box.long_max),
     yu_ocean=slice(bounding_box.lat_min,  bounding_box.lat_max))
+
+if options.ntimes is not None:
+    surface_fields = surface_fields.isel(time=slice(options.ntimes))
+
+if options.verbose:
+    dask.diagnostics.ProgressBar().register()
+
+surface_fields = surface_fields[["usurf", "vsurf"]]
+
+logger.info("computing forcings...")
+#forcings = lib.preprocess_and_compute_forcings(
+#        surface_fields, grid, options.cyclize,
+#        options.factor)
+forcings = coarsen.eddy_forcing(surface_fields, grid, options.factor)
+
+logger.info("selecting forcing bounding box...")
+forcings = forcings.sel(
+    xu_ocean=slice(bounding_box.long_min, bounding_box.long_max),
+    yu_ocean=slice(bounding_box.lat_min,  bounding_box.lat_max))
+
+# TODO previously removed -- seems to not change output
+for var in forcings:
+    forcings[var].encoding = {}
+forcings = forcings.chunk({"time": 1})
 
 logger.info(f"writing forcings zarr to directory: {options.out_dir}")
 forcings.to_zarr(options.out_dir)
