@@ -20,6 +20,7 @@ def eddy_forcing(
     ----------
     u_v_dataset : xarray Dataset
         High-resolution velocity field.
+        Is changed in function.
     grid_data : xarray Dataset
         High-resolution grid details.
     scale : float
@@ -36,9 +37,6 @@ def eddy_forcing(
     -------
     forcing : xarray Dataset
         Dataset containing the low-resolution velocity field and forcing.
-
-    TODO: we edit u_v_dataset, and for some reason we were returning it (but
-    calls were silently ignoring it, or something).
     """
     # Replace nan values with zeros.
     if nan_or_zero == "zero":
@@ -124,7 +122,7 @@ def advections(u_v_field: xr.Dataset, grid_data: xr.Dataset):
     return result
 
 def spatial_filter_dataset(
-        dataset: xr.Dataset, grid_info: xr.Dataset, sigma: float
+        dataset: xr.Dataset, grid_data: xr.Dataset, sigma: float
         ) -> xr.Dataset:
     """
     Apply spatial filtering to the dataset across the spatial dimensions.
@@ -133,7 +131,8 @@ def spatial_filter_dataset(
     ----------
     dataset : xarray Dataset
         Dataset to filter. First dimension must be time, followed by spatial dimensions
-    grid_info : xarray Dataset
+        Is changed in place.
+    grid_data: xarray Dataset
         grid data,  must include variables "dxu" and "dyu"
     sigma : float
         Scale of the filtering, same unit as those of the grid (often, meters)
@@ -143,8 +142,11 @@ def spatial_filter_dataset(
     filt_dataset : xarray Dataset
         Filtered dataset
     """
-    area_u = grid_info["dxu"] * grid_info["dyu"] / 1e8
+    area_u = grid_data["dxu"] * grid_data["dyu"] / 1e8
+
+    # TODO 2023-09-13 raehik: is this bad? we're changing the dataset here
     dataset = dataset * area_u
+
     # Normalisation term, so that if the quantity we filter is constant
     # over the domain, the filtered quantity is constant with the same value
     norm = xr.apply_ufunc(
