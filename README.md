@@ -110,14 +110,35 @@ level.
 **You must configure GCP credentials to download the CM2.6 dataset used.**
 See [`docs/data.md`](docs/data.md) for more details.
 
-Direct call (without MLflow) example:
+Example invocation:
 
     python src/gz21_ocean_momentum/cmip26.py \
     --lat-min -80 --lat-max 80 --long-min -280 --long-max 80 \
-    --factor 4 --ntimes 100 --co2-increase
+    --factor 4 --ntimes 100 --co2-increase --out-dir forcings
+
+Alternatively, you may write (all or part of) these options into a YAML file:
+
+```
+lat-min:  -80
+lat-max:  80
+long-min: -280
+long-max: 80
+ntimes: 100
+factor: 4
+co2-increase: true
+```
+
+and use this file in an invocation with the `--config-file` option:
+
+    python src/gz21_ocean_momentum/cmip26.py \
+    --config-file examples/cli-configs/data-paper.yaml --out-dir forcings
 
 Some preprocessed data is hosted on HuggingFace at
 [datasets/M2LInES/gfdl-cmip26-gz21-ocean-forcing](https://huggingface.co/datasets/M2LInES/gfdl-cmip26-gz21-ocean-forcing).
+
+You may also run the data processing step directly from Python using the
+functions at [`step/data/lib.py`](src/gz21_ocean_momentum/step/data/lib.py). See
+the CLI script for example usage.
 
 #### Training
 The [`trainScript.py`](src/gz21_ocean_momentum/trainScript.py) script runs the
