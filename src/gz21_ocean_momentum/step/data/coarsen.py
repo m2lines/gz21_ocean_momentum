@@ -131,7 +131,6 @@ def spatial_filter_dataset(
     ----------
     dataset : xarray Dataset
         Dataset to filter. First dimension must be time, followed by spatial dimensions
-        Is changed in place.
     grid_data: xarray Dataset
         grid data,  must include variables "dxu" and "dyu"
     sigma : float
@@ -143,9 +142,6 @@ def spatial_filter_dataset(
         Filtered dataset
     """
     area_u = grid_data["dxu"] * grid_data["dyu"] / 1e8
-
-    # TODO 2023-09-13 raehik: is this bad? we're changing the dataset here
-    dataset = dataset * area_u
 
     # Normalisation term, so that if the quantity we filter is constant
     # over the domain, the filtered quantity is constant with the same value
@@ -159,7 +155,7 @@ def spatial_filter_dataset(
     )
     filtered = xr.apply_ufunc(
         lambda x: spatial_filter(x, sigma),
-        dataset,
+        dataset * area_u,
         dask="parallelized",
         output_dtypes=[
             float,
