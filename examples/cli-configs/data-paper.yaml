@@ -1,0 +1,11 @@
+# Approximates data step configuration used in the 2021 paper.
+
+lat-min:  -80
+lat-max:  80
+long-min: -280
+long-max: 80
+
+ntimes: 100
+factor: 4
+
+co2-increase: true
