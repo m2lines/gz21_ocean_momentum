@@ -25,9 +25,9 @@ import numpy as np
 import mlflow
 from torch.utils.data import DataLoader
 import xarray as xr
-from utils import select_run, select_experiment, TaskInfo
-from train.utils import learning_rates_from_string
-from data.datasets import (
+from gz21_ocean_momentum.utils import select_run, select_experiment, TaskInfo
+from gz21_ocean_momentum.train.utils import learning_rates_from_string
+from gz21_ocean_momentum.data.datasets import (
     RawDataFromXrDataset,
     DatasetTransformer,
     Subset_,
@@ -36,20 +36,20 @@ from data.datasets import (
     MultipleTimeIndices,
     DatasetPartitioner,
 )
-from train.base import Trainer
-import train.losses
-from testing.utils import create_large_test_dataset, BatchSampler, pickle_artifact
-from testing.metrics import MSEMetric, MaxMetric
-from models.utils import load_model_cls
-from models.transforms import SoftPlusTransform
+from gz21_ocean_momentum.train.base import Trainer
+import gz21_ocean_momentum.train.losses
+from gz21_ocean_momentum.testing.utils import create_large_test_dataset, BatchSampler, pickle_artifact
+from gz21_ocean_momentum.testing.metrics import MSEMetric, MaxMetric
+from gz21_ocean_momentum.models.utils import load_model_cls
+from gz21_ocean_momentum.models.transforms import SoftPlusTransform
 
 import argparse
 
 
 from dask.diagnostics import ProgressBar
 
-from data.xrtransforms import SeasonalStdizer
-import models.submodels
+from gz21_ocean_momentum.data.xrtransforms import SeasonalStdizer
+import gz21_ocean_momentum.models.submodels
 
 
 # Parse arguments
