@@ -184,10 +184,24 @@ RuntimeError: Calculated padded input size per channel: <smaller than 5 x 5>.
 Kernel size: (5 x 5). Kernel size can't be greater than actual input size
 ```
 
-#### Testing
+#### Inference
 The [`testing/main.py`](src/gz21_ocean_momentum/testing/main.py) script runs the
-model testing stage. You select a trained model and a region (which should be
-new/unseen) to test it on.
+model testing stage. This consists of running a trained model on a dataset. 
+The model's output are then stored as an artefact. This step
+should ideally be run with a GPU device available.
+
+Specifically, one can run the inference step by interactively
+running the following from the src/gz21_ocean_momentum directory:
+
+'python -m testing.main --n_splits=40'
+
+After the script has started running, it will first require
+the user to select an experiment and a run corresponding to a 
+training step run previously. 
+The user will then be required to select an experiment and a run
+corresponding to a data step previously run.
+
+The inference step should then start.
 
 ### Jupyter Notebooks
 The [examples/jupyter-notebooks](examples/jupyter-notebooks/) folder stores
