@@ -83,6 +83,7 @@ mlflow.start_run()
 
 # Prompt user to retrieve a trained model based on a run id for the default
 # experiment (folder mlruns/0)
+print('First, select a trained model (experiment then run)...')
 models_experiment_id, _ = select_experiment()
 cols = [
     "metrics.test loss",
@@ -131,6 +132,7 @@ submodel = getattr(models.submodels, submodel_name)
 metrics = {"mse": MSEMetric(), "Inf Norm": MaxMetric()}
 
 # Prompt user to select the test dataset
+print('Second, select a dataset (experiment and run)...')
 data_experiment_id, _ = select_experiment()
 cols = ["params.lat_min", "params.lat_max", "params.factor", "params.CO2"]
 data_run = select_run(
@@ -151,9 +153,11 @@ mlflow.log_param("n_epochs", n_epochs)
 # Read the dataset file
 print("loading dataset...")
 xr_dataset = xr.open_zarr(data_file)
-if input("global?").lower() == "y":
-    # This will add a cyclic transform when used on our model
-    xr_dataset.attrs["cycle"] = 360
+
+# TODO bring back the following lines
+#if input("global? (y / n)").lower() == "y":
+#    # This will add a cyclic transform when used on our model
+#    xr_dataset.attrs["cycle"] = 360
 
 with ProgressBar(), TaskInfo("Applying transforms to dataset"):
     xr_dataset = submodel.fit_transform(xr_dataset)
