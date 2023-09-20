@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Unit tests for the data/coarse.py module"""
+"""Unit tests for the data step."""
 
 import pytest
 import xarray as xr
 import numpy as np
 from numpy import ma
 import matplotlib.pyplot as plt
-from gz21_ocean_momentum.data.coarse import spatial_filter_dataset, spatial_filter, eddy_forcing
-
+import gz21_ocean_momentum.step.data.lib as lib
 
 class TestEddyForcing:
     "Class to test eddy forcing routines."
@@ -18,7 +17,7 @@ class TestEddyForcing:
         Check that number of dimensions stay the same through spatial_filter().
         """
         a = np.random.randn(10, 4, 4)
-        filtered_a = spatial_filter(a, 5)
+        filtered_a = lib._spatial_filter(a, 5)
         assert a.ndim == filtered_a.ndim
 
     def test_spatial_filter_of_constant(self):
@@ -49,7 +48,7 @@ class TestEddyForcing:
             }
         )
 
-        filtered_data = spatial_filter_dataset(data, grid_info, (5, 5))
+        filtered_data = lib._spatial_filter_dataset(data, grid_info, (5, 5))
 
         assert data["a"].values == pytest.approx(filtered_data["a"].values)
 
@@ -88,7 +87,7 @@ class TestEddyForcing:
                     ),
                 }
         )
-        forcing = eddy_forcing(data, grid_info, 4)
+        forcing = lib.compute_forcings_cm2_6(data, grid_info, 4)
         usurf_0, usurf_1 = forcing.usurf.isel(time=0), forcing.usurf.isel(time=1)
         # remove nan values at the boundaries from the test
         usurf_0 = usurf_0.data[~np.isnan(usurf_0)]
@@ -144,9 +143,7 @@ class TestEddyForcing:
         )
 
         # new forcing: apply
-        forcing_new = eddy_forcing(
-            data, grid_info, scale=scale_m,
-            method='mean', scale_mode='factor')
+        forcing_new = lib.compute_forcings_cm2_6(data, grid_info, scale=scale_m)
 
         # new forcing: post-chunk
         for var in forcing_new:
@@ -172,7 +169,7 @@ class TestEddyForcing:
                 - S_x and S_y, the two components of the diagnosed subgrid momentum
                 forcing
             """
-            return eddy_forcing(block, grid_info, scale=scale_m)
+            return lib.compute_forcings_cm2_6(block, grid_info, scale=scale_m)
 
         # old forcing: apply
         template = data.coarsen(
