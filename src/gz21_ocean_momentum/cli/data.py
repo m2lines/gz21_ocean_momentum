@@ -1,16 +1,11 @@
 import gz21_ocean_momentum.step.data.lib as lib
 import gz21_ocean_momentum.common.cli as cli
-from   gz21_ocean_momentum.common.bounding_box import BoundingBox
-
-import gz21_ocean_momentum.step.data.coarsen as coarsen
+from   gz21_ocean_momentum.common.bounding_box import BoundingBox, bound_dataset
 
 import configargparse
 
 import dask.diagnostics
 import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 # up to date as of 2023-09-01
 DEF_CATALOG_URI = "https://raw.githubusercontent.com/pangeo-data/pangeo-datastore/d684158e92fb3f3ad3b34e7dc5bba52b22a3ba80/intake-catalogs/ocean.yaml"
@@ -30,9 +25,20 @@ p.add("--ntimes",   type=int,   help="number of time points to process, starting
 p.add("--co2-increase", action="store_true", help="use 1%% annual CO2 increase CM2.6 dataset. By default, uses control (no increase)")
 p.add("--factor",   type=int,   required=True, help="resolution degradation factor")
 p.add("--pangeo-catalog-uri", type=str, default=DEF_CATALOG_URI, help="URI to Pangeo ocean dataset intake catalog file")
-p.add("--verbose", action="store_true", help="be more verbose (e.g. display progress)")
+p.add("--verbose", action="store_true", help="be more verbose (displays progress, debug messages)")
 
 options = p.parse_args()
+
+# set up logging immediately after parsing CLI options (need to check verbosity)
+# (would like to simplify this, maybe with `basicConfig(force=True)`)
+if options.verbose:
+    logging.basicConfig(level=logging.DEBUG)
+    dask.diagnostics.ProgressBar().register()
+    logger = logging.getLogger(__name__)
+    logger.debug("verbose mode; displaying all debug messages, progress bars)")
+else:
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
 
 if not cli.path_is_nonexist_or_empty_dir(options.out_dir):
     cli.fail(1, "--out-dir output directory is invalid",
@@ -44,44 +50,40 @@ bounding_box = BoundingBox(
         options.long_min, options.long_max)
 
 logger.info("retrieving CM2.6 dataset via Pangeo Cloud Datastore...")
-if options.co2_increase:
-    logger.info("-> using 1% annual CO2 increase dataset")
-else:
-    logger.info("-> using control dataset (no annual CO2 increase)")
-
 surface_fields, grid = lib.retrieve_cm2_6(options.pangeo_catalog_uri, options.co2_increase)
 
-logger.info("selecting input data bounding box...")
-surface_fields = surface_fields.sel(
-    xu_ocean=slice(bounding_box.long_min, bounding_box.long_max),
-    yu_ocean=slice(bounding_box.lat_min,  bounding_box.lat_max))
-grid = grid.sel(
-    xu_ocean=slice(bounding_box.long_min, bounding_box.long_max),
-    yu_ocean=slice(bounding_box.lat_min,  bounding_box.lat_max))
-
-if options.ntimes is not None:
-    surface_fields = surface_fields.isel(time=slice(options.ntimes))
-
-if options.verbose:
-    dask.diagnostics.ProgressBar().register()
-
+logger.debug("dropping irrelevant data variables...")
 surface_fields = surface_fields[["usurf", "vsurf"]]
 
+if options.ntimes is not None:
+    logger.info(f"slicing {options.ntimes} time points...")
+    surface_fields = surface_fields.isel(time=slice(options.ntimes))
+
+logger.info("selecting input data bounding box...")
+surface_fields = bound_dataset("yu_ocean", "xu_ocean", surface_fields,
+                               bounding_box)
+grid = bound_dataset("yu_ocean", "xu_ocean", grid, bounding_box)
+
+logger.debug("placing grid dataset into local memory...")
+grid = grid.compute()
+
+if options.cyclize:
+    logger.info("making dataset cyclic along longitude...")
+    logger.info("WARNING: may be nonfunctional or have poor performance")
+    surface_fields = lib.cyclize(
+            surface_fields, "xu_ocean", options.factor)
+    grid = lib.cyclize(
+            grid,           "xu_ocean", options.factor)
+
+    logger.debug("rechunking along cyclized dimension...")
+    surface_fields = surface_fields.chunk({"xu_ocean": -1})
+    grid = grid.chunk({"xu_ocean": -1})
+
 logger.info("computing forcings...")
-#forcings = lib.preprocess_and_compute_forcings(
-#        surface_fields, grid, options.cyclize,
-#        options.factor)
-forcings = coarsen.eddy_forcing(surface_fields, grid, options.factor)
+forcings = lib.compute_forcings_cm2_6(surface_fields, grid, options.factor)
 
 logger.info("selecting forcing bounding box...")
-forcings = forcings.sel(
-    xu_ocean=slice(bounding_box.long_min, bounding_box.long_max),
-    yu_ocean=slice(bounding_box.lat_min,  bounding_box.lat_max))
-
-# TODO previously removed -- seems to not change output
-for var in forcings:
-    forcings[var].encoding = {}
-forcings = forcings.chunk({"time": 1})
+forcings = bound_dataset("yu_ocean", "xu_ocean", forcings, bounding_box)
 
 logger.info(f"writing forcings zarr to directory: {options.out_dir}")
 forcings.to_zarr(options.out_dir)

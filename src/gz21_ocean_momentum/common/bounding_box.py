@@ -1,3 +1,5 @@
+import xarray as xr
+
 from dataclasses import dataclass
 from typing import Optional
 from typing import Tuple
@@ -15,6 +17,20 @@ class BoundingBox():
     lat_max:  float
     long_min: float
     long_max: float
+
+def bound_dataset(
+        dim_lat: str, dim_long: str,
+        data: xr.Dataset, bounding_box: BoundingBox
+        ):
+    """Bound an xarray `Dataset` to the given `BoundingBox` using the given
+    dimension names as spatial axes to bound along.
+
+    The spatial dimensions should be `float`s. Argument order is latitude (y)
+    followed by longitude (x).
+    """
+    return data.sel({
+            dim_lat:  slice(bounding_box.lat_min,  bounding_box.lat_max),
+            dim_long: slice(bounding_box.long_min, bounding_box.long_max)})
 
 def load_bounding_boxes_yaml(path: str) -> list[BoundingBox]:
     """Load a YAML file of bounding boxes.
