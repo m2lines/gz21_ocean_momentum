@@ -1,6 +1,7 @@
 import gz21_ocean_momentum.step.data.lib as lib
 import gz21_ocean_momentum.common.cli as cli
-from   gz21_ocean_momentum.common.bounding_box import BoundingBox, bound_dataset
+from   gz21_ocean_momentum.common.bounding_box import BoundingBox
+import gz21_ocean_momentum.common.bounding_box as bounding_box
 
 import configargparse
 
@@ -45,9 +46,11 @@ if not cli.path_is_nonexist_or_empty_dir(options.out_dir):
                 "if the directory exists, ensure it is empty")
 
 # store bounding box in a struct-like
-bounding_box = BoundingBox(
+bbox = BoundingBox(
         options.lat_min,  options.lat_max,
         options.long_min, options.long_max)
+if not bounding_box.validate_nonempty(bbox):
+    cli.fail(2, f"provided bounding box describes an empty region: {bbox}")
 
 logger.info("retrieving CM2.6 dataset via Pangeo Cloud Datastore...")
 surface_fields, grid = lib.retrieve_cm2_6(options.pangeo_catalog_uri, options.co2_increase)
@@ -60,9 +63,8 @@ if options.ntimes is not None:
     surface_fields = surface_fields.isel(time=slice(options.ntimes))
 
 logger.info("selecting input data bounding box...")
-surface_fields = bound_dataset("yu_ocean", "xu_ocean", surface_fields,
-                               bounding_box)
-grid = bound_dataset("yu_ocean", "xu_ocean", grid, bounding_box)
+surface_fields = bounding_box.bound_dataset("yu_ocean", "xu_ocean", surface_fields, bbox)
+grid = bounding_box.bound_dataset("yu_ocean", "xu_ocean", grid, bbox)
 
 logger.debug("placing grid dataset into local memory...")
 grid = grid.compute()
@@ -83,7 +85,7 @@ logger.info("computing forcings...")
 forcings = lib.compute_forcings_cm2_6(surface_fields, grid, options.factor)
 
 logger.info("selecting forcing bounding box...")
-forcings = bound_dataset("yu_ocean", "xu_ocean", forcings, bounding_box)
+forcings = bound_dataset("yu_ocean", "xu_ocean", forcings, bbox)
 
 logger.info(f"writing forcings zarr to directory: {options.out_dir}")
 forcings.to_zarr(options.out_dir)
