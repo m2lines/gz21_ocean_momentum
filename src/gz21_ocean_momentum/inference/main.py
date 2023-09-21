@@ -25,9 +25,9 @@ import numpy as np
 import mlflow
 from torch.utils.data import DataLoader
 import xarray as xr
-from utils import select_run, select_experiment, TaskInfo
-from train.utils import learning_rates_from_string
-from data.datasets import (
+from gz21_ocean_momentum.utils import select_run, select_experiment, TaskInfo
+from gz21_ocean_momentum.train.utils import learning_rates_from_string
+from gz21_ocean_momentum.data.datasets import (
     RawDataFromXrDataset,
     DatasetTransformer,
     Subset_,
@@ -36,21 +36,24 @@ from data.datasets import (
     MultipleTimeIndices,
     DatasetPartitioner,
 )
-from train.base import Trainer
-import train.losses
-from testing.utils import create_large_test_dataset, BatchSampler, pickle_artifact
-from testing.metrics import MSEMetric, MaxMetric
-from models.utils import load_model_cls
-from models.transforms import SoftPlusTransform
+from gz21_ocean_momentum.train.base import Trainer
+from gz21_ocean_momentum.train import losses
+from gz21_ocean_momentum.inference.utils import (
+    create_large_test_dataset,
+    BatchSampler,
+    pickle_artifact,
+)
+from gz21_ocean_momentum.inference.metrics import MSEMetric, MaxMetric
+from gz21_ocean_momentum.models.utils import load_model_cls
+from gz21_ocean_momentum.models.transforms import SoftPlusTransform
 
 import argparse
 
 
 from dask.diagnostics import ProgressBar
-from other.telegram import send_message
 
-from data.xrtransforms import SeasonalStdizer
-import models.submodels
+from gz21_ocean_momentum.data.xrtransforms import SeasonalStdizer
+from gz21_ocean_momentum.models import submodels
 
 
 # Parse arguments
@@ -84,6 +87,7 @@ mlflow.start_run()
 
 # Prompt user to retrieve a trained model based on a run id for the default
 # experiment (folder mlruns/0)
+print("First, select a trained model (experiment then run)...")
 models_experiment_id, _ = select_experiment()
 cols = [
     "metrics.test loss",
@@ -126,12 +130,13 @@ model_file = client.download_artifacts(model_run.run_id, "models/trained_model.p
 # TODO temporary fix for backward compatibility
 if not isinstance(submodel_name, str):
     submodel_name = "transform3"
-submodel = getattr(models.submodels, submodel_name)
+submodel = getattr(submodels, submodel_name)
 
 # metrics saved independently of the training criterion
 metrics = {"mse": MSEMetric(), "Inf Norm": MaxMetric()}
 
 # Prompt user to select the test dataset
+print("Second, select a dataset (experiment and run)...")
 data_experiment_id, _ = select_experiment()
 cols = ["params.lat_min", "params.lat_max", "params.factor", "params.CO2"]
 data_run = select_run(
@@ -152,9 +157,6 @@ mlflow.log_param("n_epochs", n_epochs)
 # Read the dataset file
 print("loading dataset...")
 xr_dataset = xr.open_zarr(data_file)
-if input("global?").lower() == "y":
-    # This will add a cyclic transform when used on our model
-    xr_dataset.attrs["cycle"] = 360
 
 with ProgressBar(), TaskInfo("Applying transforms to dataset"):
     xr_dataset = submodel.fit_transform(xr_dataset)
@@ -211,7 +213,7 @@ for metric in metrics.values():
 # Set up training criterion and select parameters to train
 try:
     n_targets = dataset.n_targets
-    criterion = getattr(train.losses, loss_cls_name)(n_targets)
+    criterion = getattr(losses, loss_cls_name)(n_targets)
 except AttributeError as e:
     raise type(e)("Could not find the loss class used for training, ", loss_cls_name)
 
@@ -241,7 +243,7 @@ print("Features transform: ", transform.transforms["features"].transforms)
 print("Targets transform: ", transform.transforms["targets"].transforms)
 
 # Net to GPU
-with TaskInfo("Put neural network on GPU"):
+with TaskInfo("Put neural network on device"):
     net.to(device)
 
 print("width: {}, height: {}".format(dataset.width, dataset.height))
@@ -278,9 +280,6 @@ with ProgressBar(), TaskInfo("Create output dataset"):
     out.to_zarr(file_path)
     mlflow.log_artifact(file_path)
     print(f"Size of output data is {out.nbytes/1e9} GB")
-    send_message("Done with one dataset!")
-    send_message("\xF0\x9F\x98\x8D")
-    send_message("Now go to your laptop and tell what you want to do...")
 
 mlflow.end_run()
 print("Done")

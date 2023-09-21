@@ -112,8 +112,9 @@ logger.debug("Mapping blocks")
 debug_mode = os.environ.get("DEBUG_MODE")
 if params.factor != 0 and not debug_mode:
     scale_m = params.factor
-    forcing = eddy_forcing(patch_data, grid_data, scale=scale_m, method='mean',
-                           scale_mode='factor')
+    forcing = eddy_forcing(
+        patch_data, grid_data, scale=scale_m, method="mean", scale_mode="factor"
+    )
 elif not debug_mode:
     scale_m = params.scale * 1e3
     forcing = eddy_forcing(patch_data, grid_data, scale=scale_m, method="mean")
@@ -125,7 +126,7 @@ else:
 ProgressBar().register()
 
 # Specify input vs output type for each variable of the dataset. Might
-# be used later on for training or testing.
+# be used later on for training or inference.
 if not debug_mode:
     forcing["S_x"].attrs["type"] = "output"
     forcing["S_y"].attrs["type"] = "output"

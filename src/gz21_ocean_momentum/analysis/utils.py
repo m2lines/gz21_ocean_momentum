@@ -12,11 +12,11 @@ from matplotlib import colors
 import matplotlib.animation as animation
 from matplotlib.patches import Rectangle
 import pandas as pd
-from analysis.analysis import TimeSeriesForPoint
+from gz21_ocean_momentum.analysis.analysis import TimeSeriesForPoint
 import xarray as xr
 from typing import Optional
 from scipy.ndimage import gaussian_filter
-from data.pangeo_catalog import get_patch, get_whole_data
+from gz21_ocean_momentum.data.pangeo_catalog import get_patch, get_whole_data
 from cartopy.crs import PlateCarree
 import yaml
 

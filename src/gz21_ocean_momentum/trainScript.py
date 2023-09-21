@@ -11,6 +11,7 @@ import tempfile
 from dask.diagnostics import ProgressBar
 import numpy as np
 import mlflow
+import xarray as xr
 
 import torch
 from torch.utils.data import DataLoader
@@ -34,13 +35,15 @@ from train.utils import (
     learning_rates_from_string,
 )
 from train.base import Trainer
-from testing.utils import create_test_dataset
-from testing.metrics import MSEMetric, MaxMetric
+from inference.utils import create_test_dataset
+from inference.metrics import MSEMetric, MaxMetric
 import train.losses
 import models.transforms
 import models.submodels
 
 from utils import TaskInfo
+
+from typing import Any
 
 torch.autograd.set_detect_anomaly(True)
 
@@ -98,14 +101,15 @@ def check_str_is_None(string_in: str):
 description = (
     "Trains a model on a chosen dataset from the store."
     "Allows to set training parameters via the CLI."
+    "Use one of either --run-id or --forcing-data-path."
 )
 parser = argparse.ArgumentParser(description=description)
-parser.add_argument(
-    "exp_id",
-    type=int,
-    help="Experiment id of the source dataset containing the " "training data.",
-)
-parser.add_argument("run_id", type=str, help="Run id of the source dataset")
+
+parser.add_argument("--run-id", type=str, help="MLflow run ID of data step containing forcing data to use")
+
+# access input forcing data via absolute filepath
+parser.add_argument("--forcing-data-path", type=str, help="Filepath of the forcing data")
+
 parser.add_argument("--batchsize", type=int, default=8)
 parser.add_argument("--n_epochs", type=int, default=100)
 parser.add_argument(
@@ -161,13 +165,39 @@ parser.add_argument(
 )
 params = parser.parse_args()
 
+def argparse_get_mlflow_artifact_path_or_direct_or_fail(
+        mlflow_artifact_name: str, params: dict[str, Any]
+        ) -> str:
+    """Obtain a filepath either from an MLflow run ID and artifact name, or a
+    direct path if provided.
 
-# ------------------------------------------------------
-# LOG THE EXPERIMENT_ID AND RUN_ID OF THE SOURCE DATASET
-# ------------------------------------------------------
-mlflow.log_param("source.experiment_id", params.exp_id)
-mlflow.log_param("source.run_id", params.run_id)
+    params must have keys run_id and forcing_data_path.
 
+    Only one of run_id and path should be non-None.
+
+    Note that the filepath is not checked for validity (but for run_id, MLflow
+    probably will assert that it exists).
+
+    Effectful: errors result in immediate program exit.
+    """
+    if params.run_id is not None and params.run_id != "None":
+        if params.forcing_data_path is not None and params.forcing_data_path != "None":
+            # got run ID and direct path: bad
+            raise TypeError("overlapping options provided (--forcing-data-path and --exp-id)")
+
+        # got only run ID: obtain path via MLflow
+        mlflow.log_param("source.run-id", params.run_id)
+        mlflow_client = mlflow.tracking.MlflowClient()
+        return mlflow_client.download_artifacts(params.run_id, mlflow_artifact_name)
+
+    if params.forcing_data_path is not None and params.forcing_data_path != "None":
+        # got only direct path: use
+        return params.forcing_data_path
+
+    # if we get here, neither options were provided
+    raise TypeError("require one of --run-id or --forcing-data-path")
+
+forcings_path = argparse_get_mlflow_artifact_path_or_direct_or_fail("forcing", params)
 
 # --------------------------
 # SET UP TRAINING PARAMETERS
@@ -226,7 +256,7 @@ print("Selected device type: ", device_type.value)
 # LOAD TRAINING DATA
 # ------------------
 # Extract the run ids for the datasets to use in training
-global_ds = load_data_from_run(params.run_id)
+global_ds = xr.open_zarr(forcings_path)
 # Load data from the store, according to experiment id and run id
 xr_datasets = load_training_datasets(global_ds, "training_subdomains.yaml")
 # Split into train and test datasets
