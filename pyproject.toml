@@ -34,7 +34,7 @@ dependencies = [
     "cartopy>=0.21", # analysis (plotting data)
 
     "torch>=1.13.1",
-    "progressbar2>=4.2.0" # testing/utils (but imported by trainScript)
+    "progressbar2>=4.2.0" # inference/utils (but imported by trainScript)
 ]
 
 authors = [

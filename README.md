@@ -201,7 +201,7 @@ Kernel size: (5 x 5). Kernel size can't be greater than actual input size
 ```
 
 #### Inference
-The [`testing/main.py`](src/gz21_ocean_momentum/testing/main.py) script runs the
+The [`inference/main.py`](src/gz21_ocean_momentum/inference/main.py) script runs the
 model testing stage. This consists of running a trained model on a dataset. 
 The model's output are then stored as an artefact. This step
 should ideally be run with a GPU device available, to achieve a better speed.
@@ -212,7 +212,7 @@ in order for the data to be found and stored in a sensible place.
 One can run the inference step by interactively
 running the following project root directory:
 
->python3 -m gz21_ocean_momentum.testing.main --n_splits=40
+>python3 -m gz21_ocean_momentum.inference.main --n_splits=40
 
 with `n_splits` being the number of subsets which the dataset is split 
 into for the processing, before being put back together for the final output.

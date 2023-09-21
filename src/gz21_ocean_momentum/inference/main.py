@@ -37,9 +37,13 @@ from gz21_ocean_momentum.data.datasets import (
     DatasetPartitioner,
 )
 from gz21_ocean_momentum.train.base import Trainer
-import gz21_ocean_momentum.train.losses
-from gz21_ocean_momentum.testing.utils import create_large_test_dataset, BatchSampler, pickle_artifact
-from gz21_ocean_momentum.testing.metrics import MSEMetric, MaxMetric
+from gz21_ocean_momentum.train import losses
+from gz21_ocean_momentum.inference.utils import (
+    create_large_test_dataset,
+    BatchSampler,
+    pickle_artifact,
+)
+from gz21_ocean_momentum.inference.metrics import MSEMetric, MaxMetric
 from gz21_ocean_momentum.models.utils import load_model_cls
 from gz21_ocean_momentum.models.transforms import SoftPlusTransform
 
@@ -49,7 +53,7 @@ import argparse
 from dask.diagnostics import ProgressBar
 
 from gz21_ocean_momentum.data.xrtransforms import SeasonalStdizer
-import gz21_ocean_momentum.models.submodels
+from gz21_ocean_momentum.models import submodels
 
 
 # Parse arguments
@@ -83,7 +87,7 @@ mlflow.start_run()
 
 # Prompt user to retrieve a trained model based on a run id for the default
 # experiment (folder mlruns/0)
-print('First, select a trained model (experiment then run)...')
+print("First, select a trained model (experiment then run)...")
 models_experiment_id, _ = select_experiment()
 cols = [
     "metrics.test loss",
@@ -126,13 +130,13 @@ model_file = client.download_artifacts(model_run.run_id, "models/trained_model.p
 # TODO temporary fix for backward compatibility
 if not isinstance(submodel_name, str):
     submodel_name = "transform3"
-submodel = getattr(models.submodels, submodel_name)
+submodel = getattr(submodels, submodel_name)
 
 # metrics saved independently of the training criterion
 metrics = {"mse": MSEMetric(), "Inf Norm": MaxMetric()}
 
 # Prompt user to select the test dataset
-print('Second, select a dataset (experiment and run)...')
+print("Second, select a dataset (experiment and run)...")
 data_experiment_id, _ = select_experiment()
 cols = ["params.lat_min", "params.lat_max", "params.factor", "params.CO2"]
 data_run = select_run(
@@ -209,7 +213,7 @@ for metric in metrics.values():
 # Set up training criterion and select parameters to train
 try:
     n_targets = dataset.n_targets
-    criterion = getattr(train.losses, loss_cls_name)(n_targets)
+    criterion = getattr(losses, loss_cls_name)(n_targets)
 except AttributeError as e:
     raise type(e)("Could not find the loss class used for training, ", loss_cls_name)
 
@@ -239,7 +243,7 @@ print("Features transform: ", transform.transforms["features"].transforms)
 print("Targets transform: ", transform.transforms["targets"].transforms)
 
 # Net to GPU
-with TaskInfo("Put neural network on ", device):
+with TaskInfo("Put neural network on device"):
     net.to(device)
 
 print("width: {}, height: {}".format(dataset.width, dataset.height))

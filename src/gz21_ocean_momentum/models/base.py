@@ -10,7 +10,7 @@ TODO
 - FinalTransformationMixin is not used anywhere as far as I can tell, should we remove?
 - output_width and output_height could probably be combined for one output_size method.
 - As far as I can tell the methods of DetectOutputSizeMixin are only used in
-  testing/utils.py and data/datasets.py so may be better off there than as part of the
+  inference/utils.py and data/datasets.py so may be better off there than as part of the
   model?
 """
 import torch
