@@ -212,7 +212,7 @@ in order for the data to be found and stored in a sensible place.
 One can run the inference step by interactively
 running the following from the src/gz21_ocean_momentum directory:
 
-'python -m testing.main --n_splits=40'
+>python3 -m gz21_ocean_momentum.testing.main --n_splits=40
 
 with `n_splits` being the number of subsets which the dataset is split 
 into for the processing, before being put back together for the final output.
