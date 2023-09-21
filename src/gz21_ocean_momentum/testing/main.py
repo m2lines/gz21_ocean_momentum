@@ -154,11 +154,6 @@ mlflow.log_param("n_epochs", n_epochs)
 print("loading dataset...")
 xr_dataset = xr.open_zarr(data_file)
 
-# TODO bring back the following lines
-#if input("global? (y / n)").lower() == "y":
-#    # This will add a cyclic transform when used on our model
-#    xr_dataset.attrs["cycle"] = 360
-
 with ProgressBar(), TaskInfo("Applying transforms to dataset"):
     xr_dataset = submodel.fit_transform(xr_dataset)
 
