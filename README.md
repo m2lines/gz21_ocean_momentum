@@ -210,7 +210,7 @@ In this step it is particularly important to set the environment variable `MLFLO
 in order for the data to be found and stored in a sensible place.
 
 One can run the inference step by interactively
-running the following from the src/gz21_ocean_momentum directory:
+running the following project root directory:
 
 >python3 -m gz21_ocean_momentum.testing.main --n_splits=40
 
