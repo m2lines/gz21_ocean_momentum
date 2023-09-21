@@ -43,7 +43,7 @@ def select_experiment(default_selection: str = ""):
 
     """
     client_ = client.MlflowClient()
-    list_of_exp = client_.list_experiments()
+    list_of_exp = client_.search_experiments()
     dict_of_exp = {exp.experiment_id: exp.name for exp in list_of_exp}
     for id_, name in dict_of_exp.items():
         print(id_, ": ", name)

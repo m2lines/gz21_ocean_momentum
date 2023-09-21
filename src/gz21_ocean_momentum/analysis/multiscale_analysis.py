@@ -4,7 +4,7 @@ Created on Tue Feb  4 14:04:37 2020
 
 @author: Arthur
 Script to analyze the outputs from the 'multiscale' experiment, corresponding
-to the script testing/multiscale.py.
+to the script inference/multiscale.py.
 """
 
 from analysis.loadmlflow import LoadMLFlow

@@ -6,7 +6,7 @@ Created on Wed Nov  4 13:34:58 2020
 @author: arthur
 """
 
-from data.xrtransforms import (
+from gz21_ocean_momentum.data.xrtransforms import (
     ScalingTransform,
     SeasonalStdizer,
     ChainedTransform,

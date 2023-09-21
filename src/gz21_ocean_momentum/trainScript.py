@@ -35,8 +35,8 @@ from train.utils import (
     learning_rates_from_string,
 )
 from train.base import Trainer
-from testing.utils import create_test_dataset
-from testing.metrics import MSEMetric, MaxMetric
+from inference.utils import create_test_dataset
+from inference.metrics import MSEMetric, MaxMetric
 import train.losses
 import models.transforms
 import models.submodels
