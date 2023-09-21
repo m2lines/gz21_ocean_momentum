@@ -95,6 +95,22 @@ MLflow parameters:
 For old MLflow versions (TODO: which?), replace the `--env-manager=local` flag
 with `--no-conda`
 
+In order to make sure that data in- and output locations are well-defined, the 
+environment variable `MLFLOW_TRACKING_URI` must be set to the intended data location:
+
+> export MLFLOW_TRACKING_URI="/path/to/data/dir"
+
+in Linux, or 
+> %env  MLFLOW_TRACKING_URI /path/to/data/dir
+
+in a Jupyter Notebook, or
+
+```
+import os
+os.environ['MLFLOW_TRACKING_URI] = '/path/to/data/dir'
+```
+in Python.
+
 #### Data processing
 The [`cmip26.py`](src/gz21_ocean_momentum/cmip26.py) script runs the data
 processing stage. It generates coarse surface velocities and diagnosed forcings
@@ -188,12 +204,24 @@ Kernel size: (5 x 5). Kernel size can't be greater than actual input size
 The [`testing/main.py`](src/gz21_ocean_momentum/testing/main.py) script runs the
 model testing stage. This consists of running a trained model on a dataset. 
 The model's output are then stored as an artefact. This step
-should ideally be run with a GPU device available.
+should ideally be run with a GPU device available, to achieve a better speed.
 
-Specifically, one can run the inference step by interactively
+In this step it is particularly important to set the environment variable `MLFLOW_TRACKING_URI`
+in order for the data to be found and stored in a sensible place.
+
+One can run the inference step by interactively
 running the following from the src/gz21_ocean_momentum directory:
 
 'python -m testing.main --n_splits=40'
+
+with `n_splits` being the number of subsets which the dataset is split 
+into for the processing, before being put back together for the final output.
+This is done in order to avoid memory issues for large datasets.
+Other useful arguments for this call would be 
+- `to_experiment`: the name of the mlflow experiment used for this run
+n_splits: the number of splits applied to the data
+- `batch_size`: the batch size used in running the neural network on the data
+
 
 After the script has started running, it will first require
 the user to select an experiment and a run corresponding to a 

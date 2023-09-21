@@ -244,7 +244,7 @@ print("Features transform: ", transform.transforms["features"].transforms)
 print("Targets transform: ", transform.transforms["targets"].transforms)
 
 # Net to GPU
-with TaskInfo("Put neural network on GPU"):
+with TaskInfo("Put neural network on ", device):
     net.to(device)
 
 print("width: {}, height: {}".format(dataset.width, dataset.height))
