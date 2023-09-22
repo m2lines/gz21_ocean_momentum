@@ -113,7 +113,7 @@ See [`docs/data.md`](docs/data.md) for more details.
 
 Example invocation:
 
-    python src/gz21_ocean_momentum/cmip26.py \
+    python src/gz21_ocean_momentum/cli/data.py \
     --lat-min -80 --lat-max 80 --long-min -280 --long-max 80 \
     --factor 4 --ntimes 100 --co2-increase --out-dir forcings
 
@@ -131,7 +131,7 @@ co2-increase: true
 
 and use this file in an invocation with the `--config-file` option:
 
-    python src/gz21_ocean_momentum/cmip26.py \
+    python src/gz21_ocean_momentum/cli/data.py \
     --config-file examples/cli-configs/data-paper.yaml --out-dir forcings
 
 Some preprocessed data is hosted on HuggingFace at
