@@ -53,7 +53,7 @@ Alternatively, if you are using python to manage virtual environments using the 
 [Poetry](https://python-poetry.org/). To use, rename `pyproject-poetry.toml` to
 `pyproject.toml` (overwriting the existing file) and use Poetry as normal. Note
 that the Poetry build is not actively supported-- if it fails, check that the
-dependencies are up to date with the setuptools `pyproject.toml`.)*
+dependencies are up-to-date with the setuptools `pyproject.toml`.)*
 
 #### System
 Some graphing code uses cartopy, which requires [GEOS](https://libgeos.org/). To
@@ -61,7 +61,7 @@ install on Ubuntu:
 
     sudo apt install libgeos-dev
 
-On MacOS, via Homebrew:
+On macOS, via Homebrew:
 
     brew install geos
 
@@ -98,16 +98,18 @@ with `--no-conda`
 In order to make sure that data in- and output locations are well-defined, the 
 environment variable `MLFLOW_TRACKING_URI` must be set to the intended data location:
 
-> export MLFLOW_TRACKING_URI="/path/to/data/dir"
+    export MLFLOW_TRACKING_URI="/path/to/data/dir"
 
 in Linux, or 
-> %env  MLFLOW_TRACKING_URI /path/to/data/dir
+```
+%env  MLFLOW_TRACKING_URI /path/to/data/dir
+```
 
 in a Jupyter Notebook, or
 
 ```
 import os
-os.environ['MLFLOW_TRACKING_URI] = '/path/to/data/dir'
+os.environ['MLFLOW_TRACKING_URI'] = '/path/to/data/dir'
 ```
 in Python.
 
@@ -159,7 +161,7 @@ MLflow call example:
 
 ```
 mlflow run . --experiment-name <name> -e train --env-manager=local \
--P exp_id=692154129919725696 -P run_id=c57b36da385e4fc4a967e7790192ecb2 \
+-P run_id=c57b36da385e4fc4a967e7790192ecb2 \
 -P learning_rate=0/5e-4/15/5e-5/30/5e-6 -P n_epochs=200 -P weight_decay=0.00 -P train_split=0.8 \
 -P test_split=0.85 -P model_module_name=models.models1 -P model_cls_name=FullyCNN -P batchsize=4 \
 -P transformation_cls_name=SoftPlusTransform -P submodel=transform3 \
@@ -173,7 +175,7 @@ Relevant parameters:
 * `run_id`: id of the run that generated the forcing data that will be used for
   training.
 * `loss_cls_name`: name of the class that defines the loss. This class should be
-  defined in train/losses.py in order for the script to find it. Currently the
+  defined in train/losses.py in order for the script to find it. Currently, the
   main available options are:
   * `HeteroskedasticGaussianLossV2`: this corresponds to the loss used in the
     2021 paper
@@ -212,14 +214,13 @@ in order for the data to be found and stored in a sensible place.
 One can run the inference step by interactively
 running the following project root directory:
 
->python3 -m gz21_ocean_momentum.inference.main --n_splits=40
+    python3 -m gz21_ocean_momentum.inference.main --n_splits=40
 
 with `n_splits` being the number of subsets which the dataset is split 
 into for the processing, before being put back together for the final output.
 This is done in order to avoid memory issues for large datasets.
 Other useful arguments for this call would be 
 - `to_experiment`: the name of the mlflow experiment used for this run
-n_splits: the number of splits applied to the data
 - `batch_size`: the batch size used in running the neural network on the data
 
 
