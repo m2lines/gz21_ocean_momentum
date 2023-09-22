@@ -85,7 +85,7 @@ logger.info("computing forcings...")
 forcings = lib.compute_forcings_cm2_6(surface_fields, grid, options.factor)
 
 logger.info("selecting forcing bounding box...")
-forcings = bound_dataset("yu_ocean", "xu_ocean", forcings, bbox)
+forcings = bounding_box.bound_dataset("yu_ocean", "xu_ocean", forcings, bbox)
 
 logger.info(f"writing forcings zarr to directory: {options.out_dir}")
 forcings.to_zarr(options.out_dir)
