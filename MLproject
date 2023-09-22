@@ -4,24 +4,6 @@ name: gz21_ocean_momentum
 
 entry_points:
 
-  data:
-    parameters:
-      out_dir : str
-      lat_min : float
-      lat_max : float
-      long_min : float
-      long_max : float
-      ntimes : {type: float, default: 10000}
-      factor: {type: float, default: 0}
-      #global: {type: str, default: 0} # unclear how to do flags with mlflow
-      #CO2: {type: float, default: 0} # unclear how to do flags with mlflow
-    command: >-
-      python src/gz21_ocean_momentum/cli/data.py
-      --lat-min  {lat_min}  --lat-max  {lat_max}
-      --long-min {long_min} --long-max {long_max}
-      --ntimes {ntimes} --factor {factor}
-      --out-dir {out_dir}
-
   train:
     parameters:
       forcing_data_path: {type: string, default: None}
