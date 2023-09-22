@@ -55,6 +55,10 @@ With `pip` installed, run the following in the root directory:
 that the Poetry build is not actively supported-- if it fails, check that the
 dependencies are up-to-date with the setuptools `pyproject.toml`.)*
 
+Note that if you are running Python 3.9 or older, you may also need to install
+the [GEOS](https://libgeos.org/) library, due to `cartopy` requiring it. (Newer
+versions moved away from the C dependency.)
+
 ### Running unit tests
 There are a handful of unit tests using pytest, in the [`tests`](tests/)
 directory. These assert some operations and methods used in the steps. They may
