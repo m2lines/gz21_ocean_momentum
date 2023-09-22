@@ -133,6 +133,10 @@ and use this file in an invocation with the `--config-file` option:
     python src/gz21_ocean_momentum/cli/data.py \
     --config-file examples/cli-configs/data-paper.yaml --out-dir forcings
 
+For command-line option explanation, append the `--help` flag:
+
+    python src/gz21_ocean_momentum/cli/data.py --help
+
 Some preprocessed data is hosted on HuggingFace at
 [datasets/M2LInES/gfdl-cmip26-gz21-ocean-forcing](https://huggingface.co/datasets/M2LInES/gfdl-cmip26-gz21-ocean-forcing).
 
