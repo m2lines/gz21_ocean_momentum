@@ -9,9 +9,9 @@ import numpy as np
 from intake.config import conf
 
 # TODO variable currently unused? Remove? Or is it setting environment variable?
-conf["persist_path"] = "/scratch/ag7531/"
+# conf["persist_path"] = "/scratch/ag7531/"
 # TODO variable currently unused. Remove?
-CACHE_FOLDER = "/scratch/ag7531/cm26_cache"
+# CACHE_FOLDER = "/scratch/ag7531/cm26_cache"
 # TODO: Not sure this should be hard coded here. Isn't it also hard coded in cmip26.py?
 CATALOG_URL = "https://raw.githubusercontent.com/pangeo-data/pangeo-datastore\
 /master/intake-catalogs/master.yaml"
@@ -53,11 +53,11 @@ def get_patch(
     if CO2_level == 0:
         source = catalog.ocean.GFDL_CM2_6.GFDL_CM2_6_control_ocean_surface
         # TODO variable cache_folder currently unused. Remove?
-        cache_folder = CACHE_FOLDER
+        # cache_folder = CACHE_FOLDER
     elif CO2_level == 1:
         source = catalog.ocean.GFDL_CM2_6.GFDL_CM2_6_one_percent_ocean_surface
         # TODO variable cache_folder currently unused. Remove?
-        cache_folder = CACHE_FOLDER + "1percent"
+        # cache_folder = CACHE_FOLDER + "1percent"
     else:
         raise ValueError("Unrecognized CO2 level. Should be O or 1.")
     s_grid = catalog.ocean.GFDL_CM2_6.GFDL_CM2_6_grid
@@ -124,8 +124,7 @@ if __name__ == "__main__":
 
     os.environ[
         "GOOGLE_APPLICATION_CREDENTIALS"
-    ] = "/home/arthur/\
-access_key.json"
+    ] = "~/.config/gcloud/application_default_credentials.json"
     CATALOG_URL = "https://raw.githubusercontent.com/pangeo-data/pangeo-datastore\
         /master/intake-catalogs/master.yaml"
     retrieved_data = get_whole_data(CATALOG_URL, 0)

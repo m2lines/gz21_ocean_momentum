@@ -105,6 +105,7 @@ def select_run(
     if merge is not None:
         for name, key_left, key_right in merge:
             experiment = mlflow.get_experiment_by_name(name)
+            print(experiment)
             df2 = mlflow.search_runs(experiment_ids=experiment.experiment_id)
             mlflow_runs = pd.merge(
                 mlflow_runs,
