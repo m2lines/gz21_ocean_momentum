@@ -105,7 +105,6 @@ def select_run(
     if merge is not None:
         for name, key_left, key_right in merge:
             experiment = mlflow.get_experiment_by_name(name)
-            print(experiment)
             df2 = mlflow.search_runs(experiment_ids=experiment.experiment_id)
             mlflow_runs = pd.merge(
                 mlflow_runs,
@@ -119,7 +118,6 @@ def select_run(
             "No data found. Check that you correctly set \
                         the store"
         )
-    print(cols)
     print(mlflow_runs[cols])
     id_ = int(input("Select row number (first column)") or default_selection)
     if id_ < 0:
