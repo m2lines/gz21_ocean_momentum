@@ -23,7 +23,12 @@ mlflow run . --experiment-name <name>--env-manager=local \
 ```
 . The notebook generates figure 1b. 
 
-For `generate-paper-figure-6.ipynb`, which generates figure 6b, the same call has to be run with again with `CO2=1`. The notebook is then asking for the data set with `CO2=0` first and the one with `CO2=1` second.
+For `generate-paper-figure-6.ipynb`, which generates figure 6b, 
+the same call has to be run with again with `CO2=1`. 
+The notebook is then asking for the data set with `CO2=0` first and the one with `CO2=1` second.
 
-`test-global-control.ipynb` generates figures 4, 5 and 7. For this, the inference step with the trained neural network has to be run both on the data with `CO2=0` and `CO2=1`. The notebook needs the data processing run data first, 
-and then the inference data.
+`test-global-control.ipynb` generates figures 4, 5 and 7. For this, the inference step with 
+the trained neural network has to be run both on the data with `CO2=0` and `CO2=1`. 
+The notebook needs to be handed the inference run, which is linked to the data and training runs 
+through `params.data_run_id` (run ID of data run) and `params.model_run_id` (run ID of training run), 
+respectively.
