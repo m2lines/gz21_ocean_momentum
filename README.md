@@ -163,7 +163,7 @@ MLflow call example:
 
 ```
 mlflow run . --experiment-name <name> -e train --env-manager=local \
--P run_id=c57b36da385e4fc4a967e7790192ecb2 \
+-P run_id=<run id> \
 -P learning_rate=0/5e-4/15/5e-5/30/5e-6 -P n_epochs=200 -P weight_decay=0.00 -P train_split=0.8 \
 -P test_split=0.85 -P model_module_name=models.models1 -P model_cls_name=FullyCNN -P batchsize=4 \
 -P transformation_cls_name=SoftPlusTransform -P submodel=transform3 \

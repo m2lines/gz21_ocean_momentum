@@ -92,9 +92,9 @@ models_experiment_id, _ = select_experiment()
 cols = [
     "metrics.test loss",
     "start_time",
-    # "params.time_indices",
+    "params.time_indices",
     "params.model_cls_name",
-    #    "params.source.run_id",
+    "params.source.run-id",
     "params.submodel",
 ]
 model_run = select_run(
