@@ -222,8 +222,8 @@ with `n_splits` being the number of subsets which the dataset is split
 into for the processing, before being put back together for the final output.
 This is done in order to avoid memory issues for large datasets.
 Other useful arguments for this call would be 
-- `to_experiment`: the name of the mlflow experiment used for this run
-- `batch_size`: the batch size used in running the neural network on the data
+- `to_experiment`: the name of the mlflow experiment used for this run (default is "test").
+- `batch_size`: the batch size used in running the neural network on the data.
 
 
 After the script has started running, it will first require
