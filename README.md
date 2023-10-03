@@ -239,6 +239,19 @@ notebooks developed during early project development, some of which were used to
 generate figures used in the 2021 paper. See the readme in the folder for
 details.
 
+### Dev Branch
+The `dev` branch contains ongoing refactoring work which removes the necessity to use
+mlflow. Currently, the code has been refactored into a clearer structure and easier
+use through a command line interface for the data step, and the training step
+is in progress. Further work is needed for the inference step, and to adapt the Jupyter
+notebooks.
+
+## Data on Huggingface
+There is GZ21 Ocean Momentum data available on [Huggingface](https://huggingface.co/):
+- [the output of the data step](https://huggingface.co/datasets/M2LInES/gfdl-cmip26-gz21-ocean-forcing)
+and
+- [the trained model](https://huggingface.co/M2LInES/gz21-ocean-momentum) 
+
 ## Contributing
 We are not currently accepting contributions outside of the M2LInES and ICCS
 projects until we have reached a code release milestone.
