@@ -17,7 +17,7 @@ import pickle
 import gz21_ocean_momentum.models as models
 import sys
 
-sys.modules["models"] = models # what are we doing here anyway
+sys.modules["models"] = models  # what are we doing here anyway
 
 
 class TaskInfo:
@@ -119,7 +119,7 @@ def select_run(
                         the store"
         )
     print(mlflow_runs[cols])
-    id_ = int(input("Run id?") or default_selection)
+    id_ = int(input("Select row number (first column)") or default_selection)
     if id_ < 0:
         return 0
     return mlflow_runs.loc[id_, :]
@@ -135,7 +135,7 @@ def pickle_artifact(run_id: str, path: str):
 def seed_all(seed: int = 0):
     random.seed(seed)
     # seed hash
-    os.environ['PYTHONHASHSEED'] = str(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed)
     # seed numpy
     np.random.seed(seed)
     # seed torch

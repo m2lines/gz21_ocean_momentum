@@ -8,6 +8,8 @@ __pycache__/*
 
 # MLflow output
 /mlruns/*
+/examples/jupyter-notebooks/mlruns/*
 
 # Jupyter notebook cache files
 .ipynb_checkpoints/
+/.pytest_cache/

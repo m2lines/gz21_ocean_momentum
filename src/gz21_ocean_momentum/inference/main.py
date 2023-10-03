@@ -94,7 +94,7 @@ cols = [
     "start_time",
     "params.time_indices",
     "params.model_cls_name",
-    "params.source.run_id",
+    "params.source.run-id",
     "params.submodel",
 ]
 model_run = select_run(
@@ -113,7 +113,7 @@ time_indices = [
 train_split = float(model_run["params.train_split"])
 test_split = float(model_run["params.test_split"])
 batch_size = batch_size if batch_size else int(model_run["params.batchsize"])
-source_data_id = model_run["params.source.run_id"]
+source_data_id = model_run["params.source.run-id"]
 model_module_name = model_run["params.model_module_name"]
 model_cls_name = model_run["params.model_cls_name"]
 loss_cls_name = model_run["params.loss_cls_name"]

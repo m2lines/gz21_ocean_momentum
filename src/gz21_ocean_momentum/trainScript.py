@@ -38,8 +38,8 @@ from train.base import Trainer
 from inference.utils import create_test_dataset
 from inference.metrics import MSEMetric, MaxMetric
 import train.losses
-import models.transforms
-import models.submodels
+from models import transforms, submodels
+
 
 from utils import TaskInfo
 
@@ -105,10 +105,16 @@ description = (
 )
 parser = argparse.ArgumentParser(description=description)
 
-parser.add_argument("--run-id", type=str, help="MLflow run ID of data step containing forcing data to use")
+parser.add_argument(
+    "--run-id",
+    type=str,
+    help="MLflow run ID of data step containing forcing data to use",
+)
 
 # access input forcing data via absolute filepath
-parser.add_argument("--forcing-data-path", type=str, help="Filepath of the forcing data")
+parser.add_argument(
+    "--forcing-data-path", type=str, help="Filepath of the forcing data"
+)
 
 parser.add_argument("--batchsize", type=int, default=8)
 parser.add_argument("--n_epochs", type=int, default=100)
@@ -165,9 +171,10 @@ parser.add_argument(
 )
 params = parser.parse_args()
 
+
 def argparse_get_mlflow_artifact_path_or_direct_or_fail(
-        mlflow_artifact_name: str, params: dict[str, Any]
-        ) -> str:
+    mlflow_artifact_name: str, params: dict[str, Any]
+) -> str:
     """Obtain a filepath either from an MLflow run ID and artifact name, or a
     direct path if provided.
 
@@ -183,7 +190,9 @@ def argparse_get_mlflow_artifact_path_or_direct_or_fail(
     if params.run_id is not None and params.run_id != "None":
         if params.forcing_data_path is not None and params.forcing_data_path != "None":
             # got run ID and direct path: bad
-            raise TypeError("overlapping options provided (--forcing-data-path and --exp-id)")
+            raise TypeError(
+                "overlapping options provided (--forcing-data-path and --exp-id)"
+            )
 
         # got only run ID: obtain path via MLflow
         mlflow.log_param("source.run-id", params.run_id)
@@ -196,6 +205,7 @@ def argparse_get_mlflow_artifact_path_or_direct_or_fail(
 
     # if we get here, neither options were provided
     raise TypeError("require one of --run-id or --forcing-data-path")
+
 
 forcings_path = argparse_get_mlflow_artifact_path_or_direct_or_fail("forcing", params)
 
@@ -265,7 +275,7 @@ datasets, train_datasets, test_datasets = [], [], []
 
 for xr_dataset in xr_datasets:
     # TODO this is a temporary fix to implement seasonal patterns
-    submodel_transform = copy.deepcopy(getattr(models.submodels, submodel))
+    submodel_transform = copy.deepcopy(getattr(submodels, submodel))
     print(submodel_transform)
     xr_dataset = submodel_transform.fit_transform(xr_dataset)
     with ProgressBar(), TaskInfo("Computing dataset"):
@@ -336,7 +346,7 @@ except AttributeError as e:
     raise type(e)("Could not find the specified model class: " + str(e))
 net = model_cls(datasets[0].n_features, criterion.n_required_channels)
 try:
-    transformation_cls = getattr(models.transforms, transformation_cls_name)
+    transformation_cls = getattr(transforms, transformation_cls_name)
     transformation = transformation_cls()
     transformation.indices = criterion.precision_indices
     net.final_transformation = transformation
