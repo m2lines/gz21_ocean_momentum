@@ -47,8 +47,6 @@ def get_patch(
     catalog = intake.open_catalog(catalog_url)
     if CO2_level == 0:
         source = catalog.ocean.GFDL_CM2_6.GFDL_CM2_6_control_ocean_surface
-        # TODO variable cache_folder currently unused. Remove?
-        # cache_folder = CACHE_FOLDER
     elif CO2_level == 1:
         source = catalog.ocean.GFDL_CM2_6.GFDL_CM2_6_one_percent_ocean_surface
     else:

@@ -20,7 +20,7 @@ from gz21_ocean_momentum.data.pangeo_catalog import get_patch, get_whole_data
 from cartopy.crs import PlateCarree
 import yaml
 
-from data.utils import load_training_datasets
+from gz21_ocean_momentum.data.utils import load_training_datasets
 
 from enum import Enum
 
@@ -168,7 +168,12 @@ def view_predictions(
     fig.canvas.mpl_connect("button_press_event", onClick)
 
 
-def sample(data: np.ndarray, step_time: int = 1, nb_per_time: int = 5, random_state: Optional[int] = None):
+def sample(
+    data: np.ndarray,
+    step_time: int = 1,
+    nb_per_time: int = 5,
+    random_state: Optional[int] = None,
+):
     """Samples points from the data, where it is assumed that the data
     is 4-D, with the first dimension representing time , the second
     the channel, and the others representing spatial dimensions.
@@ -188,7 +193,7 @@ def sample(data: np.ndarray, step_time: int = 1, nb_per_time: int = 5, random_st
     :nb_per_time: int,
         Number of points used (chosen randomly according to a uniform
         distribution over the spatial domain) for each image.
-        
+
     :random_state: int, optional,
         Random state used for the random number generator.
 
@@ -584,7 +589,7 @@ def apply_complete_mask(array, pred, uv_plotter):
     return array
 
 
-def plot_training_subdomains(   
+def plot_training_subdomains(
     global_plotter: GlobalPlotter,
     alpha=0.5,
     bg_variable=None,
@@ -627,15 +632,15 @@ def plot_training_subdomains(
     subdomain_names = "ABCDE"
     # Plot the map
     ax = global_plotter.plot(bg_variable, *plot_args, **plot_kwd_args)
-    
+
     # Recover the coordinates of the rectangular subdomain
-    with open('../../training_subdomains.yaml', encoding="utf-8") as config_file:
+    with open("../../training_subdomains.yaml", encoding="utf-8") as config_file:
         subdomains = yaml.full_load(config_file)
         for i in range(len(subdomains)):
-            lat_min = dict(subdomains[i][1])['lat_min']
-            lat_max = dict(subdomains[i][1])['lat_max']
-            lon_min = dict(subdomains[i][1])['lon_min']
-            lon_max = dict(subdomains[i][1])['lon_max']
+            lat_min = dict(subdomains[i][1])["lat_min"]
+            lat_max = dict(subdomains[i][1])["lat_max"]
+            lon_min = dict(subdomains[i][1])["lon_min"]
+            lon_max = dict(subdomains[i][1])["lon_max"]
 
             lat_min, lat_max = float(lat_min), float(lat_max)
             lon_min, lon_max = float(lon_min), float(lon_max)
@@ -656,8 +661,10 @@ def plot_training_subdomains(
             # Add the table line
             lat_range = str(lat_min) + "\\degree, " + str(lat_max) + "\\degree"
             lon_range = str(lon_min) + "\\degree, " + str(lon_max) + "\\degree"
-            latex_lines.append(latex_line.format(subdomain_names[i], lat_range, lon_range))
-            
+            latex_lines.append(
+                latex_line.format(subdomain_names[i], lat_range, lon_range)
+            )
+
     latex_lines = "".join(latex_lines)
     latex = "".join((latex_start, latex_lines, latex_end))
     print(latex)
