@@ -4,6 +4,11 @@ Created on Tue Feb  4 14:00:45 2020
 
 @author: Arthur
 """
+
+from gz21_ocean_momentum.analysis.analysis import TimeSeriesForPoint
+from gz21_ocean_momentum.data.pangeo_catalog import get_patch, get_whole_data
+from gz21_ocean_momentum.common.bounding_box import BoundingBox
+
 import numpy as np
 import mlflow
 from mlflow.tracking import client
@@ -12,21 +17,16 @@ from matplotlib import colors
 import matplotlib.animation as animation
 from matplotlib.patches import Rectangle
 import pandas as pd
-from gz21_ocean_momentum.analysis.analysis import TimeSeriesForPoint
 import xarray as xr
 from typing import Optional
 from scipy.ndimage import gaussian_filter
-from gz21_ocean_momentum.data.pangeo_catalog import get_patch, get_whole_data
 from cartopy.crs import PlateCarree
 import yaml
-
-from gz21_ocean_momentum.data.utils import load_training_datasets
 
 from enum import Enum
 
 CATALOG_URL = "https://raw.githubusercontent.com/pangeo-data/pangeo-datastore\
 /master/intake-catalogs/master.yaml"
-
 
 def correlation_map(truth: np.ndarray, pred: np.ndarray):
     """
@@ -588,9 +588,9 @@ def apply_complete_mask(array, pred, uv_plotter):
     array = array.sel(latitude=slice(pred["latitude"][0], pred["latitude"][-1]))
     return array
 
-
 def plot_training_subdomains(
     global_plotter: GlobalPlotter,
+    bboxes: list[BoundingBox],
     alpha=0.5,
     bg_variable=None,
     facecolor="blue",
@@ -601,10 +601,7 @@ def plot_training_subdomains(
     **plot_kwd_args,
 ):
     """
-    Plots the training subdomains used for a training run. Retrieves
-    those subdomains from the training_subdomains.yaml file. Additionally, provide the
-    latex code of a table with the latitudes and longitudes of each
-    subdomain.
+    Plots the training subdomains used for a training run.
 
     Parameters
     ----------
@@ -619,58 +616,56 @@ def plot_training_subdomains(
 
     Returns
     -------
-    None.
+    Plotted map.
 
     """
-    # retrieve the latex code for the table from file
-    with open("analysis/latex_table.txt") as f:
-        lines = f.readlines()
-        latex_start = "".join(lines[:3])
-        latex_line = lines[4]
-        latex_end = "".join(lines[6:])
-    latex_lines = []
-    subdomain_names = "ABCDE"
     # Plot the map
     ax = global_plotter.plot(bg_variable, *plot_args, **plot_kwd_args)
 
-    # Recover the coordinates of the rectangular subdomain
-    with open("../../training_subdomains.yaml", encoding="utf-8") as config_file:
-        subdomains = yaml.full_load(config_file)
-        for i in range(len(subdomains)):
-            lat_min = dict(subdomains[i][1])["lat_min"]
-            lat_max = dict(subdomains[i][1])["lat_max"]
-            lon_min = dict(subdomains[i][1])["lon_min"]
-            lon_max = dict(subdomains[i][1])["lon_max"]
-
-            lat_min, lat_max = float(lat_min), float(lat_max)
-            lon_min, lon_max = float(lon_min), float(lon_max)
-            x, y = lon_min, lat_min
-            width, height = lon_max - lon_min, lat_max - lat_min
-            ax.add_patch(
-                Rectangle(
-                    (x, y),
-                    width,
-                    height,
-                    facecolor=facecolor,
-                    edgecolor=edgecolor,
-                    linewidth=linewidth,
-                    fill=fill,
-                    alpha=alpha,
-                )
+    for bbox in bboxes:
+        ax.add_patch(
+            Rectangle(
+                (bbox.long_min, bbox.lat_min),
+                bbox.long_max - bbox.long_min,
+                bbox.lat_max  - bbox.lat_min,
+                facecolor=facecolor,
+                edgecolor=edgecolor,
+                linewidth=linewidth,
+                fill=fill,
+                alpha=alpha,
             )
-            # Add the table line
-            lat_range = str(lat_min) + "\\degree, " + str(lat_max) + "\\degree"
-            lon_range = str(lon_min) + "\\degree, " + str(lon_max) + "\\degree"
-            latex_lines.append(
-                latex_line.format(subdomain_names[i], lat_range, lon_range)
-            )
+        )
 
-    latex_lines = "".join(latex_lines)
-    latex = "".join((latex_start, latex_lines, latex_end))
-    print(latex)
     plt.show()
     return ax
 
+def training_subdomains_latex(bboxes: list[BoundingBox]) -> str:
+    """
+    Return the LaTeX code of a table with the latitudes and longitudes of each
+    subdomain.
+
+    Potentially useful in visualizations, Jupyter notebooks.
+    """
+    text_lines = []
+    for i in range(len(bboxes)):
+        bbox = bboxes[i]
+        text_bbox_range_lat  = f"{bbox.lat_min}\\degree, {bbox.lat_max}\\degree"
+        text_bbox_range_long = f"{bbox.long_min}\\degree, {bbox.long_max}\\degree"
+        text_line = f"{i} & {text_bbox_range_lat} & {text_bbox_range_long} & X & X \\\\\n"
+        text_lines.append(text_line)
+
+    text_pre = """
+\\begin{table}[]
+\\begin{tabular}{lcccc}
+subdomain & latitude range & longitude range & training & validation \\\\
+"""
+    text_post = """
+\\end{tabular}
+\\end{table}
+"""
+
+    text = text_pre + "".join(text_lines) + text_post
+    return text
 
 def anomalies(dataset: xr.Dataset, dim: str = "time.month"):
     """Returns a dataset of the anomalies."""
