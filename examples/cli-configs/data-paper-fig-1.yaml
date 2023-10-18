@@ -1,0 +1,11 @@
+# Forcing generation configuration for Figure 1 in the 2021 paper.
+
+lat-min:  -80
+lat-max:  80
+long-min: -280
+long-max: 80
+
+ntimes: 4000
+factor: 4
+
+co2-increase: true
