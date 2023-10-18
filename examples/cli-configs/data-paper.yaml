@@ -1,4 +1,5 @@
 # Approximates data step configuration used in the 2021 paper.
+# Also generates forcing data used to generate Figure 1 (via Jupyter notebook).
 
 lat-min:  -80
 lat-max:  80
