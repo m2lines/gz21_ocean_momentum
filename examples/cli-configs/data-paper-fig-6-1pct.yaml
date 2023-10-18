@@ -1,0 +1,12 @@
+# One forcing generation configuration for Figure 6 in the 2021 paper.
+# Same as Figure 1, but using 1% annual CO2 increase dataset.
+
+lat-min:  -80
+lat-max:  80
+long-min: -280
+long-max: 80
+
+ntimes: 4000
+factor: 4
+
+co2-increase: true
