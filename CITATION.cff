@@ -1,0 +1,18 @@
+# vim: ft=yaml
+
+cff-version: 1.2.0
+title: GZ21 Ocean Momentum
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+- given-names: Arthur P.
+  family-names: Guillaumin
+  orcid: 'https://orcid.org/0000-0003-1571-4228'
+  affiliation: >-
+    Courant Institute of Mathematical Sciences, New York
+    University, New York, NY, USA
+  email: a.guillaumin@qmul.ac.uk
+version: 0.2.0
+date-released: 2023-11-09
