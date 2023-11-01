@@ -260,3 +260,7 @@ projects until we have reached a code release milestone.
 ## License
 This repository is provided under the MIT license. See [`LICENSE`](LICENSE) for
 license text and copyright information.
+
+## Citing this software
+See `CITATION.cff` for citation metadata for this software. *(For further
+details on usage, see https://citation-file-format.github.io/ .)*
