@@ -17,27 +17,24 @@ classifiers = [
 ]
 
 dependencies = [
-    # general, likely used all over
-    "scipy",
     "xarray",
+    "torch>=1.13.1",
     "dask",
     "mlflow-skinny",
 
-    # data download
-    "intake",
-    "requests",
-    "aiohttp",
-    "intake-xarray",
-    "gcsfs",
-
+    "scipy", # data analysis, graphing
     "matplotlib>=3.7", # analysis, examples
     "cartopy>=0.21", # analysis (plotting data)
 
-    "torch>=1.13.1",
-    "progressbar2>=4.2.0" # inference/utils (but imported by trainScript)
+    # data download
+    "intake",
+    "intake-xarray",
+    "gcsfs", # required for downloading CM2.6 via intake (dataset stored on GCP)
+    "requests",
+    "aiohttp",
 
-    # new CLI
-    "configargparse>=1.7",
+    "progressbar2>=4.2.0", # inference/utils (but imported by trainScript)
+    "configargparse>=1.7", # CLI
 ]
 
 authors = [
