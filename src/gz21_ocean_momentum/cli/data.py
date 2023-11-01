@@ -41,9 +41,8 @@ else:
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
 
-if not cli.path_is_nonexist_or_empty_dir(options.out_dir):
-    cli.fail(1, "--out-dir output directory is invalid",
-                "if the directory exists, ensure it is empty")
+cli.fail_if_path_is_nonempty_dir(
+        1, f"--out-dir \"{options.out_dir}\" invalid", options.out_dir)
 
 # store bounding box in a struct-like
 bbox = BoundingBox(
