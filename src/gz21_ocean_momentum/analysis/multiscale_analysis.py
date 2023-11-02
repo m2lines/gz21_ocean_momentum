@@ -10,7 +10,7 @@ to the script inference/multiscale.py.
 from gz21_ocean_momentum.analysis.loadmlflow import LoadMLFlow
 from gz21_ocean_momentum.utils import select_run
 from gz21_ocean_momentum.analysis.utils import view_predictions, DisplayMode
-import mlflow
+import mlflow # type: ignore
 
 # We'll run this locally
 mlflow.set_tracking_uri("file:///d:\\Data sets\\NYU\\mlruns")

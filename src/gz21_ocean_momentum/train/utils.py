@@ -41,15 +41,15 @@ def print_every(to_print: str, every: int, n_iter: int) -> bool:
 class RunningAverage:
     """Class for online computing of a running average"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.n_items = 0
         self.average = 0.0
 
     @property
-    def value(self):
+    def value(self) -> float:
         return self.average
 
-    def update(self, value: float, weight: float = 1) -> float:
+    def update(self, value: float, weight: int = 1) -> float:
         """Adds some value to be used in the running average.
 
         Parameters
@@ -78,16 +78,16 @@ class RunningAverage:
         self.average = temp / self.n_items
         return self.average
 
-    def reset(self):
+    def reset(self) -> None:
         """Resets the running average to zero as well as its number of items"""
         self.n_items = 0
         self.average = 0.0
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.average)
 
 
-def learning_rates_from_string(rates_string: str) -> dict:
+def learning_rates_from_string(rates_string: str) -> dict[int, float]:
     temp = rates_string.split("/")
     if len(temp) == 1:
         return {0: float(rates_string)}
@@ -99,9 +99,9 @@ def learning_rates_from_string(rates_string: str) -> dict:
     return rates
 
 
-def run_ids_from_string(run_ids_str: str) -> list:
+def run_ids_from_string(run_ids_str: str) -> list[str]:
     return run_ids_str.split("/")
 
 
-def list_from_string(string: str) -> list:
+def list_from_string(string: str) -> list[str]:
     return string.split("/")
