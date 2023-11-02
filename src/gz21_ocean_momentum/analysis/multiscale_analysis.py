@@ -7,8 +7,9 @@ Script to analyze the outputs from the 'multiscale' experiment, corresponding
 to the script inference/multiscale.py.
 """
 
-from analysis.loadmlflow import LoadMLFlow
-from analysis.utils import select_run, view_predictions, DisplayMode
+from gz21_ocean_momentum.analysis.loadmlflow import LoadMLFlow
+from gz21_ocean_momentum.utils import select_run
+from gz21_ocean_momentum.analysis.utils import view_predictions, DisplayMode
 import mlflow
 
 # We'll run this locally
