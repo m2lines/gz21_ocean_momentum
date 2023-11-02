@@ -30,6 +30,9 @@ jobs:
 
     - run: pip install mypy
 
+    - name: Install relevant Python type stub libraries
+      run: pip install types-requests
+
     - name: mypy
       run: mypy --strict .
 
