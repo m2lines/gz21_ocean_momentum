@@ -1,32 +1,33 @@
-# Stochastic-Deep Learning Parameterization of Ocean Momentum Forcing
+# GZ21: stochastic deep learning parameterization of ocean momentum forcing
 [gz21-paper-code-zenodo]: https://zenodo.org/record/5076046#.ZF4ulezMLy8
 [gz21-paper-agupubs]: https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2021MS002534
 
-This repository provides a subgrid model of ocean momentum forcing, based on a
-convolutional neural network (CNN) trained on high-resolution surface velocity
-data from CM2.6. This model can then be coupled into larger GCMs, e.g., at
-coarser granularity to provide high-fidelity parameterization of ocean momentum
-forcing. The parameterization output by the CNN consists of a Gaussian
-distribution specified by 2 parameters (mean and standard deviation), which
-allows for stochastic implementations in online models.
+This repository trains a convolutional neural network (CNN) to parameterize
+subgrid ocean momentum forcing, intended for coupling into larger GCMs at to
+provide a high-fidelity parameterization in coarser-grain models.
 
-The model is based on the paper [Arthur P. Guillaumin, Laure Zanna (2021).
-Stochastic-deep learning parameterization of ocean momentum
-forcing][gz21-paper-agupubs]. The exact version of the code used to produce said
-paper can be found on [Zenodo][gz21-paper-code-zenodo]. The present repository
-provides a version of this model which is designed for others to reproduce,
-replicate, and reuse.
+High-resolution surface velocity data from the CM2.6 dataset is used to compute
+forcings (present in coarser-grain models), then coarsened. These coarse surface
+velocities are used to train a CNN to predict forcings. For every grid point,
+rather than predicting a single value for the subgrid momentum forcing, the CNN
+predicts both the mean and standard deviation of a Gaussian probability
+distribution. This allows for stochastic implementations in online models.
 
-_This repository is currently work-in-progress following a process of
-refreshing the code and making it available for easy reuse by others._
+The paper
+[Arthur P. Guillaumin, Laure Zanna (2021). Stochastic-deep learning
+parameterization of ocean momentum forcing][gz21-paper-agupubs] discusses the
+original model, and is a useful resource for further reading.
+(The exact version of the code used to produce said paper can be found on
+[Zenodo][gz21-paper-code-zenodo].)
 
 ## Architecture
 The model is written in Python, using PyTorch for the CNN. We provide 3 separate
 "steps", which are run using different commands and arguments:
 
-* data processing: downloads part of CM2.6 dataset and processes
-* model training: train model on processed data
-* model testing: tests the trained model on an unseen region
+* data processing: downloads subset of CM2.6 dataset, computes forcings
+* model training: train model to predict forcing from (coarse) velocities
+* model testing: test trained model on unseen region of data (the subset not
+  used in previous training step)
 
 For more details on each of the steps, see the [`docs`](docs/) directory.
 
