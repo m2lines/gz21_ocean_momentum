@@ -12,6 +12,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 import torch
+import torch.utils.data as torch
 from torch.utils.data import Dataset, ConcatDataset, Subset
 import xarray as xr
 
@@ -712,6 +713,18 @@ class RawDataFromXrDataset(Dataset):
             return getattr(self.xr_dataset, attr_name)
         raise AttributeError()
 
+def pytorch_dataset_from_cm2_6_forcing_dataset(ds: xr.Dataset) -> torch.Dataset:
+    """Obtain a PyTorch `Dataset` view over an xarray dataset, specifically for
+    CM2.6 data annotated with forcings in `S_x` and `S_y`.
+
+    The same snippet is used for both training and inference."""
+    ds_torch = RawDataFromXrDataset(ds)
+    ds_torch.index = "time"
+    ds_torch.add_input("usurf")
+    ds_torch.add_input("vsurf")
+    ds_torch.add_output("S_x")
+    ds_torch.add_output("S_y")
+    return ds_torch
 
 class DatasetWithTransform:
     def __init__(self, dataset, transform: DatasetTransformer):
