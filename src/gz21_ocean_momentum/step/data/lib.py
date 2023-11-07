@@ -78,7 +78,7 @@ def cyclize(dim_name: str, ds: xr.Dataset, nb_points: int):
     return xr.concat((left, right), dim_name)
 
 
-def compute_forcings_cm2_6(
+def compute_forcings_and_coarsen_cm2_6(
     u_v_dataset: xr.Dataset,
     grid_data: xr.Dataset,
     scale: int,
@@ -90,7 +90,7 @@ def compute_forcings_cm2_6(
     Parameters
     ----------
     u_v_dataset : xarray Dataset
-        High-resolution velocity field.
+        High-resolution velocity field in "usurf" and "vsurf".
     grid_data : xarray Dataset
         High-resolution grid details.
     scale : float
@@ -100,13 +100,14 @@ def compute_forcings_cm2_6(
         nan values in the initial surface velocities array or whether we
         replace them by zeros before applying the procedure.
         In the second case, remaining zeros after applying the procedure will
-        be replaced by nans for consistency.
+        be replaced by NaNs for consistency.
         The default is 'zero'.
 
     Returns
     -------
     forcing : xarray Dataset
-        Dataset containing the low-resolution velocity field and forcing.
+        Dataset containing the low-resolution velocity field in "usurf" and
+        "vsurf", and forcing in data variables "S_x" and "S_y".
     """
     # Replace nan values with zeros.
     if nan_or_zero == "zero":
@@ -122,10 +123,12 @@ def compute_forcings_cm2_6(
     adv = _advections(u_v_dataset, grid_data)
     # Filtered advections
     filtered_adv = _spatial_filter_dataset(adv, grid_data, scale/2)
+
     # Filtered u,v field and temperature
     u_v_filtered = _spatial_filter_dataset(u_v_dataset, grid_data, scale/2)
     # Advection term from filtered velocity field
     adv_filtered = _advections(u_v_filtered, grid_data)
+
     # Forcing
     forcing = adv_filtered - filtered_adv
     forcing = forcing.rename({"adv_x": "S_x", "adv_y": "S_y"})
@@ -161,7 +164,8 @@ def _advections(u_v_field: xr.Dataset, grid_data: xr.Dataset):
     Parameters
     ----------
     u_v_field : xarray Dataset
-        Velocity field, must contains variables "usurf" and "vsurf"
+        Velocity field, must contains variables "usurf" and "vsurf", coordinates
+        "xu_ocean" and "yu_ocean"
     grid_data : xarray Dataset
         grid data, must contain variables "dxu" and "dyu"
 

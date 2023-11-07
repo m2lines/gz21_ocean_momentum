@@ -105,8 +105,9 @@ def _dataset_from_channels(array, channels_names: list, dims, coords):
     return xr.Dataset(data)
 
 
-def create_large_test_dataset(
-    net, criterion, test_datasets, test_loaders, device, save_input: bool = False
+def predict_lazy_cm2_6(
+        net: torch.nn.Module,
+        criterion, test_datasets, test_loaders, device, save_input: bool = False
 ):
     """
     Return an xarray dataset with the predictions carried out on the
@@ -116,11 +117,16 @@ def create_large_test_dataset(
     dataset into smaller test datasets, each of which fits in RAM, there
     should be no issue.
 
+    TODO:
+
+      * `xu_ocean`, `yu_ocean` hardcoded
+      * why do we take `test_datasets`? bad
+
     Parameters
     ----------
     net : torch.nn.Module
         Neural net used to make predictions
-    test_datasets : list
+    test_datasets : list <-- can't go `list[xarray[has "usurf"]]`...
         List of PytTorch datasets containing the input data.
     test_loaders : list
         List of Pytorch DataLoaders corresponding to the datasets
