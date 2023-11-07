@@ -23,8 +23,16 @@ DESCRIPTION = "GZ21 inference step: predict forcings trained model on "
 
 p = configargparse.ArgParser(description=DESCRIPTION)
 p.add("--config-file", is_config_file=True, help="config file path")
+
+p.add("--lat-min",  type=float, required=True, help="bounding box minimum latitude")
+p.add("--lat-max",  type=float, required=True, help="bounding box maximum latitude")
+p.add("--long-min", type=float, required=True, help="bounding box minimum longitude")
+p.add("--long-max", type=float, required=True, help="bounding box maximum longitude")
+p.add("--ntimes",   type=int,   help="number of time points to process, starting from the first. Note that the CM2.6 dataset is daily, so this would be number of days. If unset, uses whole dataset.")
+p.add("--co2-increase", action="store_true", help="use 1%% annual CO2 increase CM2.6 dataset. By default, uses control (no increase)")
+p.add("--factor",   type=int,   required=True, help="resolution degradation factor")
+
 p.add("--model-state-dict-file", type=str, required=True, help="model state dict file (*.pth)")
-p.add("--forcing-data-dir",      type=str, required=True, help="directory containing zarr-format forcing data")
 p.add("--device",  type=str, default="cuda", help="neural net device (e.g. cuda, cuda:0, cpu)")
 p.add("--out-dir", type=str, required=True,  help="folder to save output dataset to")
 
@@ -32,19 +40,43 @@ p.add("--train-split", required=True)
 p.add("--test-split",  required=True)
 p.add("--batch_size",  required=True)
 
+p.add("--verbose", action="store_true", help="be more verbose (displays progress, debug messages)")
+
 options = p.parse_args()
+
+# set up logging immediately after parsing CLI options (need to check verbosity)
+# (would like to simplify this, maybe with `basicConfig(force=True)`)
+if options.verbose:
+    logging.basicConfig(level=logging.DEBUG)
+    dask.diagnostics.ProgressBar().register()
+    logger = logging.getLogger(__name__)
+    logger.debug("verbose mode; displaying all debug messages, progress bars)")
+else:
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+# store bounding box in a struct-like
+bbox = BoundingBox(
+        options.lat_min,  options.lat_max,
+        options.long_min, options.long_max)
+if not bounding_box.validate_nonempty(bbox):
+    cli.fail(2, f"provided bounding box describes an empty region: {bbox}")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-cli.fail_if_path_is_nonempty_dir(
-        1, f"--out-dir \"{options.out_dir}\" invalid", options.out_dir)
+logger.info("retrieving CM2.6 dataset via Pangeo Cloud Datastore...")
+surface_fields, _grid = lib.retrieve_cm2_6(options.pangeo_catalog_uri, options.co2_increase)
 
-xr_dataset = xr.open_zarr(options.forcing_data_dir)
+logger.debug("dropping irrelevant data variables...")
+surface_fields = surface_fields[["usurf", "vsurf"]]
 
-# TODO: Actually, we shouldn't need this whole snippet, because we shouldn't use
-# existing forcings. We do pure inference here now.
-dataset = pytorch_dataset_from_cm2_6_forcing_dataset(xr_dataset)
+if options.ntimes is not None:
+    logger.info(f"slicing {options.ntimes} time points...")
+    surface_fields = surface_fields.isel(time=slice(options.ntimes))
+
+logger.info("selecting input data bounding box...")
+surface_fields = bounding_box.bound_dataset("yu_ocean", "xu_ocean", surface_fields, bbox)
 
 # ---
 

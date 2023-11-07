@@ -87,7 +87,7 @@ class TestEddyForcing:
                     ),
                 }
         )
-        forcing = lib.compute_forcings_cm2_6(data, grid_info, 4)
+        forcing = lib.compute_forcings_and_coarsen_cm2_6(data, grid_info, 4)
         usurf_0, usurf_1 = forcing.usurf.isel(time=0), forcing.usurf.isel(time=1)
         # remove nan values at the boundaries from the test
         usurf_0 = usurf_0.data[~np.isnan(usurf_0)]
@@ -143,7 +143,7 @@ class TestEddyForcing:
         )
 
         # new forcing: apply
-        forcing_new = lib.compute_forcings_cm2_6(data, grid_info, scale=scale_m)
+        forcing_new = lib.compute_forcings_and_coarsen_cm2_6(data, grid_info, scale=scale_m)
 
         # new forcing: post-chunk
         for var in forcing_new:
@@ -169,7 +169,7 @@ class TestEddyForcing:
                 - S_x and S_y, the two components of the diagnosed subgrid momentum
                 forcing
             """
-            return lib.compute_forcings_cm2_6(block, grid_info, scale=scale_m)
+            return lib.compute_forcings_and_coarsen_cm2_6(block, grid_info, scale=scale_m)
 
         # old forcing: apply
         template = data.coarsen(

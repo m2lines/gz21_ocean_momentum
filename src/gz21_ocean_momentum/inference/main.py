@@ -28,7 +28,7 @@ import xarray as xr
 from gz21_ocean_momentum.utils import select_run, select_experiment, TaskInfo
 from gz21_ocean_momentum.train.utils import learning_rates_from_string
 from gz21_ocean_momentum.data.datasets import (
-    RawDataFromXrDataset,
+    pytorch_dataset_from_cm2_6_forcing_dataset
     DatasetTransformer,
     Subset_,
     DatasetWithTransform,
@@ -36,7 +36,6 @@ from gz21_ocean_momentum.data.datasets import (
     MultipleTimeIndices,
     DatasetPartitioner,
 )
-from gz21_ocean_momentum.train.base import Trainer
 from gz21_ocean_momentum.train import losses
 from gz21_ocean_momentum.inference.utils import (
     create_large_test_dataset,
@@ -58,7 +57,6 @@ from gz21_ocean_momentum.models import submodels
 
 # Parse arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("--n_epochs", type=int, default=0)
 parser.add_argument("--lr_ratio", type=float, default=1)
 parser.add_argument("--train_mode", type=str, default="all")
 parser.add_argument("--n_test_times", type=int, default=None)
@@ -67,7 +65,6 @@ parser.add_argument("--to_experiment", type=str, default="test")
 parser.add_argument("--n_splits", type=int, default=1)
 
 script_params = parser.parse_args()
-n_epochs = script_params.n_epochs
 lr_ratio = script_params.lr_ratio
 to_experiment = script_params.to_experiment
 n_test_times = script_params.n_test_times
@@ -150,7 +147,6 @@ data_file = client.download_artifacts(data_run.run_id, "forcing")
 
 mlflow.log_param("model_run_id", model_run.run_id)
 mlflow.log_param("data_run_id", data_run.run_id)
-mlflow.log_param("n_epochs", n_epochs)
 
 # Read the dataset file
 print("loading dataset...")
@@ -159,21 +155,11 @@ xr_dataset = xr.open_zarr(data_file)
 with ProgressBar(), TaskInfo("Applying transforms to dataset"):
     xr_dataset = submodel.fit_transform(xr_dataset)
 
-# To PyTorch Dataset
-dataset = RawDataFromXrDataset(xr_dataset)
-dataset.index = "time"
-dataset.add_input("usurf")
-dataset.add_input("vsurf")
-dataset.add_output("S_x")
-dataset.add_output("S_y")
+dataset = pytorch_dataset_from_cm2_6_forcing_dataset(xr_dataset)
 
-if n_epochs > 0:
-    train_index = int(train_split * len(dataset))
-    test_index = int(test_split * len(dataset))
-else:
-    # TODO check this. Right now we have done this to align with chunks.
-    train_index = batch_size
-    test_index = batch_size
+# TODO check this. Right now we have done this to align with chunks.
+train_index = batch_size
+test_index = batch_size
 
 n_test_times = n_test_times if n_test_times else (len(dataset) - test_index)
 train_dataset = Subset_(dataset, np.arange(train_index))
@@ -246,31 +232,9 @@ with TaskInfo("Put neural network on device"):
 
 print("width: {}, height: {}".format(dataset.width, dataset.height))
 
-
-# Training itself
-if n_epochs > 0:
-    with TaskInfo("Training"):
-        trainer = Trainer(net, device)
-        trainer.criterion = criterion
-        # Register metrics
-        for metric_name, metric in metrics.items():
-            trainer.register_metric(metric_name, metric)
-        parameters = net.parameters()
-        optimizer = torch.optim.Adam(parameters, lr=learning_rate)
-        for i_epoch in range(n_epochs):
-            train_loss = trainer.train_for_one_epoch(train_dataloader, optimizer)
-            test_loss, metrics_results = trainer.test(test_dataloader)
-            print("Epoch {}".format(i_epoch))
-            print("Train loss for this epoch is {}".format(train_loss))
-            print("Test loss for this epoch is {}".format(test_loss))
-
-    with TaskInfo("Validation"):
-        train_loss, train_metrics_results = trainer.test(train_dataloader)
-        print(f"Final train loss is {train_loss}")
-
-# Test
+# make predictions using neural net
 with ProgressBar(), TaskInfo("Create output dataset"):
-    out = create_large_test_dataset(net, criterion, partition, loaders, device)
+    out = predict_lazy_cm2_6(net, criterion, partition, loaders, device)
     file_path = os.path.join(data_location, f"test_output_0")
     ProgressBar().register()
     print("Start of actual computations...")
