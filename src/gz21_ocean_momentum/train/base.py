@@ -10,7 +10,7 @@ from torch.nn import Module, MSELoss
 from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import DataLoader
 
-from .utils import print_every, RunningAverage
+from gz21_ocean_momentum.train.utils import print_every, RunningAverage
 
 
 class Trainer:
@@ -110,25 +110,28 @@ class Trainer:
         -------
         float
             The average train loss for this epoch.
+
+        Effect: backpropagates loss, editing neural network.
         """
         self.net.train()
         self._locked = True
         running_loss = RunningAverage()
         running_loss_ = RunningAverage()
-        for i_batch, batch in enumerate(dataloader):
+        for i, (feature, target) in enumerate(dataloader):
             # Zero the gradients
             self.net.zero_grad()
             # Move batch to the GPU (if possible)
-            X = batch[0].to(self._device, dtype=torch.float)
-            Y = batch[1].to(self._device, dtype=torch.float)
-            Y_hat = self.net(X)
+            feature_device = feature.to(self._device, dtype=torch.float)
+            target_device  =  target.to(self._device, dtype=torch.float)
+            # predict with input
+            predict = self.net(feature)
             # Compute loss
             loss = self.criterion(Y_hat, Y)
             running_loss.update(loss.item(), X.size(0))
             running_loss_.update(loss.item(), X.size(0))
             # Print current loss
             loss_text = "Loss value {}".format(running_loss_.average)
-            if print_every(loss_text, self.print_loss_every, i_batch):
+            if print_every(loss_text, self.print_loss_every, i):
                 # Every time we print we reset the running average
                 running_loss_.reset()
             # Backpropagate
