@@ -13,7 +13,12 @@ from gz21_ocean_momentum.data.xrtransforms import (
     TargetedTransform,
 )
 
+# v CM2.6 specific v
+
+# velocities (usurf, vsurf) are metres/s
 velocity_vars = ["usurf", "vsurf"]
+
+# forcing unitless -- common scale is ?
 forcing_vars = ["S_x", "S_y"]
 
 velocity_scaler = TargetedTransform(ScalingTransform(10.0), velocity_vars)
