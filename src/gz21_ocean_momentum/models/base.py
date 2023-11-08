@@ -36,7 +36,7 @@ class DetectOutputSizeMixin:
         """
         # TODO: following 2 lines can be combined for speedup as
         #       e.g. `torch.zeros(10, 10, device=self.device)`
-        dummy_in = torch.zeros((1, self.n_in_channels, input_height, input_width))
+        dummy_in = torch.zeros((1, self._n_in_channels, input_height, input_width))
         dummy_in = dummy_in.to(device=self.device)
         # AB - Self here is assuming access to a neural net forward method?
         #      If so I think this should really be contained in FullyCNN.
@@ -61,7 +61,7 @@ class DetectOutputSizeMixin:
         """
         # TODO: following 2 lines can be combined for speedup as
         #       e.g. `torch.zeros(10, 10, device=self.device)`
-        dummy_in = torch.zeros((1, self.n_in_channels, input_height, input_width))
+        dummy_in = torch.zeros((1, self._n_in_channels, input_height, input_width))
         dummy_in = dummy_in.to(device=self.device)
         dummy_out = self(dummy_in)
         return dummy_out.size(2)
