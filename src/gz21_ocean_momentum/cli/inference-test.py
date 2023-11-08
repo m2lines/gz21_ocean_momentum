@@ -19,26 +19,33 @@ import gz21_ocean_momentum.train.losses.HeteroskedasticGaussianLossV2 as loss_cl
 from gz21_ocean_momentum.data.datasets import
     pytorch_dataset_from_cm2_6_forcing_dataset
 
-DESCRIPTION = "GZ21 inference step: predict forcings trained model on "
+DESCRIPTION = """
+Use pre-trained GZ21 neural net to predict forcing for input ocean velocity data.
+
+This script is intended as example of how use the GZ21 neural net, and for
+general tinkering.
+
+Designed to ingest coarsened CM2.6 data: looks for data variables at certain
+names (`xu_ocean`, ...) with certain units. If these do not match up, the neural
+net will not operate properly.
+
+More specifically, this script is designed to ingest coarsened CM2.6 data as
+output from the GZ21 data step. This also computes forcings, which are ignored.
+(Ideally, we would provide a short script to simply coarsen some data.)
+
+Note that the neural net has two outputs per grid point. See project
+documentation (specifically `README.md` in the project repository), and the
+associated paper Guillaumin (2021) for suggestions on how to integrate these
+into your GCM of choice.
+"""
 
 p = configargparse.ArgParser(description=DESCRIPTION)
 p.add("--config-file", is_config_file=True, help="config file path")
 
-p.add("--lat-min",  type=float, required=True, help="bounding box minimum latitude")
-p.add("--lat-max",  type=float, required=True, help="bounding box maximum latitude")
-p.add("--long-min", type=float, required=True, help="bounding box minimum longitude")
-p.add("--long-max", type=float, required=True, help="bounding box maximum longitude")
-p.add("--ntimes",   type=int,   help="number of time points to process, starting from the first. Note that the CM2.6 dataset is daily, so this would be number of days. If unset, uses whole dataset.")
-p.add("--co2-increase", action="store_true", help="use 1%% annual CO2 increase CM2.6 dataset. By default, uses control (no increase)")
-p.add("--factor",   type=int,   required=True, help="resolution degradation factor")
-
+p.add("--input-data-dir", type=str, required=True, help="path to input ocean velocity data, in zarr format (folder)")
 p.add("--model-state-dict-file", type=str, required=True, help="model state dict file (*.pth)")
 p.add("--device",  type=str, default="cuda", help="neural net device (e.g. cuda, cuda:0, cpu)")
-p.add("--out-dir", type=str, required=True,  help="folder to save output dataset to")
-
-p.add("--train-split", required=True)
-p.add("--test-split",  required=True)
-p.add("--batch_size",  required=True)
+p.add("--out-dir", type=str, required=True,  help="folder to save forcing predictions dataset to (in zarr format)")
 
 p.add("--verbose", action="store_true", help="be more verbose (displays progress, debug messages)")
 
@@ -54,19 +61,6 @@ if options.verbose:
 else:
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
-
-# store bounding box in a struct-like
-bbox = BoundingBox(
-        options.lat_min,  options.lat_max,
-        options.long_min, options.long_max)
-if not bounding_box.validate_nonempty(bbox):
-    cli.fail(2, f"provided bounding box describes an empty region: {bbox}")
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-logger.info("retrieving CM2.6 dataset via Pangeo Cloud Datastore...")
-surface_fields, _grid = lib.retrieve_cm2_6(options.pangeo_catalog_uri, options.co2_increase)
 
 logger.debug("dropping irrelevant data variables...")
 surface_fields = surface_fields[["usurf", "vsurf"]]
