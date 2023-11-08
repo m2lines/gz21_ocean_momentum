@@ -121,7 +121,7 @@ parser.add_argument(
 parser.add_argument("--batchsize", type=int, default=8)
 parser.add_argument("--n_epochs", type=int, default=100)
 parser.add_argument(
-    "--learning_rate", type=learning_rates_from_string, default={"0\1e-3"}
+    "--learning_rate", type=learning_rates_from_string, default="0/1e-3"
 )
 parser.add_argument("--train_split", type=float, default=0.8, help="Between 0 and 1")
 parser.add_argument(
