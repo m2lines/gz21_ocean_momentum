@@ -20,6 +20,14 @@ original model, and is a useful resource for further reading.
 (The exact version of the code used to produce said paper can be found on
 [Zenodo][gz21-paper-code-zenodo].)
 
+## Repository layout
+TODO
+
+* `src`:
+* `tests`: pytest tests
+* `docs`
+* `examples`: CLI step configs, Jupyter notebooks for generating figures etc.
+
 ## Architecture
 The model is written in Python, using PyTorch for the CNN. We provide 3 separate
 "steps", which are run using different commands and arguments:
@@ -31,7 +39,7 @@ The model is written in Python, using PyTorch for the CNN. We provide 3 separate
 
 For more details on each of the steps, see the [`docs`](docs/) directory.
 
-## Usage
+## Installation
 ### Dependencies
 Python 3.9 or newer is required. We primarily test on Python 3.11.
 
@@ -67,7 +75,7 @@ be run in the regular method:
 
     pytest
 
-### Running steps
+## Running steps
 Execute these commands from the repository root.
 
 See [`docs`](docs/) directory for more details.
@@ -144,7 +152,7 @@ For command-line option explanation, append the `--help` flag:
     python src/gz21_ocean_momentum/cli/data.py --help
 
 Some preprocessed data is hosted on HuggingFace at
-[datasets/M2LInES/gfdl-cmip26-gz21-ocean-forcing](https://huggingface.co/datasets/M2LInES/gfdl-cmip26-gz21-ocean-forcing).
+[datasets/M2LInES/gz21-forcing-cm26](https://huggingface.co/datasets/M2LInES/gz21-forcing-cm26).
 
 You may also run the data processing step directly from Python using the
 functions at [`step/data/lib.py`](src/gz21_ocean_momentum/step/data/lib.py). See
