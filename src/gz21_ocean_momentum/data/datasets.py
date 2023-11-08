@@ -189,7 +189,7 @@ class DatasetTransformer:
             )
         self.transforms["targets"].add_transform(transform)
 
-    def fit(self, x: torch.utils.data.Dataset):
+    def fit(self, x: torch.Dataset):
         """
         Call the fit method of all array transforms in the list
         of features and target transforms on the passed Dataset.
