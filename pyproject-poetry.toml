@@ -66,7 +66,7 @@ namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
 name = "gz21_ocean_momentum"
 version = "0.2.0"
 description = "TODO"
-authors = ["Sébastien Eustace <sebastien@eustace.io>"]
+authors = ["Arthur Guillaumin <a.guillaumin@qmul.ac.uk>"]
 readme = "README.md"
 packages = [{include = "poetry_demo"}]
 
