@@ -7,6 +7,11 @@ Stochastic-deep learning parameterization of ocean momentum
 forcing][gz21-paper-agupubs]. The exact version of the code used to produce said
 paper can be found on [Zenodo][gz21-paper-code-zenodo].
 
+Some of these notebooks require the following dependencies (obtain using `pip`):
+
+  * `ipympl`
+  * `cmocean`
+
 ## 2021 paper figures
 There are several notebooks which were used to generate the figures in the 2021
 paper.
