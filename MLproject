@@ -12,7 +12,7 @@ entry_points:
       learning_rate : {type : string, default : 0\1e-3}
       n_epochs : {type : float, default : 100}
       train_split : {type : float, default : 0.8}
-      test_split : {type : float, default : 0.85}
+      test_split : {type : float, default : 0.8}
       time_indices : {type : string, default : 0}
       print_every : {type : float, default : 20}
       weight_decay : {type : float, default : 0.01}
@@ -23,7 +23,7 @@ entry_points:
       submodel : {type: string, default : transform3}
       features_transform_cls_name : {type : string, default : None}
       targets_transform_cls_name : {type : string, default : None}
-      subdomains_file: {type: string, default: training_subdomains.yaml}
+      subdomains_file: {type: string, default: examples/cli-configs/training-subdomains-paper.yaml}
     command: "python src/gz21_ocean_momentum/trainScript.py
         --run-id {run_id}
         --forcing-data-path {forcing_data_path}
