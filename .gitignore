@@ -13,3 +13,6 @@ __pycache__/*
 # Jupyter notebook cache files
 .ipynb_checkpoints/
 /.pytest_cache/
+
+# common Python venv folder (suggested in readme)
+/venv/
