@@ -5,7 +5,7 @@ These Jupyter notebooks were created & used during original development of the
 code and associated paper: [Arthur P. Guillaumin, Laure Zanna (2021).
 Stochastic-deep learning parameterization of ocean momentum
 forcing][gz21-paper-agupubs]. The exact version of the code used to produce said
-paper can be found on [Zenodo][gz21-paper-code-zenodo]. 
+paper can be found on [Zenodo][gz21-paper-code-zenodo].
 
 ## 2021 paper figures
 There are several notebooks which were used to generate the figures in the 2021
