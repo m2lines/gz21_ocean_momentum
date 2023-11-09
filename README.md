@@ -180,6 +180,15 @@ mlflow run . --experiment-name <name> -e train --env-manager=local \
 -P loss_cls_name=HeteroskedasticGaussianLossV2
 ```
 
+Plain Python call example:
+
+```
+python src/gz21_ocean_momentum/trainScript.py
+--subdomains-file examples/cli-configs/training-subdomains-paper.yaml \
+--forcing-data-path <forcing zarr dir> \
+TODO
+```
+
 Relevant parameters:
 
 * `run_id`: MLflow run ID of the run that generated the forcing data that will
