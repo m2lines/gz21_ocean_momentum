@@ -43,7 +43,7 @@ def retrieve_cm2_6(
 
     return surface_fields, grid
 
-def cyclize(dim_name: str, ds: xr.Dataset, nb_points: int):
+def cyclize(dim_name: str, ds: xr.Dataset, nb_points: int) -> xr.Dataset:
     """
     Generate a cyclic dataset from non-cyclic input.
 
@@ -63,7 +63,7 @@ def cyclize(dim_name: str, ds: xr.Dataset, nb_points: int):
     -------
     New extended dataset.
     """
-    # TODO 2023-09-20: old note from original import: "make this flexible"
+    # 2023-09-20 raehik: old note from original import: "make this flexible"
     cycle_length = 360.0
     left = ds.roll({dim_name: nb_points}, roll_coords=True)
     right = left.isel({dim_name: slice(0, 2 * nb_points)})
@@ -85,7 +85,19 @@ def compute_forcings_and_coarsen_cm2_6(
     nan_or_zero: str = "zero",
 ) -> xr.Dataset:
     """
-    Compute the sub-grid forcing terms using mean coarse-graining.
+    Coarsen and compute subgrid forcings for the given ocean surface velocities.
+    Takes in high-resolution data, outputs low-resolution with associated
+    subgrid forcings.
+
+    Designed for CM2.6 simulation data.
+
+    Rough outline:
+
+      * apply a Gaussian filter
+      * compute subgrid forcing from filtered data, save in filtered dataset
+      * coarsen this amended filtered dataset
+
+    See Guillaumin (2021) 2.2 for further details.
 
     Parameters
     ----------
@@ -130,34 +142,34 @@ def compute_forcings_and_coarsen_cm2_6(
     adv_filtered = _advections(u_v_filtered, grid_data)
 
     # Forcing
-    forcing = adv_filtered - filtered_adv
-    forcing = forcing.rename({"adv_x": "S_x", "adv_y": "S_y"})
+    ds_forcing = adv_filtered - filtered_adv
+    ds_forcing = ds_forcing.rename({"adv_x": "S_x", "adv_y": "S_y"})
     # Merge filtered u,v, temperature and forcing terms
-    forcing = forcing.merge(u_v_filtered)
+    ds_filtered_with_forcing = ds_forcing.merge(u_v_filtered)
     logger.debug("uncoarsened forcings follow below:")
-    logger.debug(forcing)
+    logger.debug(ds_filtered_with_forcing)
 
     # Coarsen
-    forcing_coarse = forcing.coarsen(
+    ds_filtered_with_forcing_coarse = ds_filtered_with_forcing.coarsen(
         {"xu_ocean": int(scale), "yu_ocean": int(scale)}, boundary="trim"
     )
-    forcing_coarse = forcing_coarse.mean()
+    ds_filtered_with_forcing_coarse = ds_filtered_with_forcing.mean()
 
     if nan_or_zero == "zero":
         # Replace zeros with nans for consistency
-        forcing_coarse = forcing_coarse.where(forcing_coarse["usurf"] != 0)
+        ds_filtered_with_forcing_coarse = ds_filtered_with_forcing_coarse.where(ds_filtered_with_forcing_coarse["usurf"] != 0)
 
     # Specify input vs output type for each variable of the dataset. Might
     # be used later on for training or testing.
-    forcing_coarse["S_x"].attrs["type"] = "output"
-    forcing_coarse["S_y"].attrs["type"] = "output"
-    forcing_coarse["usurf"].attrs["type"] = "input"
-    forcing_coarse["vsurf"].attrs["type"] = "input"
+    ds_filtered_with_forcing_coarse["S_x"].attrs["type"] = "output"
+    ds_filtered_with_forcing_coarse["S_y"].attrs["type"] = "output"
+    ds_filtered_with_forcing_coarse["usurf"].attrs["type"] = "input"
+    ds_filtered_with_forcing_coarse["vsurf"].attrs["type"] = "input"
 
-    return forcing_coarse
+    return ds_filtered_with_forcing_coarse
 
 
-def _advections(u_v_field: xr.Dataset, grid_data: xr.Dataset):
+def _advections(u_v_field: xr.Dataset, grid_data: xr.Dataset) -> xr.Dataset:
     """
     Compute advection terms corresponding to the passed velocity field.
 
@@ -189,7 +201,6 @@ def _advections(u_v_field: xr.Dataset, grid_data: xr.Dataset):
     adv_x = u * gradient_x["usurf"] + v * gradient_y["usurf"]
     adv_y = u * gradient_x["vsurf"] + v * gradient_y["vsurf"]
     result = xr.Dataset({"adv_x": adv_x, "adv_y": adv_y})
-    # TODO 2023-09-20: old note from original import: v
     # check if we can simply prevent the previous operation from adding chunks
     # result = result.chunk(dict(xu_ocean=-1, yu_ocean=-1))
     return result
@@ -236,11 +247,11 @@ def _spatial_filter_dataset(
     )
     return filtered / norm
 
-def _spatial_filter(data: np.ndarray, sigma: float):
+def _spatial_filter(data: np.ndarray, sigma: float) -> np.ndarray:
     """
-    Apply a gaussian filter to spatial data.
+    Apply a Gaussian filter to spatial data.
 
-    Apply scipy gaussian filter to along all dimensions except first one, which
+    Apply scipy Gaussian filter to along all dimensions except first one, which
     corresponds to time.
 
     Parameters
