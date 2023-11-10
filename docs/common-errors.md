@@ -1,4 +1,4 @@
-# Common errors
+# Troubleshooting common errors
 ## `User project specified in the request is invalid.`
 If when running the data processing step, you see an error message like this:
 
