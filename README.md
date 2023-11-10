@@ -23,8 +23,8 @@ Documentation in this repository will refer back to sections from the paper e.g.
 
 ## Overview
 Most of this repository is concerned with preparing training data, and training
-a NN. Each of these is handled with a standalone Python script, and data is
-saved and loaded between via disk.
+a NN. Each of these is handled with a standalone command-line interface (CLI)
+Python script, and data is saved and loaded between via disk.
 
 In the "data" step, we generate training data using
 [simulation data from the CM2.6 climate model][cm26-ds]
@@ -42,22 +42,14 @@ standard deviation of a Gaussian probability distribution for the forcing. This
 allows for stochastic implementations in online models. *(See Guillaumin (2021)
 2.3 for a more in-depth explanation and how to interpret the NN output.)*
 
-## Repository layout
-* `src`: source code (both library functions and command-line scripts)
+In the "testing" step, we test a trained model on an unseen region of data (the
+subset not used in the previous training step).
+
+### Repository layout
+* `src`: source code (both library functions and CLI scripts)
 * `tests`: pytest tests
 * `docs`: detailed project documentation, implementation notes
 * `examples`: CLI step configs, Jupyter notebooks for generating figures etc.
-
-## Architecture
-The model is written in Python, using PyTorch for the CNN. We provide 3 separate
-"steps", which are run using different commands and arguments:
-
-* data processing: downloads subset of CM2.6 dataset, computes forcings
-* model training: train model to predict forcing from (coarse) velocities
-* model testing: test trained model on unseen region of data (the subset not
-  used in previous training step)
-
-For more details on each of the steps, see the [`docs`](docs/) directory.
 
 ## Installation
 ### Dependencies
@@ -102,6 +94,9 @@ See [`docs`](docs/) directory for more details.
 
 For command-line option explanation, run the appropriate step with `--help` e.g.
 `python src/gz21_ocean_momentum/cli/data.py --help`.
+
+For CLI scripts which support reading in options from a file, various examples
+are stored in [`examples/cli-configs`](examples/cli-configs/).
 
 #### MLflow specifics
 MLflow parameters:
