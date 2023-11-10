@@ -33,11 +33,12 @@ forcing data, plus another set of forcings generated using the 1% annual CO2
 increase CM2.6 dataset. Use `--config-file
 examples/cli-configs/data-paper-fig-6-1pct.yaml`.
 
-`test-global-control.ipynb` generates figures 4, 5 and 7, as well as D4 and D5. For this, the inference step with 
-the trained neural network has to be run both on the data with `CO2=0` and with `CO2=1`, and then the notebook needs to 
-be run once with each set. The paper figures referring to _piControl_ are those with `CO2=0` (the control simulation
-with pre-industrial CO2 levels), and the figures referring to _1pctCO2_ are those with `CO2=1` (a 1% increase per 
-year in CO2 levels for the first 70 years, after which they remain constant).
-The notebook needs to be handed the experiment and run ID of the inference run, which is linked to the data and training 
-runs through `params.data_run_id` (run ID of data run) and `params.model_run_id` (run ID of training run), 
-respectively.
+`test-global.ipynb` generates figures 4, 5 and 7, as well as D4 and D5. For
+this, the inference step with the trained neural network has to be run both on
+the data with and without `--co2-increase`, and then the notebook needs to be
+run once with each set. *(The neural net may be trained only once, on data
+without `--co2-increase`.)* The paper figures referring to _piControl_ are those
+without `--co2-increase` (the control simulation with pre-industrial CO2
+levels), and the figures referring to _1pctCO2_ are those with `--co2-increase`
+(a 1% increase per year in CO2 levels for the first 70 years, after which they
+remain constant).
