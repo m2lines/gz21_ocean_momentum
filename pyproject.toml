@@ -33,8 +33,9 @@ dependencies = [
     "requests",
     "aiohttp",
 
-    "progressbar2>=4.2.0", # inference/utils (but imported by trainScript)
-    "configargparse>=1.7", # CLI
+    # common CLI packages
+    "progressbar2>=4.2.0",
+    "configargparse>=1.7",
 ]
 
 authors = [
