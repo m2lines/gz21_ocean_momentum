@@ -1,0 +1,11 @@
+# "Quick" settings for the data step: small subdomain, low ntimes, high factor.
+
+lat-min:  -40
+lat-max:  40
+long-min: -140
+long-max: 40
+
+ntimes: 10
+factor: 8
+
+co2-increase: false
