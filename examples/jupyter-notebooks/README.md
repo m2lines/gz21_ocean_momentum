@@ -7,7 +7,10 @@ Stochastic-deep learning parameterization of ocean momentum
 forcing][gz21-paper-agupubs]. The exact version of the code used to produce said
 paper can be found on [Zenodo][gz21-paper-code-zenodo].
 
-Some of these notebooks require the following dependencies (obtain using `pip`):
+Notebooks require the same dependencies as gz21. Some have extra dependencies,
+mostly for visualization. These should be displayed at the top of the notebook.
+In particular, the following packages are common between multiple notebooks
+(`pip install <pkg>`):
 
   * `ipympl`
   * `cmocean`
