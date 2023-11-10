@@ -1,31 +1,51 @@
 # GZ21: stochastic deep learning parameterization of ocean momentum forcing
 [gz21-paper-code-zenodo]: https://zenodo.org/record/5076046#.ZF4ulezMLy8
 [gz21-paper-agupubs]: https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2021MS002534
+[cm26-ds]: https://catalog.pangeo.io/browse/master/ocean/GFDL_CM2_6/
 
-This repository trains a convolutional neural network (CNN) to parameterize
-subgrid ocean momentum forcing, intended for coupling into larger GCMs at to
-provide a high-fidelity parameterization in coarser-grain models.
+This repository trains a PyTorch convolutional neural network (CNN) to predict
+subgrid ocean momentum forcing from ocean surface velocity, intended for
+coupling with larger GCMs to provide a performant, high-fidelity
+parameterization in coarse-resolution climate models.
 
-High-resolution surface velocity data from the CM2.6 dataset is used to compute
-forcings (present in coarser-grain models), then coarsened. These coarse surface
-velocities are used to train a CNN to predict forcings. For every grid point,
-rather than predicting a single value for the subgrid momentum forcing, the CNN
-predicts both the mean and standard deviation of a Gaussian probability
-distribution. This allows for stochastic implementations in online models.
+Scripts for preparing training data, training up a model, and using the model to
+make predictions (inference mode) are provided. These are run from the
+command-line, and accept various configuration options (e.g. hyperparameters for
+NN training).
 
-The paper
+For further detail and discussion, please read the original paper
 [Arthur P. Guillaumin, Laure Zanna (2021). Stochastic-deep learning
-parameterization of ocean momentum forcing][gz21-paper-agupubs] discusses the
-original model, and is a useful resource for further reading.
-(The exact version of the code used to produce said paper can be found on
+parameterization of ocean momentum forcing][gz21-paper-agupubs].
+Documentation in this repository will refer back to sections from the paper e.g.
+*Guillaumin (2021) 2.1* to provide context and further reading.
+(A snapshot of the code used in the paper can be found on
 [Zenodo][gz21-paper-code-zenodo].)
 
-## Repository layout
-TODO
+## Overview
+Most of this repository is concerned with preparing training data, and training
+a NN. Each of these is handled with a standalone Python script, and data is
+saved and loaded between via disk.
 
-* `src`:
+In the "data" step, we generate training data using
+[simulation data from the CM2.6 climate model][cm26-ds]
+(which we refer to as the CM2.6 dataset, or just CM2.6).
+We calculate the subgrid forcing needed for coarse-resolution models using the
+high-resolution ocean velocity data in the CM2.6 dataset, then coarsen. This
+coarsened, with-forcings dataset is saved to disk. You may generate training
+data using either the "control" CM2.6 simulation, or the "1-percent annual CO2
+increase" one. *(See Guillaumin (2021) 2.1.)*
+
+In the "training" step, we train a NN to predict the true forcing from the
+coarse velocity data generated above. This forcing term tends to have a large
+amount of uncertainty. Rather than a single value, we predict both the mean and
+standard deviation of a Gaussian probability distribution for the forcing. This
+allows for stochastic implementations in online models. *(See Guillaumin (2021)
+2.3 for a more in-depth explanation and how to interpret the NN output.)*
+
+## Repository layout
+* `src`: source code (both library functions and command-line scripts)
 * `tests`: pytest tests
-* `docs`
+* `docs`: detailed project documentation, implementation notes
 * `examples`: CLI step configs, Jupyter notebooks for generating figures etc.
 
 ## Architecture
@@ -159,9 +179,9 @@ functions at [`step/data/lib.py`](src/gz21_ocean_momentum/step/data/lib.py). See
 the CLI script for example usage.
 
 #### Training
-[cli-train]: src/gz21_ocean_momentum/trainScript.py
+[cli-train]: src/gz21_ocean_momentum/cli/train.py
 
-The [`trainScript.py`][cli-train] script runs the model training step. You may
+The [`cli/train.py`][cli-train] script runs the model training step. You may
 configure various training parameters through command-line arguments, such as
 number of training epochs, loss functions, and training data. (You will want to
 select the output from a data processing step for the latter.)
@@ -183,7 +203,7 @@ mlflow run . --experiment-name <name> -e train --env-manager=local \
 Plain Python call example:
 
 ```
-python src/gz21_ocean_momentum/trainScript.py
+python src/gz21_ocean_momentum/cli/train.py
 --subdomains-file examples/cli-configs/training-subdomains-paper.yaml \
 --forcing-data-path <forcing zarr dir> \
 TODO
@@ -212,7 +232,7 @@ Relevant parameters:
 
 You may also call this script directly instead of going through `mlflow run`. In
 such cases, you may replace `--run-id` with `--forcing-data-path`. See
-[`trainScript`][cli-train] and [`MLproject`](MLproject) for more details.
+[`cli/train.py`][cli-train] and [`MLproject`](MLproject) for more details.
 
 ##### Subdomains
 The `subdomains_file` format is a list of bounding boxes, each defined using
