@@ -133,8 +133,8 @@ os.environ['MLFLOW_TRACKING_URI'] = '/path/to/data/dir'
 The CLI into the data processing step is at
 [`cli/data.py`](src/gz21_ocean_momentum/cli/data.py). It generates coarse
 surface velocities and diagnosed forcings from the CM2.6 dataset and saves them
-to disk. You may configure certain parameters such as bounds (lat/lon) and CO2
-level.
+to disk. This is used as training data for our NN. You may configure certain
+parameters such as bounds (lat/lon) and CO2 level.
 
 **You must configure GCP credentials to download the CM2.6 dataset used.**
 See [`docs/data.md`](docs/data.md) for more details.
