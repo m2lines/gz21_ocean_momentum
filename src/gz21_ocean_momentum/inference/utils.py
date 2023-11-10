@@ -107,7 +107,8 @@ def _dataset_from_channels(array, channels_names: list, dims, coords):
 
 def predict_lazy_cm2_6(
         net: torch.nn.Module,
-        criterion, test_datasets, test_loaders, device, save_input: bool = False
+        n_required_channels, channel_names,
+        test_datasets, test_loaders, device, save_input: bool = False
 ):
     """
     Return an xarray dataset with the predictions carried out on the
@@ -117,17 +118,14 @@ def predict_lazy_cm2_6(
     dataset into smaller test datasets, each of which fits in RAM, there
     should be no issue.
 
-    TODO:
-
-      * `xu_ocean`, `yu_ocean` hardcoded
-      * why do we take `test_datasets`? bad
-
     Parameters
     ----------
     net : torch.nn.Module
         Neural net used to make predictions
-    test_datasets : list <-- can't go `list[xarray[has "usurf"]]`...
-        List of PytTorch datasets containing the input data.
+    test_datasets : list
+        List of PyTorch datasets containing the input data.
+        TODO 2023-11-10 raehik: we shouldn't really need this. Should be a
+        better way to obtain what we need from each dataset in this list.
     test_loaders : list
         List of Pytorch DataLoaders corresponding to the datasets
     device : torch.device
@@ -149,7 +147,7 @@ def predict_lazy_cm2_6(
         temp = delayed_apply(net, loader, device)
         shape = (
             len(test_dataset),
-            criterion.n_required_channels,
+            n_required_channels,
             test_dataset.output_height,
             test_dataset.output_width,
         )
@@ -163,7 +161,7 @@ def predict_lazy_cm2_6(
         coords_s = test_dataset.output_coords
         coords_s["latitude"] = coords_s.pop("yu_ocean")
         coords_s["longitude"] = coords_s.pop("xu_ocean")
-        var_names = criterion.channel_names
+        var_names = channel_names
         output_dataset = _dataset_from_channels(output, var_names, new_dims, coords_s)
         outputs.append(output_dataset)
         # same for input
