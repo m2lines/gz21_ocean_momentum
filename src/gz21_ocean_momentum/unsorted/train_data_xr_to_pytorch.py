@@ -1,5 +1,6 @@
 import xarray as xr
 import numpy as np
+import torch.utils.data as torch
 
 from gz21_ocean_momentum.data.datasets import (
     DatasetWithTransform,
@@ -70,10 +71,10 @@ def prep_train_test_dataloaders(
     test_dataset = ConcatDataset_(test_datasets)
 
     # Dataloaders
-    train_dataloader = DataLoader(
+    train_dataloader = torch.DataLoader(
         train_dataset, batch_size=batch_size, shuffle=True, drop_last=True, num_workers=4
     )
-    test_dataloader = DataLoader(
+    test_dataloader = torch.DataLoader(
         test_dataset, batch_size=batch_size, shuffle=False, drop_last=True
     )
 

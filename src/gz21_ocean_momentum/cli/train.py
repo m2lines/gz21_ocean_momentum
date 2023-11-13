@@ -1,27 +1,41 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# TODO:
+# * probably remove the map usage. seems non-Pythonic, clumsy over list comps
+
 import gz21_ocean_momentum.common.cli as cli
 import gz21_ocean_momentum.common.assorted as common
 import gz21_ocean_momentum.common.bounding_box as bounding_box
 import gz21_ocean_momentum.unsorted.train_data_xr_to_pytorch as lib
-from gz21_ocean_momentum.models import submodels
+import gz21_ocean_momentum.models.submodels as submodels
+import gz21_ocean_momentum.models.transforms as transforms
+import gz21_ocean_momentum.models.models1 as model
+import gz21_ocean_momentum.train.losses as loss
+from gz21_ocean_momentum.train.base import Trainer
+from gz21_ocean_momentum.inference.metrics import MSEMetric, MaxMetric
 
 import configargparse
 
 import os
 
 import xarray as xr
+
 import torch
+from torch.utils.data import DataLoader
+from torch import optim
+from torch.optim.lr_scheduler import MultiStepLR
 
 # TODO probably temporary
 import tempfile
+
+# TODO ideally temporary but probably not
+import copy
 
 # ---
 
 old_imports = """
 import os.path
-import copy
 import argparse
 import importlib
 import pickle
@@ -30,14 +44,7 @@ import numpy as np
 import mlflow
 import xarray as xr
 
-import torch
-from torch.utils.data import DataLoader
-from torch import optim
-from torch.optim.lr_scheduler import MultiStepLR
-
-from gz21_ocean_momentum.train.base import Trainer
 from gz21_ocean_momentum.inference.utils import create_test_dataset
-from gz21_ocean_momentum.inference.metrics import MSEMetric, MaxMetric
 import gz21_ocean_momentum.train.losses
 
 import gz21_ocean_momentum.step.train.lib as lib
@@ -88,18 +95,6 @@ def _check_dir(dir_path):
     if not os.path.exists(dir_path):
         os.mkdir(dir_path)
 
-# --------------------------
-# SET UP TRAINING PARAMETERS
-# --------------------------
-# Note that we use two indices for the train/test split. This is because we
-# want to avoid the time correlation to play in our favour during test.
-model_module_name = "models.models1"
-model_cls_name = "FullyCNN"
-loss_cls_name = "HeteroskedasticGaussianLossV2"
-transformation_cls_name = "SoftPlusTransform"
-# Submodel (for instance monthly means)
-submodel = "transform3"
-
 # Directories where temporary data will be saved
 data_location = tempfile.mkdtemp()
 print("Created temporary dir at  ", data_location)
@@ -111,18 +106,20 @@ MODEL_OUTPUT_DIR = "model_output"
 for directory in [FIGURES_DIRECTORY, MODELS_DIRECTORY, MODEL_OUTPUT_DIR]:
     _check_dir(os.path.join(data_location, directory))
 
-submodel_transform_func = lambda x: submodels.transform3.fit_transform(x)
+# TODO: we apparently have to deepcopy because it tracks if it's already fitted
+# the transform. ok I guess
+submodel_transform_func = lambda x: copy.deepcopy(submodels.transform3).fit_transform(x)
 
 # load input training data, split into spatial domains via provided bounding
 # boxes
 ds = xr.open_zarr(options.in_train_data_dir)
 f_bound_cm26 = lambda x: bounding_box.bound_dataset("yu_ocean", "xu_ocean", ds, x)
-sd_dss_xr = map(f_bound_cm26, bounding_box.load_bounding_boxes_yaml(options.subdomains_file))
+sd_dss_xr = list(map(f_bound_cm26, bounding_box.load_bounding_boxes_yaml(options.subdomains_file)))
 
 # transform shorthand
 submodel_transform_and_to_torch = lambda x: lib.gz21_train_data_subdomain_xr_to_torch(submodel_transform_func(x))
 
-datasets = map(submodel_transform_and_to_torch, sd_dss_xr)
+datasets = list(map(submodel_transform_and_to_torch, sd_dss_xr))
 
 train_dataloader, test_dataloader = lib.prep_train_test_dataloaders(
     datasets, options.train_split, options.test_split, options.batch_size)
@@ -132,30 +129,11 @@ train_dataloader, test_dataloader = lib.prep_train_test_dataloaders(
 # -------------------
 # Load the loss class required in the script parameters
 n_target_channels = datasets[0].n_targets
-criterion = getattr(train.losses, loss_cls_name)(n_target_channels)
-
-# Recover the model's class, based on the corresponding CLI parameters
-try:
-    models_module = importlib.import_module(model_module_name)
-    model_cls = getattr(models_module, model_cls_name)
-except ModuleNotFoundError as e:
-    raise type(e)("Could not find the specified module for : " + str(e))
-except AttributeError as e:
-    raise type(e)("Could not find the specified model class: " + str(e))
-net = model_cls(datasets[0].n_features, criterion.n_required_channels)
-try:
-    transformation_cls = getattr(transforms, transformation_cls_name)
-    transformation = transformation_cls()
-    transformation.indices = criterion.precision_indices
-    net.final_transformation = transformation
-except AttributeError as e:
-    raise type(e)("Could not find the specified transformation class: " + str(e))
-
-print("--------------------")
-print(net)
-print("--------------------")
-print("***")
-
+criterion = loss.HeteroskedasticGaussianLossV2(n_target_channels)
+net = model.FullyCNN(criterion.n_required_channels)
+transformation = transforms.SoftPlusTransform()
+transformation.indices = criterion.precision_indices
+net.final_transformation = transformation
 
 # Log the text representation of the net into a txt artifact
 with open(
@@ -176,7 +154,7 @@ for dataset in datasets:
 # -------------------
 # Adam optimizer
 # To GPU
-net.to(device)
+net.to(options.device)
 
 # Optimizer and learning rate scheduler
 optimizer = optim.Adam(
@@ -186,7 +164,7 @@ lr_scheduler = MultiStepLR(
         optimizer, options.decay_at_epoch_milestones,
         gamma=options.decay_factor)
 
-trainer = Trainer(net, device)
+trainer = Trainer(net, options.device)
 trainer.criterion = criterion
 trainer.print_loss_every = options.printevery
 
@@ -225,7 +203,7 @@ mlflow.log_param("n_epochs_actual", i_epoch + 1)
 # ------------------------------
 net.cpu()
 torch.save(net.state_dict(), options.out_model)
-net.to(device=device)
+net.to(options.device)
 
 # Save other parts of the model
 # TODO this should not be necessary
@@ -241,7 +219,7 @@ net.to(device=device)
 for i_dataset, dataset, test_dataset, xr_dataset in zip(
     range(len(datasets)), datasets, test_datasets, xr_datasets
 ):
-    test_dataloader = DataLoader(
+    test_dataloader = torch.DataLoader(
         test_dataset, batch_size=options.batch_size, shuffle=False, drop_last=True
     )
     output_dataset = create_test_dataset(
