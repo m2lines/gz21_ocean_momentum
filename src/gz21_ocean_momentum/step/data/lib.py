@@ -145,28 +145,27 @@ def compute_forcings_and_coarsen_cm2_6(
     ds_forcing = adv_filtered - filtered_adv
     ds_forcing = ds_forcing.rename({"adv_x": "S_x", "adv_y": "S_y"})
     # Merge filtered u,v, temperature and forcing terms
-    ds_filtered_with_forcing = ds_forcing.merge(u_v_filtered)
+    ds_merged = ds_forcing.merge(u_v_filtered)
     logger.debug("uncoarsened forcings follow below:")
-    logger.debug(ds_filtered_with_forcing)
+    logger.debug(ds_merged)
 
     # Coarsen
-    ds_filtered_with_forcing_coarse = ds_filtered_with_forcing.coarsen(
+    ds_merged_coarse = ds_merged.coarsen(
         {"xu_ocean": int(scale), "yu_ocean": int(scale)}, boundary="trim"
-    )
-    ds_filtered_with_forcing_coarse = ds_filtered_with_forcing.mean()
+    ).mean()
 
     if nan_or_zero == "zero":
         # Replace zeros with nans for consistency
-        ds_filtered_with_forcing_coarse = ds_filtered_with_forcing_coarse.where(ds_filtered_with_forcing_coarse["usurf"] != 0)
+        ds_merged_coarse = ds_merged_coarse.where(ds_merged_coarse["usurf"] != 0)
 
     # Specify input vs output type for each variable of the dataset. Might
     # be used later on for training or testing.
-    ds_filtered_with_forcing_coarse["S_x"].attrs["type"] = "output"
-    ds_filtered_with_forcing_coarse["S_y"].attrs["type"] = "output"
-    ds_filtered_with_forcing_coarse["usurf"].attrs["type"] = "input"
-    ds_filtered_with_forcing_coarse["vsurf"].attrs["type"] = "input"
+    ds_merged_coarse["S_x"].attrs["type"] = "output"
+    ds_merged_coarse["S_y"].attrs["type"] = "output"
+    ds_merged_coarse["usurf"].attrs["type"] = "input"
+    ds_merged_coarse["vsurf"].attrs["type"] = "input"
 
-    return ds_filtered_with_forcing_coarse
+    return ds_merged_coarse
 
 
 def _advections(u_v_field: xr.Dataset, grid_data: xr.Dataset) -> xr.Dataset:
