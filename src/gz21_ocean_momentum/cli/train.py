@@ -70,7 +70,7 @@ p.add("--out-model",                 type=str,   required=True, help="save train
 p.add("--initial-learning-rate",     type=float, required=True, help="initial learning rate for optimization algorithm")
 p.add("--decay-factor",              type=float, required=True, help="learning rate decay factor, applied each time an epoch milestone is reached")
 p.add("--decay-at-epoch-milestones", type=int, action="append", required=True, help="milestones to decay at. May specify multiple times. Must be strictly increasing with no duplicates")
-p.add("--device",  type=str, default="cuda", help="neural net device (e.g. cuda, cuda:0, cpu)")
+p.add("--device",                    type=str, default="cuda:0", help="neural net device (e.g. cuda:0, cpu)")
 p.add("--weight-decay",              type=float, default=0.0, help="Weight decay parameter for Adam loss function. Deprecated, default 0.")
 p.add("--train-split", type=float, required=True, help="0>=x>=1. Use 0->x of input dataset for training")
 p.add("--test-split",  type=float, required=True, help="0>=x>=1. Use x->end of input dataset for training. Must be greater than --train-split")
