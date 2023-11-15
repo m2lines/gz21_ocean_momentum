@@ -19,6 +19,7 @@ import torch
 class DetectOutputSizeMixin:
     """Class to detect the shape of a neural net."""
 
+    # use inference mode to reduce memory and time cost
     @torch.no_grad()
     def output_width(self, input_height, input_width):
         """
@@ -41,6 +42,7 @@ class DetectOutputSizeMixin:
         dummy_out = self(dummy_in)
         return dummy_out.size(3)
 
+    # use inference mode to reduce memory and time cost
     @torch.no_grad()
     def output_height(self, input_height, input_width):
         """
