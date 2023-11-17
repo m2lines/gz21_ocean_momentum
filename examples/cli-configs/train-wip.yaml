@@ -3,7 +3,7 @@ subdomains-file: /home/raehik/sh/gz21/gz21/examples/cli-configs/training-subdoma
 
 batch-size: 8
 
-epochs: 200
+epochs: 20
 initial-learning-rate: 5.0e-4
 decay-factor: 0.0
 decay-at-epoch-milestones: [15, 30] # TODO is 0 implicit? I forget

@@ -920,6 +920,8 @@ class ConcatDataset_(ConcatDataset):
         if enforce_same_dims:
             heights = [dataset.height for dataset in self.datasets]
             widths = [dataset.width for dataset in self.datasets]
+        # TODO broken: fails if enforce_same_dims=False
+        # probably remove option altogether
         self.height = min(heights)
         self.width = min(widths)
         for dataset in self.datasets:

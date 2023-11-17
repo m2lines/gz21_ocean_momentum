@@ -1,0 +1,26 @@
+#Configuration file for the subdomains used in the training and validation phase
+!!python/tuple
+- !!python/tuple
+  - training
+  - lat_min: 0.
+    lat_max: 20.
+    lon_min: -50.
+    lon_max: -20.
+- !!python/tuple
+  - training
+  - lat_min: -20.
+    lat_max: 0.
+    lon_min: -180.
+    lon_max: -162.
+- !!python/tuple
+  - training
+  - lat_min: -20.
+    lat_max: -5.
+    lon_min: -110.
+    lon_max: -92.
+- !!python/tuple
+  - training
+  - lat_min: -0.
+    lat_max: 15.
+    lon_min: -48
+    lon_max: -30
