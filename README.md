@@ -50,9 +50,9 @@ subset not used in the previous training step).
 * `tests`: pytest tests
 * `docs`: detailed project documentation, implementation notes
 * `examples`: CLI step configs, Jupyter notebooks for generating figures etc.
+* `flake.nix`, `flake.lock`: helper files for building on Nix (ignore)
 
 ## Installation
-### Dependencies
 Python 3.9 or newer is required. We primarily test on Python 3.11.
 
 To avoid any conflicts with local packages, we recommend using a virtual
@@ -80,14 +80,7 @@ Note that if you are running Python 3.9 or older, you may also need to install
 the [GEOS](https://libgeos.org/) library, due to `cartopy` requiring it. (Newer
 versions moved away from the C dependency.)
 
-### Running unit tests
-There are a handful of unit tests using pytest, in the [`tests`](tests/)
-directory. These assert some operations and methods used in the steps. They may
-be run in the regular method:
-
-    pytest
-
-## Running steps
+## Usage
 Execute these commands from the repository root.
 
 See [`docs`](docs/) directory for more details.
@@ -98,45 +91,21 @@ For command-line option explanation, run the appropriate step with `--help` e.g.
 For CLI scripts which support reading in options from a file, various examples
 are stored in [`examples/cli-configs`](examples/cli-configs/).
 
-#### MLflow specifics
-MLflow parameters:
+### Unit tests
+There are a handful of unit tests using pytest, in the [`tests`](tests/)
+directory. These assert some operations and methods used in the steps. They may
+be run in the regular method:
 
-* `experiment-name`: "tag" to use for MLflow experiment. Used to share artifacts
-  between steps, i.e. you should run the training step with a name you used to
-  run the data processing step.
-* `exp_id`: TODO: one way MLflow distinguishes runs. May need to set to share
-  artifacts between steps...?
-* `run_id`: TODO: one way MLflow distinguishes runs. May need to set to share
-  artifacts between steps...?
+    pytest
 
-For MLflow versions older than 1.25.0, replace the `--env-manager=local` flag
-with `--no-conda`.
-
-When invoking steps with `mlflow run`, you may need to control the path used for
-`mlruns` (which stores outputs of runs). You may set the `MLFLOW_TRACKING_URI`
-environment variable to achieve this. In Linux:
-
-    export MLFLOW_TRACKING_URI="/path/to/data/dir"
-
-In a Jupyter Notebook:
-
-    %env MLFLOW_TRACKING_URI /path/to/data/dir
-
-In Python:
-
-```python
-import os
-os.environ['MLFLOW_TRACKING_URI'] = '/path/to/data/dir'
-```
-
-#### Data processing
-The CLI into the data processing step is at
-[`cli/data.py`](src/gz21_ocean_momentum/cli/data.py). It generates coarse
+### Training data generation
+[`cli/data.py`](src/gz21_ocean_momentum/cli/data.py) calculates coarse
 surface velocities and diagnosed forcings from the CM2.6 dataset and saves them
-to disk. This is used as training data for our NN. You may configure certain
-parameters such as bounds (lat/lon) and CO2 level.
+to disk. This is used as training data for the neural net.
 
-**You must configure GCP credentials to download the CM2.6 dataset used.**
+You may configure certain parameters such as bounds (lat/lon) and CO2 level.
+
+**You must configure GCP credentials in order to download the CM2.6 dataset.**
 See [`docs/data.md`](docs/data.md) for more details.
 
 Example invocation:
@@ -147,7 +116,7 @@ Example invocation:
 
 Alternatively, you may write (all or part of) these options into a YAML file:
 
-```
+```yaml
 lat-min:  -80
 lat-max:  80
 long-min: -280
@@ -181,19 +150,23 @@ configure various training parameters through command-line arguments, such as
 number of training epochs, loss functions, and training data. (You will want to
 select the output from a data processing step for the latter.)
 
-MLflow call example:
+Example invocation:
 
+    python src/gz21_ocean_momentum/cli/train.py \
+    --lat-min -80 --lat-max 80 --long-min -280 --long-max 80 \
+    --factor 4 --ntimes 100 --co2-increase --out-dir forcings
+
+Alternatively, you may write (all or part of) these options into a YAML file:
+
+```yaml
+TODO
 ```
-mlflow run . --experiment-name <name> -e train --env-manager=local \
--P run_id=<run id> \
--P subdomains_file=examples/cli-configs/training-subdomains-paper.yaml \
--P learning_rate=0/5e-4/15/5e-5/30/5e-6 -P weight_decay=0.00 \
--P n_epochs=200 -P batchsize=4 \
--P train_split=0.8 -P test_split=0.85 \
--P model_module_name=models.models1 -P model_cls_name=FullyCNN \
--P transformation_cls_name=SoftPlusTransform -P submodel=transform3 \
--P loss_cls_name=HeteroskedasticGaussianLossV2
-```
+
+and use this file in an invocation with the `--config-file` option:
+
+    python src/gz21_ocean_momentum/cli/data.py \
+    --config-file examples/cli-configs/data-paper.yaml --out-dir forcings
+
 
 Plain Python call example:
 
