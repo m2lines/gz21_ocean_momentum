@@ -103,8 +103,8 @@ class Trainer:
             forward-backward pass.
 
         clip : float,
-            Value used to clipp gradients. Default is None, in which case
-            no clipping of gradients.
+            Value used to clip gradients. Default is None, in which case no
+            clipping of gradients.
 
         Returns
         -------
@@ -121,14 +121,14 @@ class Trainer:
             # Zero the gradients
             self.net.zero_grad()
             # Move batch to the GPU (if possible)
-            feature_device = feature.to(self._device, dtype=torch.float)
-            target_device  =  target.to(self._device, dtype=torch.float)
+            feature = feature.to(self._device, dtype=torch.float)
+            target  =  target.to(self._device, dtype=torch.float)
             # predict with input
             predict = self.net(feature)
             # Compute loss
-            loss = self.criterion(Y_hat, Y)
-            running_loss.update(loss.item(), X.size(0))
-            running_loss_.update(loss.item(), X.size(0))
+            loss = self.criterion(predict, target)
+            running_loss.update(loss.item(), feature.size(0))
+            running_loss_.update(loss.item(), feature.size(0))
             # Print current loss
             loss_text = "Loss value {}".format(running_loss_.average)
             if print_every(loss_text, self.print_loss_every, i):
@@ -143,6 +143,7 @@ class Trainer:
         # Update the learning rate via the scheduler
         if scheduler is not None:
             scheduler.step()
+        print("end loop")
         return running_loss.value
 
     def test(self, dataloader) -> float:

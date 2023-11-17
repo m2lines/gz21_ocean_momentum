@@ -106,18 +106,20 @@ MODEL_OUTPUT_DIR = "model_output"
 for directory in [FIGURES_DIRECTORY, MODELS_DIRECTORY, MODEL_OUTPUT_DIR]:
     _check_dir(os.path.join(data_location, directory))
 
-# TODO: we apparently have to deepcopy because it tracks if it's already fitted
-# the transform. ok I guess
-submodel_transform_func = lambda x: copy.deepcopy(submodels.transform3).fit_transform(x)
-
 # load input training data, split into spatial domains via provided bounding
 # boxes
 ds = xr.open_zarr(options.in_train_data_dir)
 f_bound_cm26 = lambda x: bounding_box.bound_dataset("yu_ocean", "xu_ocean", ds, x)
 sd_dss_xr = list(map(f_bound_cm26, bounding_box.load_bounding_boxes_yaml(options.subdomains_file)))
 
-# transform shorthand
-submodel_transform_and_to_torch = lambda x: lib.gz21_train_data_subdomain_xr_to_torch(submodel_transform_func(x))
+# transform wrapper
+def submodel_transform_and_to_torch(ds_xr):
+    # TODO: we apparently have to deepcopy because it tracks if it's already
+    # fitted the transform. ok I guess
+    ds_xr = copy.deepcopy(submodels.transform3).fit_transform(ds_xr)
+    ds_xr = ds_xr.compute()
+    ds_torch = lib.gz21_train_data_subdomain_xr_to_torch(ds_xr)
+    return ds_torch
 
 datasets = list(map(submodel_transform_and_to_torch, sd_dss_xr))
 
@@ -128,9 +130,8 @@ train_dataloader, test_dataloader = lib.prep_train_test_dataloaders(
 # LOAD NEURAL NETWORK
 # -------------------
 # Load the loss class required in the script parameters
-n_target_channels = datasets[0].n_targets
-criterion = loss.HeteroskedasticGaussianLossV2(n_target_channels)
-net = model.FullyCNN(criterion.n_required_channels)
+criterion = loss.HeteroskedasticGaussianLossV2(datasets[0].n_targets)
+net = model.FullyCNN(datasets[0].n_features, criterion.n_required_channels)
 transformation = transforms.SoftPlusTransform()
 transformation.indices = criterion.precision_indices
 net.final_transformation = transformation
@@ -191,11 +192,11 @@ for i_epoch in range(options.epochs):
 
     for metric_name, metric_value in metrics_results.items():
         print(f"Test {metric_name} for this epoch is {metric_value}")
-    mlflow.log_metric("train loss", train_loss, i_epoch)
-    mlflow.log_metric("test loss", test_loss, i_epoch)
-    mlflow.log_metrics(metrics_results)
+    #mlflow.log_metric("train loss", train_loss, i_epoch)
+    #mlflow.log_metric("test loss", test_loss, i_epoch)
+    #mlflow.log_metrics(metrics_results)
 # Update the logged number of actual training epochs
-mlflow.log_param("n_epochs_actual", i_epoch + 1)
+#mlflow.log_param("n_epochs_actual", i_epoch + 1)
 
 
 # ------------------------------
