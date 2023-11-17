@@ -908,20 +908,15 @@ class DatasetPartitioner:
 
 class ConcatDataset_(ConcatDataset):
     """Extends the Pytorch Concat Dataset in two ways:
-    - enforces (by default) the concatenated dataset to have the same
-    shapes
+    - enforces the concatenated dataset to have the same shapes
     - passes on attributes (from the first dataset, assuming they are
                             equal accross concatenated datasets)
     """
 
-    def __init__(self, datasets, enforce_same_dims=True):
+    def __init__(self, datasets):
         super(ConcatDataset_, self).__init__(datasets)
-        self.enforce_same_dims = enforce_same_dims
-        if enforce_same_dims:
-            heights = [dataset.height for dataset in self.datasets]
-            widths = [dataset.width for dataset in self.datasets]
-        # TODO broken: fails if enforce_same_dims=False
-        # probably remove option altogether
+        heights = [dataset.height for dataset in self.datasets]
+        widths = [dataset.width for dataset in self.datasets]
         self.height = min(heights)
         self.width = min(widths)
         for dataset in self.datasets:
