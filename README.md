@@ -88,8 +88,12 @@ See [`docs`](docs/) directory for more details.
 For command-line option explanation, run the appropriate step with `--help` e.g.
 `python src/gz21_ocean_momentum/cli/data.py --help`.
 
-For CLI scripts which support reading in options from a file, various examples
-are stored in [`examples/cli-configs`](examples/cli-configs/).
+Most CLI scripts support reading in options from a YAML file using a
+`--config-file` flag. In general, a flag `--name value` will be converted to a
+top-level `name: value` line. Examples are provided in
+[`examples/cli-configs`](examples/cli-configs/). CLI options override file
+options, so you may provide partial configuration in a file and fill out the
+rest (e.g. file paths) on the command line.
 
 ### Unit tests
 There are a handful of unit tests using pytest, in the [`tests`](tests/)
@@ -102,8 +106,6 @@ be run in the regular method:
 [`cli/data.py`](src/gz21_ocean_momentum/cli/data.py) calculates coarse
 surface velocities and diagnosed forcings from the CM2.6 dataset and saves them
 to disk. This is used as training data for the neural net.
-
-You may configure certain parameters such as bounds (lat/lon) and CO2 level.
 
 **You must configure GCP credentials in order to download the CM2.6 dataset.**
 See [`docs/data.md`](docs/data.md) for more details.
@@ -131,10 +133,6 @@ and use this file in an invocation with the `--config-file` option:
     python src/gz21_ocean_momentum/cli/data.py \
     --config-file examples/cli-configs/data-paper.yaml --out-dir forcings
 
-For command-line option explanation, append the `--help` flag:
-
-    python src/gz21_ocean_momentum/cli/data.py --help
-
 Some preprocessed data is hosted on HuggingFace at
 [datasets/M2LInES/gz21-forcing-cm26](https://huggingface.co/datasets/M2LInES/gz21-forcing-cm26).
 
@@ -152,59 +150,32 @@ select the output from a data processing step for the latter.)
 
 Example invocation:
 
-    python src/gz21_ocean_momentum/cli/train.py \
-    --lat-min -80 --lat-max 80 --long-min -280 --long-max 80 \
-    --factor 4 --ntimes 100 --co2-increase --out-dir forcings
-
-Alternatively, you may write (all or part of) these options into a YAML file:
-
-```yaml
-TODO
+```
+python src/gz21_ocean_momentum/cli/train.py \
+--lat-min -80 --lat-max 80 --long-min -280 --long-max 80 \
+--factor 4 --ntimes 100 --co2-increase --out-dir forcings \
+--train-split-end 0.8 --test-split-start 0.85 \
+--subdomains-file examples/cli-configs/training-subdomains-paper.yaml \
+--forcing-data-path <forcing zarr dir>
 ```
 
-and use this file in an invocation with the `--config-file` option:
-
-    python src/gz21_ocean_momentum/cli/data.py \
-    --config-file examples/cli-configs/data-paper.yaml --out-dir forcings
+You may place options into a YAML file and load with the `--config-file` option.
 
 
 Plain Python call example:
 
-```
-python src/gz21_ocean_momentum/cli/train.py
---subdomains-file examples/cli-configs/training-subdomains-paper.yaml \
---forcing-data-path <forcing zarr dir> \
-TODO
-```
-
 Relevant parameters:
 
-* `run_id`: MLflow run ID of the run that generated the forcing data that will
-  be used for training.
-* `subdomains_file`: path to YAML file storing a list of subdomains to select
+* `--subdomains-file`: path to YAML file storing a list of subdomains to select
   from the forcing data, which are then used for training. (Note that at
   runtime, domains are be truncated to the size of the smallest domain in terms
   of number of points.)
-* `train_split`: use `0->N` percent of the dataset for training
-* `test_split`: use `N->100` percent of the dataset for testing
-* `loss_cls_name`: name of the class that defines the loss. This class should be
-  defined in train/losses.py in order for the script to find it. Currently, the
-  main available options are:
-  * `HeteroskedasticGaussianLossV2`: this corresponds to the loss used in the
-    2021 paper
-  * `BimodalGaussianLoss`: a Gaussian loss defined using two Gaussian modes
-* `model_module_name`: name of the module that contains the class defining the
-  NN used
-* `model_cls_name`: name of the class defining the NN used, should be defined in
-  the module specified by `model_module_name`
-
-You may also call this script directly instead of going through `mlflow run`. In
-such cases, you may replace `--run-id` with `--forcing-data-path`. See
-[`cli/train.py`][cli-train] and [`MLproject`](MLproject) for more details.
+* `--train-split-end`: use `0->N` percent of the dataset for training
+* `--test-split-start`: use `N->100` percent of the dataset for testing
 
 ##### Subdomains
-The `subdomains_file` format is a list of bounding boxes, each defined using
-four floats:
+The `--subdomains-file` format is a YAML list of bounding boxes, each defined
+using four labelled floats:
 
 ```yaml
 - lat-min: 35
