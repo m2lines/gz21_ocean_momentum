@@ -32,6 +32,8 @@ def bound_dataset(
 
     The spatial dimensions should be `float`s. Argument order is latitude (y)
     followed by longitude (x).
+
+    Pure function -- does not alter the input dataset or bounding box.
     """
     return data.sel({
             dim_lat:  slice(bbox.lat_min,  bbox.lat_max),

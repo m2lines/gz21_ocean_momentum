@@ -128,16 +128,15 @@ datasets = list(map(submodel_transform_and_to_torch, sd_dss_xr))
 # split dataset according to requested lengths
 train_range = lambda x: np.arange(0, common.at_idx_pct(options.train_split_end,x))
 test_range  = lambda x: np.arange(common.at_idx_pct(options.test_split_start, x), len(x))
-#train_datasets = [ Subset_(x, train_range(x)) for x in datasets ]
-#test_datasets  = [ Subset_(x, test_range(x))  for x in datasets ]
-train_datasets = datasets
-test_datasets = datasets
+train_datasets = [ Subset_(x, train_range(x)) for x in datasets ]
+test_datasets  = [ Subset_(x, test_range(x))  for x in datasets ]
+#train_datasets = datasets
+#test_datasets = datasets
 
 # Concatenate datasets. This adds shape transforms to ensure that all
 # regions produce fields of the same shape, hence should be called after
 # saving the transformation so that when we're going to test on another
 # region this does not occur.
-# TODO ignoring subsetting because it makes things go weird
 train_dataset = ConcatDataset_(train_datasets)
 test_dataset = ConcatDataset_(test_datasets)
 

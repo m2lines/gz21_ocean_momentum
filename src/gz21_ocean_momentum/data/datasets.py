@@ -697,6 +697,8 @@ class RawDataFromXrDataset(Dataset):
             Number of samples of the dataset.
 
         """
+        print("xrrawdataset len called")
+        print(len(self.xr_dataset[self._index]))
         try:
             return len(self.xr_dataset[self._index])
         except KeyError as e:
@@ -795,6 +797,7 @@ class DatasetWithTransform:
         raise AttributeError()
 
     def __len__(self):
+        print("len on datasetwithtransform")
         return len(self.dataset)
 
     def add_transforms_from_model(self, model):
