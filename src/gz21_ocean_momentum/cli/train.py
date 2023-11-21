@@ -14,12 +14,14 @@ import gz21_ocean_momentum.models.models1 as model
 import gz21_ocean_momentum.train.losses as loss
 from gz21_ocean_momentum.train.base import Trainer
 from gz21_ocean_momentum.inference.metrics import MSEMetric, MaxMetric
+from gz21_ocean_momentum.data.datasets import Subset_, ConcatDataset_
 
 import configargparse
 
 import os
 
 import xarray as xr
+import numpy as np
 
 import torch
 from torch.utils.data import DataLoader
@@ -72,8 +74,8 @@ p.add("--decay-factor",              type=float, required=True, help="learning r
 p.add("--decay-at-epoch-milestones", type=int, action="append", required=True, help="milestones to decay at. May specify multiple times. Must be strictly increasing with no duplicates")
 p.add("--device",                    type=str, default="cuda:0", help="neural net device (e.g. cuda:0, cpu)")
 p.add("--weight-decay",              type=float, default=0.0, help="Weight decay parameter for Adam loss function. Deprecated, default 0.")
-p.add("--train-split", type=float, required=True, help="0>=x>=1. Use 0->x of input dataset for training")
-p.add("--test-split",  type=float, required=True, help="0>=x>=1. Use x->end of input dataset for training. Must be greater than --train-split")
+p.add("--train-split-end",  type=float, required=True, help="0>=x>=1. Use 0->x of input dataset for training")
+p.add("--test-split-start", type=float, required=True, help="0>=x>=1. Use x->end of input dataset for training. Must be greater than --train-split-start")
 p.add("--printevery", type=int, default=20)
 options = p.parse_args()
 
@@ -123,8 +125,29 @@ def submodel_transform_and_to_torch(ds_xr):
 
 datasets = list(map(submodel_transform_and_to_torch, sd_dss_xr))
 
-train_dataloader, test_dataloader = lib.prep_train_test_dataloaders(
-    datasets, options.train_split, options.test_split, options.batch_size)
+# split dataset according to requested lengths
+train_range = lambda x: np.arange(0, common.at_idx_pct(options.train_split_end,x))
+test_range  = lambda x: np.arange(common.at_idx_pct(options.test_split_start, x), len(x))
+#train_datasets = [ Subset_(x, train_range(x)) for x in datasets ]
+#test_datasets  = [ Subset_(x, test_range(x))  for x in datasets ]
+train_datasets = datasets
+test_datasets = datasets
+
+# Concatenate datasets. This adds shape transforms to ensure that all
+# regions produce fields of the same shape, hence should be called after
+# saving the transformation so that when we're going to test on another
+# region this does not occur.
+# TODO ignoring subsetting because it makes things go weird
+train_dataset = ConcatDataset_(train_datasets)
+test_dataset = ConcatDataset_(test_datasets)
+
+# Dataloaders
+train_dataloader = DataLoader(
+    train_dataset, batch_size=options.batch_size, shuffle=True, drop_last=True, num_workers=4
+)
+test_dataloader = DataLoader(
+    test_dataset, batch_size=options.batch_size, shuffle=False, drop_last=True
+)
 
 # -------------------
 # LOAD NEURAL NETWORK
@@ -192,48 +215,6 @@ for i_epoch in range(options.epochs):
 
     for metric_name, metric_value in metrics_results.items():
         print(f"Test {metric_name} for this epoch is {metric_value}")
-    #mlflow.log_metric("train loss", train_loss, i_epoch)
-    #mlflow.log_metric("test loss", test_loss, i_epoch)
-    #mlflow.log_metrics(metrics_results)
-# Update the logged number of actual training epochs
-#mlflow.log_param("n_epochs_actual", i_epoch + 1)
 
-
-# ------------------------------
-# SAVE THE TRAINED MODEL TO DISK
-# ------------------------------
-net.cpu()
+#net.cpu()
 torch.save(net.state_dict(), options.out_model)
-net.to(options.device)
-
-# Save other parts of the model
-# TODO this should not be necessary
-#print("Saving other parts of the model")
-#full_path = os.path.join(data_location, MODELS_DIRECTORY, "transformation")
-#with open(full_path, "wb") as f:
-#    pickle.dump(transformation, f)
-
-
-# ----------
-# DEBUT TEST
-# ----------
-for i_dataset, dataset, test_dataset, xr_dataset in zip(
-    range(len(datasets)), datasets, test_datasets, xr_datasets
-):
-    test_dataloader = torch.DataLoader(
-        test_dataset, batch_size=options.batch_size, shuffle=False, drop_last=True
-    )
-    output_dataset = create_test_dataset(
-        net,
-        criterion.n_required_channels,
-        xr_dataset,
-        test_dataset,
-        test_dataloader,
-        test_index,
-        device,
-    )
-
-    # Save model output on the test dataset
-    output_dataset.to_zarr(
-        os.path.join(data_location, MODEL_OUTPUT_DIR, f"test_output{i_dataset}")
-    )
