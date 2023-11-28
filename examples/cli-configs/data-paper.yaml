@@ -1,5 +1,5 @@
 # Shared configuration showing up in the 2021 paper.
-# You need to provide --ntimes and optionally --co2-increase .
+# You may pass --ntimes and --co2-increase on the CLI.
 
 lat-min:  -80
 lat-max:  80
