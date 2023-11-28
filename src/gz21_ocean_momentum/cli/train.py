@@ -24,7 +24,7 @@ import xarray as xr
 import numpy as np
 
 import torch
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, ConcatDataset
 from torch import optim
 from torch.optim.lr_scheduler import MultiStepLR
 
@@ -125,20 +125,27 @@ def submodel_transform_and_to_torch(ds_xr):
 
 datasets = list(map(submodel_transform_and_to_torch, sd_dss_xr))
 
+train_dataset, test_dataset = prep_train_test(
+        datasets,
+        options.train_split_end, options.test_split_start,
+        options.batchsize)
 # split dataset according to requested lengths
-train_range = lambda x: np.arange(0, common.at_idx_pct(options.train_split_end,x))
-test_range  = lambda x: np.arange(common.at_idx_pct(options.test_split_start, x), len(x))
-train_datasets = [ Subset_(x, train_range(x)) for x in datasets ]
-test_datasets  = [ Subset_(x, test_range(x))  for x in datasets ]
-#train_datasets = datasets
-#test_datasets = datasets
+train_range = lambda x: range(0, common.at_idx_pct(options.train_split_end,x))
+test_range  = lambda x: range(common.at_idx_pct(options.test_split_start, x), len(x))
+#train_datasets = [ Subset_(x, train_range(x)) for x in datasets ]
+#test_datasets  = [ Subset_(x, test_range(x))  for x in datasets ]
+train_datasets = datasets
+test_datasets = datasets
 
 # Concatenate datasets. This adds shape transforms to ensure that all
 # regions produce fields of the same shape, hence should be called after
 # saving the transformation so that when we're going to test on another
 # region this does not occur.
-train_dataset = ConcatDataset_(train_datasets)
-test_dataset = ConcatDataset_(test_datasets)
+print(f"len(train_datasets[0]):       {len(train_datasets[0])}")
+print(f"len(train_datasets[0][0]):    {len(train_datasets[0][0])}")
+print(f"len(train_datasets[0][0][0]): {len(train_datasets[0][0][0])}")
+train_dataset = ConcatDataset(train_datasets)
+test_dataset = ConcatDataset(test_datasets)
 
 # Dataloaders
 train_dataloader = DataLoader(
