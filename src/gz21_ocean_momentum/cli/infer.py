@@ -13,7 +13,9 @@ from gz21_ocean_momentum.data.datasets import (
 )
 
 import xarray as xr
+
 import torch
+from torch.utils.data import DataLoader
 
 # TODO hardcode submodel, transformation, NN loss function
 # unlikely for a CLI we need to provide dynamic code loading -- let's just give
@@ -26,10 +28,10 @@ import gz21_ocean_momentum.models.models1 as model
 import gz21_ocean_momentum.models.submodels as submodels
 import gz21_ocean_momentum.models.transforms as transforms
 import gz21_ocean_momentum.train.losses as loss_funcs
+from gz21_ocean_momentum.inference.utils import predict_lazy_cm2_6
 #from gz21_ocean_momentum.train.base import Trainer
 
 submodel = submodels.transform3
-#criterion = loss_funcs.HeteroskedasticGaussianLossV2(dataset.n_targets)
 
 DESCRIPTION = """
 Use a trained GZ21 neural net to predict forcing for input ocean velocity data.
@@ -81,13 +83,19 @@ logger.info("performing various dataset transforms...")
 features_transform_ = ComposeTransforms()
 targets_transform_ = ComposeTransforms()
 transform = DatasetTransformer(features_transform_, targets_transform_)
-transform.fit(ds_computed_torch)
+transform.fit(ds_computed_torch) # TODO this line not in training. idk why, empty transform
 dataset = DatasetWithTransform(ds_computed_torch, transform)
 
-# load trained neural net
-#net = model.FullyCNN(dataset.n_features, criterion.n_required_channels)
-net = model.FullyCNN(dataset.n_features, 4)
-net.final_transformation = transforms.SoftPlusTransform() # TODO
+loader = DataLoader(dataset)
+
+criterion = loss_funcs.HeteroskedasticGaussianLossV2(dataset.n_targets)
+net = model.FullyCNN(dataset.n_features, criterion.n_required_channels)
+
+# TODO does the transformation file store state? if so, this is bad
+transformation = transforms.SoftPlusTransform()
+transformation.indices = criterion.precision_indices
+net.final_transformation = transformation
+
 net.load_state_dict(torch.load(options.model_state_dict_file))
 
 dataset.add_transforms_from_model(net)
@@ -97,11 +105,9 @@ with TaskInfo(f"moving neural network to requested device: {options.device}"):
 
 with ProgressBar(), TaskInfo("Predict & save prediction dataset"):
     out = predict_lazy_cm2_6(net,
-                             #criterion.n_required_channels,
-                             #criterion.channel_names,
-                             4,
-                             ["S_x"]
-                             dataset, loaders, options.device)
+                             criterion.n_required_channels,
+                             ["S_x"],
+                             [dataset], [loader], options.device)
     ProgressBar().register()
     logger.info(f"chunk predictions to time=32 ...")
     out = out.chunk(dict(time=32))
