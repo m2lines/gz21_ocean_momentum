@@ -1,11 +1,9 @@
-# Approximates data step configuration used in the 2021 paper.
+# Shared configuration showing up in the 2021 paper.
+# You need to provide --ntimes and optionally --co2-increase .
 
 lat-min:  -80
 lat-max:  80
 long-min: -280
 long-max: 80
 
-ntimes: 100
 factor: 4
-
-co2-increase: true
