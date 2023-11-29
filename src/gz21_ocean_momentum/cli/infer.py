@@ -106,7 +106,7 @@ with TaskInfo(f"moving neural network to requested device: {options.device}"):
 with ProgressBar(), TaskInfo("Predict & save prediction dataset"):
     out = predict_lazy_cm2_6(net,
                              criterion.n_required_channels,
-                             ["S_x"],
+                             criterion.channel_names,
                              [dataset], [loader], options.device)
     ProgressBar().register()
     logger.info(f"chunk predictions to time=32 ...")
