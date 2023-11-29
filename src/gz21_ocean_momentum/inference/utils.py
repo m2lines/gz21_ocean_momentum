@@ -122,6 +122,10 @@ def predict_lazy_cm2_6(
     ----------
     net : torch.nn.Module
         Neural net used to make predictions
+    n_required_channels: int
+        TODO 2023-11-29 raehik
+    channel_names: list[string]
+        TODO 2023-11-29 raehik
     test_datasets : list
         List of PyTorch datasets containing the input data.
         TODO 2023-11-10 raehik: we shouldn't really need this. Should be a
