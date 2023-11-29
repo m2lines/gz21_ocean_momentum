@@ -81,7 +81,7 @@ def cyclize(dim_name: str, ds: xr.Dataset, nb_points: int) -> xr.Dataset:
 def compute_forcings_and_coarsen_cm2_6(
     u_v_dataset: xr.Dataset,
     grid_data: xr.Dataset,
-    scale: int,
+    scale: float,
     nan_or_zero: str = "zero",
 ) -> xr.Dataset:
     """
