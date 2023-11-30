@@ -140,13 +140,12 @@ You may also run the data processing step directly from Python using the
 functions at [`step/data/lib.py`](src/gz21_ocean_momentum/step/data/lib.py). See
 the CLI script for example usage.
 
-#### Training
+### Model training
 [cli-train]: src/gz21_ocean_momentum/cli/train.py
 
-The [`cli/train.py`][cli-train] script runs the model training step. You may
-configure various training parameters through command-line arguments, such as
-number of training epochs, loss functions, and training data. (You will want to
-select the output from a data processing step for the latter.)
+The [`cli/train.py`][cli-train] script trains the model using data generated
+previously. You may configure various training parameters through command-line
+arguments, such as number of training epochs, loss function, etc.
 
 Example invocation:
 
@@ -161,10 +160,7 @@ python src/gz21_ocean_momentum/cli/train.py \
 
 You may place options into a YAML file and load with the `--config-file` option.
 
-
-Plain Python call example:
-
-Relevant parameters:
+Notable parameters:
 
 * `--subdomains-file`: path to YAML file storing a list of subdomains to select
   from the forcing data, which are then used for training. (Note that at
@@ -173,7 +169,6 @@ Relevant parameters:
 * `--train-split-end`: use `0->N` percent of the dataset for training
 * `--test-split-start`: use `N->100` percent of the dataset for testing
 
-##### Subdomains
 The `--subdomains-file` format is a YAML list of bounding boxes, each defined
 using four labelled floats:
 
@@ -200,8 +195,9 @@ RuntimeError: Calculated padded input size per channel: <smaller than 5 x 5>.
 Kernel size: (5 x 5). Kernel size can't be greater than actual input size
 ```
 
-#### Inference
-The [`inference/main.py`](src/gz21_ocean_momentum/inference/main.py) script runs the
+### Predicting using the trained model
+[cli-infer]: src/gz21_ocean_momentum/cli/infer.py
+The [`cli/infer.py`][cli-infer] script runs the
 model testing stage. This consists of running a trained model on a dataset. 
 The model's output are then stored as an artefact. This step
 should ideally be run with a GPU device available, to achieve a better speed.
@@ -235,13 +231,6 @@ The [examples/jupyter-notebooks](examples/jupyter-notebooks/) folder stores
 notebooks developed during early project development, some of which were used to
 generate figures used in the 2021 paper. See the readme in the above folder for
 details.
-
-### Dev Branch
-The `dev` branch contains ongoing refactoring work which removes the necessity to use
-mlflow. Currently, the code has been refactored into a clearer structure and easier
-use through a command line interface for the data step, and the training step
-is in progress. Further work is needed for the inference step, and to adapt the Jupyter
-notebooks.
 
 ## Data on HuggingFace
 There is GZ21 Ocean Momentum data available on [HuggingFace](https://huggingface.co/)
