@@ -1,11 +1,12 @@
 import configargparse
 
+import gz21_ocean_momentum.common.cli as cli
 import logging
 from dask.diagnostics import ProgressBar
 from gz21_ocean_momentum.utils import TaskInfo
 
+import gz21_ocean_momentum.lib.model as lib
 from gz21_ocean_momentum.data.datasets import (
-    pytorch_dataset_from_cm2_6_forcing_dataset,
     #DatasetPartitioner,
     DatasetTransformer,
     DatasetWithTransform,
@@ -13,27 +14,18 @@ from gz21_ocean_momentum.data.datasets import (
 )
 
 import xarray as xr
-
 import torch
 from torch.utils.data import DataLoader
 
-# TODO hardcode submodel, transformation, NN loss function
-# unlikely for a CLI we need to provide dynamic code loading -- let's just give
-# options
-# we could enable such "dynamic loading" in the "library" interface!-- but, due
-# to the class-based setup, it's a little complicated for a user to come in with
-# their own code for some of these, and it needs documentation. so a task for
-# later
 import gz21_ocean_momentum.models.models1 as model
 import gz21_ocean_momentum.models.submodels as submodels
 import gz21_ocean_momentum.models.transforms as transforms
 import gz21_ocean_momentum.train.losses as loss_funcs
 from gz21_ocean_momentum.inference.utils import predict_lazy_cm2_6
-#from gz21_ocean_momentum.train.base import Trainer
 
 submodel = submodels.transform3
 
-DESCRIPTION = """
+_cli_desc = """
 Use a trained GZ21 neural net to predict forcing for input ocean velocity data.
 
 This script is intended as example of how use the GZ21 neural net, generating
@@ -54,20 +46,20 @@ associated paper Guillaumin (2021) for suggestions on how to integrate these
 into your GCM of choice.
 """
 
-p = configargparse.ArgParser(description=DESCRIPTION)
+p = configargparse.ArgParser(description=_cli_desc)
 p.add("--config-file", is_config_file=True, help="config file path")
-
 p.add("--input-data-dir", type=str, required=True, help="path to input ocean velocity data, in zarr format (folder)")
 p.add("--model-state-dict-file", type=str, required=True, help="model state dict file (*.pth)")
 p.add("--out-dir", type=str, required=True,  help="folder to save forcing predictions dataset to (in zarr format)")
-
 p.add("--device",  type=str, default="cuda", help="neural net device (e.g. cuda, cuda:0, cpu)")
-p.add("--splits",  type=int)
 
 options = p.parse_args()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+cli.fail_if_path_is_nonempty_dir(
+        1, f"--out-dir \"{options.out_dir}\" invalid", options.out_dir)
 
 # ---
 
@@ -77,14 +69,7 @@ ds_computed_xr = xr.open_zarr(options.input_data_dir)
 with ProgressBar(), TaskInfo("Applying transforms to dataset"):
     ds_computed_xr = submodel.fit_transform(ds_computed_xr)
 
-ds_computed_torch = pytorch_dataset_from_cm2_6_forcing_dataset(ds_computed_xr)
-
-logger.info("performing various dataset transforms...")
-features_transform_ = ComposeTransforms()
-targets_transform_ = ComposeTransforms()
-transform = DatasetTransformer(features_transform_, targets_transform_)
-dataset = DatasetWithTransform(ds_computed_torch, transform)
-
+dataset = lib.gz21_train_data_subdomain_xr_to_torch(ds_computed_xr)
 loader = DataLoader(dataset)
 
 criterion = loss_funcs.HeteroskedasticGaussianLossV2(dataset.n_targets)

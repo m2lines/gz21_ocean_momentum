@@ -429,7 +429,6 @@ class CyclicRepeat(ArrayTransform):
         return np.concatenate((left, x, right), axis=self.axis)
 
     def transform_coordinate(self, coords, dim):
-        print(f"{dim}, {self.dim_name}")
         if dim == self.dim_name:
             left = coords[-self.nb_points :] - self.length
             right = coords[: self.nb_points] + self.length
@@ -697,8 +696,6 @@ class RawDataFromXrDataset(Dataset):
             Number of samples of the dataset.
 
         """
-        print("xrrawdataset len called")
-        print(len(self.xr_dataset[self._index]))
         try:
             return len(self.xr_dataset[self._index])
         except KeyError as e:
@@ -714,19 +711,6 @@ class RawDataFromXrDataset(Dataset):
         if hasattr(self.xr_dataset, attr_name):
             return getattr(self.xr_dataset, attr_name)
         raise AttributeError()
-
-def pytorch_dataset_from_cm2_6_forcing_dataset(ds: xr.Dataset) -> torch.Dataset:
-    """Obtain a PyTorch `Dataset` view over an xarray dataset, specifically for
-    CM2.6 data annotated with forcings in `S_x` and `S_y`.
-
-    The same snippet is used for both training and inference."""
-    ds_torch = RawDataFromXrDataset(ds)
-    ds_torch.index = "time"
-    ds_torch.add_input("usurf")
-    ds_torch.add_input("vsurf")
-    ds_torch.add_output("S_x")
-    ds_torch.add_output("S_y")
-    return ds_torch
 
 class DatasetWithTransform:
     def __init__(self, dataset, transform: DatasetTransformer):
@@ -797,7 +781,6 @@ class DatasetWithTransform:
         raise AttributeError()
 
     def __len__(self):
-        print("len on datasetwithtransform")
         return len(self.dataset)
 
     def add_transforms_from_model(self, model):
@@ -914,6 +897,8 @@ class ConcatDataset_(ConcatDataset):
     - enforces the concatenated dataset to have the same shapes
     - passes on attributes (from the first dataset, assuming they are
                             equal accross concatenated datasets)
+
+    TODO input datasets need to have .height, .width
     """
 
     def __init__(self, datasets):
