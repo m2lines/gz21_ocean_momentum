@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import gz21_ocean_momentum.step.data.lib as lib
+import gz21_ocean_momentum.lib.data as lib
 import gz21_ocean_momentum.common.cli as cli
 from   gz21_ocean_momentum.common.bounding_box import BoundingBox
 import gz21_ocean_momentum.common.bounding_box as bounding_box
@@ -60,13 +60,14 @@ surface_fields, grid = lib.retrieve_cm2_6(options.pangeo_catalog_uri, options.co
 logger.debug("dropping irrelevant data variables...")
 surface_fields = surface_fields[["usurf", "vsurf"]]
 
-if options.ntimes is not None:
-    logger.info(f"slicing {options.ntimes} time points...")
-    surface_fields = surface_fields.isel(time=slice(options.ntimes))
-
 logger.info("selecting input data bounding box...")
 surface_fields = bounding_box.bound_dataset("yu_ocean", "xu_ocean", surface_fields, bbox)
 grid = bounding_box.bound_dataset("yu_ocean", "xu_ocean", grid, bbox)
+
+# TODO 2023-11-29 raehik: original bounded first, sliced (immediately) after
+if options.ntimes is not None:
+    logger.info(f"slicing {options.ntimes} time points...")
+    surface_fields = surface_fields.isel(time=slice(options.ntimes))
 
 logger.debug("placing grid dataset into local memory...")
 grid = grid.compute()
