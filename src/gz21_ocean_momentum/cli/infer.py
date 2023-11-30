@@ -83,7 +83,6 @@ logger.info("performing various dataset transforms...")
 features_transform_ = ComposeTransforms()
 targets_transform_ = ComposeTransforms()
 transform = DatasetTransformer(features_transform_, targets_transform_)
-transform.fit(ds_computed_torch) # TODO this line not in training. idk why, empty transform
 dataset = DatasetWithTransform(ds_computed_torch, transform)
 
 loader = DataLoader(dataset)
