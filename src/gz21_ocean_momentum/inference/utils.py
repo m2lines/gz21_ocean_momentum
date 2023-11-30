@@ -123,13 +123,12 @@ def predict_lazy_cm2_6(
     net : torch.nn.Module
         Neural net used to make predictions
     n_required_channels: int
-        TODO 2023-11-29 raehik
+        number of channels, used for output data shape
     channel_names: list[string]
-        TODO 2023-11-29 raehik
+        channel names, used for output datasets
     test_datasets : list
         List of PyTorch datasets containing the input data.
-        TODO 2023-11-10 raehik: we shouldn't really need this. Should be a
-        better way to obtain what we need from each dataset in this list.
+        Actual data is not used: we extract metadata such as height/width.
     test_loaders : list
         List of Pytorch DataLoaders corresponding to the datasets
     device : torch.device
@@ -141,7 +140,6 @@ def predict_lazy_cm2_6(
     -------
     xarray.Dataset
         Dataset of predictions.
-
     """
     inputs = []
     outputs = []
@@ -165,17 +163,15 @@ def predict_lazy_cm2_6(
         coords_s = test_dataset.output_coords
         coords_s["latitude"] = coords_s.pop("yu_ocean")
         coords_s["longitude"] = coords_s.pop("xu_ocean")
-        var_names = channel_names
-        output_dataset = _dataset_from_channels(output, var_names, new_dims, coords_s)
+        output_dataset = _dataset_from_channels(output, channel_names, new_dims, coords_s)
         outputs.append(output_dataset)
         # same for input
         if save_input:
             coords_uv = test_dataset.input_coords
             coords_uv["latitude"] = coords_uv.pop("yu_ocean")
             coords_uv["longitude"] = coords_uv.pop("xu_ocean")
-            var_names = ["usurf", "vsurf"]
             input_dataset = _dataset_from_channels(
-                input_, var_names, new_dims, coords_uv
+                input_, ["usurf", "vsurf"], new_dims, coords_uv
             )
             inputs.append(input_dataset)
     if save_input:

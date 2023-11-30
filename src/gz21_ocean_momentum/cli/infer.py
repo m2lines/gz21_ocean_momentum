@@ -69,13 +69,16 @@ ds_computed_xr = xr.open_zarr(options.input_data_dir)
 with ProgressBar(), TaskInfo("Applying transforms to dataset"):
     ds_computed_xr = submodel.fit_transform(ds_computed_xr)
 
+# wrap xarray into PyTorch-compatible data
 dataset = lib.gz21_train_data_subdomain_xr_to_torch(ds_computed_xr)
 loader = DataLoader(dataset)
 
 criterion = loss_funcs.HeteroskedasticGaussianLossV2(dataset.n_targets)
 net = model.FullyCNN(dataset.n_features, criterion.n_required_channels)
 
-# TODO does the transformation file store state? if so, this is bad
+# load final net transformation
+# (this is correct, assuming any transformation state if present is stored in
+# the model state dict)
 transformation = transforms.SoftPlusTransform()
 transformation.indices = criterion.precision_indices
 net.final_transformation = transformation
