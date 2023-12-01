@@ -34,27 +34,6 @@ import tempfile
 # TODO ideally temporary but probably not
 import copy
 
-# ---
-
-old_imports = """
-import os.path
-import argparse
-import importlib
-import pickle
-from dask.diagnostics import ProgressBar
-import numpy as np
-import mlflow
-import xarray as xr
-
-from gz21_ocean_momentum.inference.utils import create_test_dataset
-import gz21_ocean_momentum.train.losses
-
-import gz21_ocean_momentum.step.train.lib as lib
-from   gz21_ocean_momentum.common.bounding_box import load_bounding_boxes_yaml
-"""
-
-# ---
-
 _cli_desc = """
 Train a Pytorch neural net to predict subgrid ocean momentum forcing from
 ocean surface velocity.
