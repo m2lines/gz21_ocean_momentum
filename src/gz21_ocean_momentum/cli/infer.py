@@ -23,8 +23,6 @@ import gz21_ocean_momentum.models.transforms as transforms
 import gz21_ocean_momentum.train.losses as loss_funcs
 from gz21_ocean_momentum.inference.utils import predict_lazy_cm2_6
 
-submodel = submodels.transform3
-
 _cli_desc = """
 Use a trained GZ21 neural net to predict forcing for input ocean velocity data.
 
@@ -45,6 +43,8 @@ documentation (specifically `README.md` in the project repository), and the
 associated paper Guillaumin (2021) for suggestions on how to integrate these
 into your GCM of choice.
 """
+
+submodel = submodels.transform3
 
 p = configargparse.ArgParser(description=_cli_desc)
 p.add("--config-file", is_config_file=True, help="config file path")
