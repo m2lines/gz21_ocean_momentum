@@ -8,23 +8,26 @@ subgrid ocean momentum forcing from ocean surface velocity, intended for
 coupling with larger GCMs to provide a performant, high-fidelity
 parameterization in coarse-resolution climate models.
 
-Scripts for preparing training data, training up a model, and using the model to
-make predictions (inference mode) are provided. These are run from the
-command-line, and accept various configuration options (e.g. hyperparameters for
-NN training).
+Command-line scripts for preparing training data, training up a model, testing
+model performance, and using the model to make predictions (inference mode) are
+provided.
 
-For further detail and discussion, please read the original paper
+For further detail and discussion, please see
 [Arthur P. Guillaumin, Laure Zanna (2021). Stochastic-deep learning
-parameterization of ocean momentum forcing][gz21-paper-agupubs].
-Documentation in this repository will refer back to sections from the paper e.g.
-*Guillaumin (2021) 2.1* to provide context and further reading.
-(A snapshot of the code used in the paper can be found on
+parameterization of ocean momentum forcing][gz21-paper-agupubs] which originally
+introduced this work. Documentation in this repository will refer back to
+sections from the paper e.g. *Guillaumin (2021) 2.1* to provide context and
+further reading. (A snapshot of the code used in the paper can be found on
 [Zenodo][gz21-paper-code-zenodo].)
 
+This repository also aims to enable reproducing the 2021 paper. The Jupyter
+notebooks at [`resources/jupyter-notebooks`][resources/jupyter-notebooks]
+generate some figures shown in the paper.
+
 ## Overview
-Most of this repository is concerned with preparing training data, and training
-a NN. Each of these is handled with a standalone command-line interface (CLI)
-Python script, and data is saved and loaded between via disk.
+Model training and usage is separated into a handful of steps. Steps are
+executed via a command-line interface (CLI) Python script, and will save some
+data to disk to then be loaded in the next step.
 
 In the "data" step, we generate training data using
 [simulation data from the CM2.6 climate model][cm26-ds]
@@ -45,11 +48,13 @@ allows for stochastic implementations in online models. *(See Guillaumin (2021)
 In the "testing" step, we test a trained model on an unseen region of data (the
 subset not used in the previous training step).
 
+We also provide a basic script for predicting forcings on a prepared dataset.
+
 ### Repository layout
-* `src`: source code (both library functions and CLI scripts)
+* `src`: source code (library and CLI scripts)
 * `tests`: pytest tests
 * `docs`: detailed project documentation, implementation notes
-* `examples`: CLI step configs, Jupyter notebooks for generating figures etc.
+* `resources`: CLI configs, Jupyter notebooks
 * `flake.nix`, `flake.lock`: helper files for building on Nix (ignore)
 
 ## Installation
@@ -91,7 +96,7 @@ For command-line option explanation, run the appropriate step with `--help` e.g.
 Most CLI scripts support reading in options from a YAML file using a
 `--config-file` flag. In general, a flag `--name value` will be converted to a
 top-level `name: value` line. Examples are provided in
-[`examples/cli-configs`](examples/cli-configs/). CLI options override file
+[`resources/cli-configs`](resources/cli-configs/). CLI options override file
 options, so you may provide partial configuration in a file and fill out the
 rest (e.g. file paths) on the command line.
 
@@ -119,10 +124,10 @@ Example invocation:
 Alternatively, you may write (all or part of) these options into a YAML file:
 
 ```yaml
-lat-min:  -80
-lat-max:  80
+lat-min:   -80
+lat-max:    80
 long-min: -280
-long-max: 80
+long-max:   80
 ntimes: 100
 factor: 4
 co2-increase: true
@@ -131,7 +136,7 @@ co2-increase: true
 and use this file in an invocation with the `--config-file` option:
 
     python src/gz21_ocean_momentum/cli/data.py \
-    --config-file examples/cli-configs/data-paper.yaml --out-dir forcings
+    --config-file resources/cli-configs/data-paper.yaml --out-dir forcings
 
 Some preprocessed data is hosted on HuggingFace at
 [datasets/M2LInES/gz21-forcing-cm26](https://huggingface.co/datasets/M2LInES/gz21-forcing-cm26).
@@ -154,7 +159,7 @@ python src/gz21_ocean_momentum/cli/train.py \
 --lat-min -80 --lat-max 80 --long-min -280 --long-max 80 \
 --factor 4 --ntimes 100 --co2-increase --out-dir forcings \
 --train-split-end 0.8 --test-split-start 0.85 \
---subdomains-file examples/cli-configs/training-subdomains-paper.yaml \
+--subdomains-file resources/cli-configs/training-subdomains-paper.yaml \
 --forcing-data-path <forcing zarr dir>
 ```
 
@@ -197,37 +202,15 @@ Kernel size: (5 x 5). Kernel size can't be greater than actual input size
 
 ### Predicting using the trained model
 [cli-infer]: src/gz21_ocean_momentum/cli/infer.py
-The [`cli/infer.py`][cli-infer] script runs the
-model testing stage. This consists of running a trained model on a dataset. 
-The model's output are then stored as an artefact. This step
-should ideally be run with a GPU device available, to achieve a better speed.
 
-In this step it is particularly important to set the environment variable `MLFLOW_TRACKING_URI`
-in order for the data to be found and stored in a sensible place.
+The [`cli/infer.py`][cli-infer] script runs the model testing stage.
 
-One can run the inference step by interactively
-running the following in the project root directory:
+TODO
 
-    python3 -m gz21_ocean_momentum.inference.main --n_splits=40
-
-with `n_splits` being the number of subsets which the dataset is split 
-into for the processing, before being put back together for the final output.
-This is done in order to avoid memory issues for large datasets.
-Other useful arguments for this call would be 
-- `to_experiment`: the name of the mlflow experiment used for this run (default is "test").
-- `batch_size`: the batch size used in running the neural network on the data.
-
-
-After the script has started running, it will first require
-the user to select an experiment and a run corresponding to a 
-training step run previously. 
-The user will then be required to select an experiment and a run
-corresponding to a data step previously run.
-
-The inference step should then start.
+* 
 
 ### Jupyter Notebooks
-The [examples/jupyter-notebooks](examples/jupyter-notebooks/) folder stores
+The [resources/jupyter-notebooks](resources/jupyter-notebooks/) folder stores
 notebooks developed during early project development, some of which were used to
 generate figures used in the 2021 paper. See the readme in the above folder for
 details.
