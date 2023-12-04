@@ -141,10 +141,6 @@ and use this file in an invocation with the `--config-file` option:
 Some preprocessed data is hosted on HuggingFace at
 [datasets/M2LInES/gz21-forcing-cm26](https://huggingface.co/datasets/M2LInES/gz21-forcing-cm26).
 
-You may also run the data processing step directly from Python using the
-functions at [`step/data/lib.py`](src/gz21_ocean_momentum/step/data/lib.py). See
-the CLI script for example usage.
-
 ### Model training
 [cli-train]: src/gz21_ocean_momentum/cli/train.py
 
