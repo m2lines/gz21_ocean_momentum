@@ -118,11 +118,14 @@ class Trainer:
         running_loss = RunningAverage()
         running_loss_ = RunningAverage()
         for i, (feature, target) in enumerate(dataloader):
+            print("SAMPLE: start")
             # Zero the gradients
             self.net.zero_grad()
+            print("SAMPLE: zerod grad")
             # Move batch to the GPU (if possible)
             feature = feature.to(self._device, dtype=torch.float)
             target  =  target.to(self._device, dtype=torch.float)
+            print("SAMPLE: moved to device")
             # predict with input
             predict = self.net(feature)
             # Compute loss

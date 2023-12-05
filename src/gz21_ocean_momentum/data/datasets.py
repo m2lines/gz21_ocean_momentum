@@ -207,6 +207,7 @@ class DatasetTransformer:
         """
         # TODO Arthur check this
         features, targets = x[:]
+        print("HI")
         self.transforms["features"].fit(features)
         self.transforms["targets"].fit(targets)
         return self

@@ -54,7 +54,7 @@ p.add("--decay-at-epoch-milestones", type=int, action="append", required=True, h
 p.add("--device",                    type=str, default="cuda:0", help="neural net device (e.g. cuda:0, cpu)")
 p.add("--weight-decay",              type=float, default=0.0, help="Weight decay parameter for Adam loss function. Deprecated, default 0.")
 p.add("--train-split-end",  type=float, required=True, help="0>=x>=1. Use 0->x of input dataset for training")
-p.add("--test-split-start", type=float, required=True, help="0>=x>=1. Use x->end of input dataset for training. Must be greater than --train-split-start")
+p.add("--test-split-start", type=float, required=True, help="0>=x>=1. Use x->end of input dataset for testing. Must be greater than --train-split-start")
 p.add("--printevery", type=int, default=20)
 options = p.parse_args()
 
@@ -87,76 +87,37 @@ MODEL_OUTPUT_DIR = "model_output"
 for directory in [FIGURES_DIRECTORY, MODELS_DIRECTORY, MODEL_OUTPUT_DIR]:
     _check_dir(os.path.join(data_location, directory))
 
-# load input training data, split into spatial domains via provided bounding
-# boxes
-ds = xr.open_zarr(options.in_train_data_dir)
-f_bound_cm26 = lambda x: bounding_box.bound_dataset("yu_ocean", "xu_ocean", ds, x)
-sd_dss_xr = list(map(f_bound_cm26, bounding_box.load_bounding_boxes_yaml(options.subdomains_file)))
+# dataset prep: load data, select subdomains via provided bounding boxes
+ds_xr = xr.open_zarr(options.in_train_data_dir)
+bboxes = bounding_box.load_bounding_boxes_yaml(options.subdomains_file)
+sds_xr = [ bounding_box.bound_dataset("yu_ocean", "xu_ocean", ds_xr, bbox) for bbox in bboxes ]
 
-# transform wrapper
-def submodel_transform_and_to_torch(ds_xr):
-    # TODO: we apparently have to deepcopy because it tracks if it's already
-    # fitted the transform. ok I guess
+# dataset prep: transform, wrap into PyTorch dataset
+def _transform_and_to_torch(ds_xr):
+    """Attach a transformation to an xarray dataset, then convert to PyTorch."""
+    # must deepcopy due to transformation implementation!
     ds_xr = copy.deepcopy(submodels.transform3).fit_transform(ds_xr)
-    ds_xr = ds_xr.compute()
+    #ds_xr = ds_xr.compute() # TODO ?
     ds_torch = lib.gz21_train_data_subdomain_xr_to_torch(ds_xr)
     return ds_torch
+datasets = [ _transform_and_to_torch(sd_xr) for sd_xr in sds_xr ]
 
-datasets = list(map(submodel_transform_and_to_torch, sd_dss_xr))
-
-train_dataset, test_dataset = prep_train_test(
+train_dataloader, test_dataloader = lib.prep_train_test_dataloaders(
         datasets,
         options.train_split_end, options.test_split_start,
-        options.batchsize)
-# split dataset according to requested lengths
-train_range = lambda x: range(0, common.at_idx_pct(options.train_split_end,x))
-test_range  = lambda x: range(common.at_idx_pct(options.test_split_start, x), len(x))
-#train_datasets = [ Subset_(x, train_range(x)) for x in datasets ]
-#test_datasets  = [ Subset_(x, test_range(x))  for x in datasets ]
-train_datasets = datasets
-test_datasets = datasets
+        options.batch_size)
 
-# Concatenate datasets. This adds shape transforms to ensure that all
-# regions produce fields of the same shape, hence should be called after
-# saving the transformation so that when we're going to test on another
-# region this does not occur.
-print(f"len(train_datasets[0]):       {len(train_datasets[0])}")
-print(f"len(train_datasets[0][0]):    {len(train_datasets[0][0])}")
-print(f"len(train_datasets[0][0][0]): {len(train_datasets[0][0][0])}")
-train_dataset = ConcatDataset(train_datasets)
-test_dataset = ConcatDataset(test_datasets)
-
-# Dataloaders
-train_dataloader = DataLoader(
-    train_dataset, batch_size=options.batch_size, shuffle=True, drop_last=True, num_workers=4
-)
-test_dataloader = DataLoader(
-    test_dataset, batch_size=options.batch_size, shuffle=False, drop_last=True
-)
-
-# -------------------
-# LOAD NEURAL NETWORK
-# -------------------
-# Load the loss class required in the script parameters
+# set up neural network
 criterion = loss.HeteroskedasticGaussianLossV2(datasets[0].n_targets)
 net = model.FullyCNN(datasets[0].n_features, criterion.n_required_channels)
 transformation = transforms.SoftPlusTransform()
 transformation.indices = criterion.precision_indices
 net.final_transformation = transformation
 
-# Log the text representation of the net into a txt artifact
-with open(
-    os.path.join(data_location, MODELS_DIRECTORY, "nn_architecture.txt"),
-    "w",
-    encoding="utf-8",
-) as f:
-    print("Writing neural net architecture into txt file.")
-    f.write(str(net))
-
-# Add transforms required by the model.
+# add automatic feature & target transforms to datasets using model
+# e.g. reshape targets to match model output shape
 for dataset in datasets:
     dataset.add_transforms_from_model(net)
-
 
 # -------------------
 # TRAINING OF NETWORK
@@ -194,9 +155,8 @@ for i_epoch in range(options.epochs):
         print(test)
         break
     test_loss, metrics_results = test
-    # Log the training loss
-    print("Train loss for this epoch is ", train_loss)
-    print("Test loss for this epoch is ", test_loss)
+    print(f"Train loss for this epoch is {train_loss}")
+    print(f"Test loss for this epoch is  {test_loss}")
 
     for metric_name, metric_value in metrics_results.items():
         print(f"Test {metric_name} for this epoch is {metric_value}")
