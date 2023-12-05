@@ -207,7 +207,7 @@ class DatasetTransformer:
         """
         # TODO Arthur check this
         features, targets = x[:]
-        print("HI")
+        print("TODO HI this is almost certainly used")
         self.transforms["features"].fit(features)
         self.transforms["targets"].fit(targets)
         return self

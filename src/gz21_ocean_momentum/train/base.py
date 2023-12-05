@@ -117,6 +117,7 @@ class Trainer:
         self._locked = True
         running_loss = RunningAverage()
         running_loss_ = RunningAverage()
+        print(len(dataloader))
         for i, (feature, target) in enumerate(dataloader):
             print("SAMPLE: start")
             # Zero the gradients

@@ -79,8 +79,8 @@ def prep_train_test_dataloaders(
     # regions produce fields of the same shape, hence should be called after
     # saving the transformation so that when we're going to test on another
     # region this does not occur.
-    train_dataset = ConcatDataset_(dss)
-    test_dataset = ConcatDataset_(dss)
+    train_dataset = ConcatDataset_(train_datasets)
+    test_dataset = ConcatDataset_(test_datasets)
 
     # Dataloaders
     train_dataloader = torch.DataLoader(

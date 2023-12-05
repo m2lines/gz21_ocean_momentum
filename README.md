@@ -155,7 +155,7 @@ python src/gz21_ocean_momentum/cli/train.py \
 --lat-min -80 --lat-max 80 --long-min -280 --long-max 80 \
 --factor 4 --ntimes 100 --co2-increase --out-dir forcings \
 --train-split-end 0.8 --test-split-start 0.85 \
---subdomains-file resources/cli-configs/training-subdomains-paper.yaml \
+--subdomains-file resources/cli-configs/train-subdomains-paper.yaml \
 --forcing-data-path <forcing zarr dir>
 ```
 

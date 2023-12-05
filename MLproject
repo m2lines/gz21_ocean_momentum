@@ -23,7 +23,7 @@ entry_points:
       submodel : {type: string, default : transform3}
       features_transform_cls_name : {type : string, default : None}
       targets_transform_cls_name : {type : string, default : None}
-      subdomains_file: {type: string, default: examples/cli-configs/training-subdomains-paper.yaml}
+      subdomains_file: {type: string, default: resources/cli-configs/train-subdomains-paper.yaml}
     command: "python src/gz21_ocean_momentum/trainScript.py
         --run-id {run_id}
         --forcing-data-path {forcing_data_path}
