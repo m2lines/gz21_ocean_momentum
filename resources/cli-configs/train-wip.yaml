@@ -6,7 +6,7 @@ batch-size: 4
 epochs: 20
 initial-learning-rate: 5.0e-4
 decay-factor: 0.0
-decay-at-epoch-milestones: [15, 30] # TODO is 0 implicit? I forget
+decay-at-epoch-milestones: [15, 30] # TODO is 0 implicit? confirm
 
-train-split: 0.8
-test-split:  0.85
+train-split-end:  0.80
+test-split-start: 0.85

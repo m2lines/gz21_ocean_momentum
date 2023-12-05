@@ -52,18 +52,33 @@ def prep_train_test_dataloaders(
         pct_train_end:  float,
         pct_test_start: float,
         batch_size: int):
-    """Split a list of PyTorch datasets into two dataloaders: one for training,
+    """
+    Split a list of PyTorch datasets into two dataloaders: one for training,
     one for testing.
+
+    Parameters
+    ----------
+    pct_train_end: float
+        Training data will be from 0->x of the dataset. 0<=x<=1
+
+    pct_test_start: float
+        Test data will be from x->end of the dataset. pct_train_end<=x<=1
+
+    Returns
+    -------
+    Two PyTorch DataLoaders: train, test.
     """
     # split dataset according to requested lengths
-    train_datasets = [ Subset_(x, np.arange(0, at_idx_pct(pct_train_end, x)))       for x in dss ]
-    test_datasets  = [ Subset_(x, np.arange(at_idx_pct(pct_test_start, x), len(x))) for x in dss ]
+    train_range = lambda x: np.arange(0, at_idx_pct(pct_train_end, x))
+    test_range  = lambda x: np.arange(at_idx_pct(pct_test_start, x), len(x))
+
+    train_datasets = [ Subset_(x, train_range(x)) for x in dss ]
+    test_datasets  = [ Subset_(x, test_range(x))  for x in dss ]
 
     # Concatenate datasets. This adds shape transforms to ensure that all
     # regions produce fields of the same shape, hence should be called after
     # saving the transformation so that when we're going to test on another
     # region this does not occur.
-    # TODO ignoring subsetting because it makes things go weird
     train_dataset = ConcatDataset_(dss)
     test_dataset = ConcatDataset_(dss)
 
