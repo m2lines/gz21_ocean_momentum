@@ -11,6 +11,8 @@ import configargparse
 import dask.diagnostics
 import logging
 
+import xarray as xr
+
 _cli_desc = "GZ21 data step: download CM2.6 dataset, apply coarse graining \
 and generate forcings. Saves result to disk in zarr format."
 
@@ -62,17 +64,14 @@ surface_fields = surface_fields[["usurf", "vsurf"]]
 
 logger.info("selecting input data bounding box...")
 surface_fields = bounding_box.bound_dataset("yu_ocean", "xu_ocean", surface_fields, bbox)
-grid = bounding_box.bound_dataset("yu_ocean", "xu_ocean", grid, bbox)
+grid           = bounding_box.bound_dataset("yu_ocean", "xu_ocean", grid,           bbox)
 
-# TODO 2023-11-29 raehik: original bounded first, sliced (immediately) after
 if options.ntimes is not None:
     logger.info(f"slicing {options.ntimes} time points...")
-    surface_fields = surface_fields.isel(time=slice(options.ntimes))
+    surface_fields = surface_fields.isel(time=slice(0, options.ntimes))
 
 logger.debug("placing grid dataset into local memory...")
 grid = grid.compute()
-
-# TODO .chunk! removed some lines here
 
 if options.cyclize:
     logger.info("making dataset cyclic along longitude...")
@@ -89,8 +88,21 @@ if options.cyclize:
 logger.info("computing forcings...")
 forcings = lib.compute_forcings_and_coarsen_cm2_6(surface_fields, grid, options.factor)
 
+use_old_func = False
+if use_old_func:
+    t = surface_fields.coarsen({"xu_ocean": options.factor, "yu_ocean": options.factor}, boundary="trim").mean()
+    t2 = t.copy()
+    t2 = t2.rename({"usurf": "S_x", "vsurf": "S_y"})
+    t = xr.merge((t, t2))
+    forcings = xr.map_blocks(lambda x: lib.compute_forcings_and_coarsen_cm2_6(x, grid, options.factor), surface_fields, template=t)
+
 logger.info("selecting forcing bounding box...")
 forcings = bounding_box.bound_dataset("yu_ocean", "xu_ocean", forcings, bbox)
+
+# re-chunk forcing Dask array (unsure if meaningful)
+for var in forcings:
+    forcings[var].encoding = {}
+forcings = forcings.chunk(dict(time=1))
 
 logger.info(f"writing forcings zarr to directory: {options.out_dir}")
 forcings.to_zarr(options.out_dir)
