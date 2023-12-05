@@ -18,7 +18,7 @@ WIP.
 
 ```
 python src/gz21_ocean_momentum/cli/train.py
---subdomains-file examples/cli-configs/training-subdomains-paper.yaml
+--subdomains-file examples/cli-configs/train-subdomains-paper.yaml
 --batch-size 8 --epochs 20
 --initial-learning-rate 5.0e-4 --decay-factor 0.0 --decay-at-epoch-milestones 15
 --decay-at-epoch-milestones 30 --train-split 0.8 --test-split 0.85 \

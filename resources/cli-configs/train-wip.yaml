@@ -1,6 +1,3 @@
-in-train-data-dir: /home/raehik/sh/gz21/gz21/tmp/generated/forcings/paper-n100
-subdomains-file: /home/raehik/sh/gz21/gz21/examples/cli-configs/training-subdomains-paper.yaml
-
 batch-size: 4
 
 epochs: 20
