@@ -102,5 +102,6 @@ forcings = xr.map_blocks(f, surface_fields, template=shape)
 logger.info("selecting forcing bounding box...")
 forcings = bounding_box.bound_dataset("yu_ocean", "xu_ocean", forcings, bbox)
 
+# to_zarr below now finally incurs the data processing computation
 logger.info(f"writing forcings zarr to directory: {options.out_dir}")
 forcings.to_zarr(options.out_dir)
