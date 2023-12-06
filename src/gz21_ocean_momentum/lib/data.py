@@ -78,10 +78,30 @@ def cyclize(dim_name: str, ds: xr.Dataset, nb_points: int) -> xr.Dataset:
     return xr.concat((left, right), dim_name)
 
 
+def compute_forcings_and_coarsen_cm2_6_shape(
+    u_v_dataset: xr.Dataset,
+    scale: int,
+) -> xr.Dataset:
+    """
+    Template for output array of `compute_forcings_and_coarsen_cm2_6`. Required
+    for `xarray.map_blocks`, as it can only infer shape for simple functions.
+
+    Should be used on Dask arrays.
+    """
+    t = u_v_dataset.coarsen({"xu_ocean": scale, "yu_ocean": scale}, boundary="trim").mean()
+
+    # clumsy way to create vars `S_x`, `S_y` of same coords as `usurf`, `vsurf`
+    t2 = t.copy()
+    t2 = t2.rename({"usurf": "S_x", "vsurf": "S_y"})
+    t = xr.merge((t, t2))
+
+    return t
+
+
 def compute_forcings_and_coarsen_cm2_6(
     u_v_dataset: xr.Dataset,
     grid_data: xr.Dataset,
-    scale: float,
+    scale: int,
     nan_or_zero: str = "zero",
 ) -> xr.Dataset:
     """
@@ -105,7 +125,7 @@ def compute_forcings_and_coarsen_cm2_6(
         High-resolution velocity field in "usurf" and "vsurf".
     grid_data : xarray Dataset
         High-resolution grid details.
-    scale : float
+    scale : int
         gaussian filtering & coarsening factor
     nan_or_zero: str, optional
         String set to either 'nan' or 'zero'. Determines whether we keep the
@@ -134,10 +154,10 @@ def compute_forcings_and_coarsen_cm2_6(
     # High res advection terms
     adv = _advections(u_v_dataset, grid_data)
     # Filtered advections
-    filtered_adv = _spatial_filter_dataset(adv, grid_data, scale/2)
+    filtered_adv = _spatial_filter_dataset(adv, grid_data, float(scale)/2)
 
     # Filtered u,v field and temperature
-    u_v_filtered = _spatial_filter_dataset(u_v_dataset, grid_data, scale/2)
+    u_v_filtered = _spatial_filter_dataset(u_v_dataset, grid_data, float(scale)/2)
     # Advection term from filtered velocity field
     adv_filtered = _advections(u_v_filtered, grid_data)
 
@@ -151,7 +171,7 @@ def compute_forcings_and_coarsen_cm2_6(
 
     # Coarsen
     ds_merged_coarse = ds_merged.coarsen(
-        {"xu_ocean": int(scale), "yu_ocean": int(scale)}, boundary="trim"
+        {"xu_ocean": scale, "yu_ocean": scale}, boundary="trim"
     ).mean()
 
     if nan_or_zero == "zero":
