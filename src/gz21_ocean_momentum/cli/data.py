@@ -12,9 +12,7 @@ import dask.diagnostics
 import logging
 
 import xarray as xr
-
 import dask.multiprocessing
-dask.config.set(num_workers=1)
 
 _cli_desc = "GZ21 data step: download CM2.6 dataset, apply coarse graining \
 and generate forcings. Saves result to disk in zarr format."
@@ -35,6 +33,7 @@ p.add("--co2-increase", action="store_true", help="use 1%% annual CO2 increase C
 p.add("--factor",   type=int,   required=True, help="resolution degradation factor")
 p.add("--pangeo-catalog-uri", type=str, default=DEF_CATALOG_URI, help="URI to Pangeo ocean dataset intake catalog file")
 p.add("--verbose", action="store_true", help="be more verbose (displays progress, debug messages)")
+p.add("--dask-workers", type=int, help="num_workers for Dask computations, higher is more parallel & memory hungry")
 
 options = p.parse_args()
 
@@ -49,6 +48,9 @@ else:
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
 
+if options.dask_workers is not None:
+    dask.config.set(num_workers=1)
+
 cli.fail_if_path_is_nonempty_dir(
         1, f"--out-dir \"{options.out_dir}\" invalid", options.out_dir)
 
@@ -61,8 +63,6 @@ if not bounding_box.validate_nonempty(bbox):
 
 logger.info("retrieving CM2.6 dataset via Pangeo Cloud Datastore...")
 surface_fields, grid = lib.retrieve_cm2_6(options.pangeo_catalog_uri, options.co2_increase)
-
-#surface_fields = surface_fields.chunk(time=50)
 
 logger.debug("dropping irrelevant data variables...")
 surface_fields = surface_fields[["usurf", "vsurf"]]
@@ -90,23 +90,16 @@ if options.cyclize:
     surface_fields = surface_fields.chunk({"xu_ocean": -1})
     grid = grid.chunk({"xu_ocean": -1})
 
-# re-chunk input Dask array (testing)
-surface_fields = surface_fields.chunk({"time": 1})
-
+# we may compute by running the function normally, but Dask may schedule poorly,
+# so be explicit with `map_blocks`
+# (dask.array.map_blocks may also work, `meta=` instead of `template=`)
 logger.info("computing forcings...")
-# Dask may schedule poorly without `map_blocks`
 shape = lib.compute_forcings_and_coarsen_cm2_6_shape(surface_fields, options.factor)
 f = lambda x: lib.compute_forcings_and_coarsen_cm2_6(x, grid, options.factor)
-forcings = xr.map_blocks(f, surface_fields, template=shape) # TODO dask.array.map_blocks?
+forcings = xr.map_blocks(f, surface_fields, template=shape)
 
 logger.info("selecting forcing bounding box...")
 forcings = bounding_box.bound_dataset("yu_ocean", "xu_ocean", forcings, bbox)
-
-for var in forcings:
-    forcings[var].encoding = {}
-
-# re-chunk forcing Dask array (unsure if required)
-#forcings = forcings.chunk({"time": 1})
 
 logger.info(f"writing forcings zarr to directory: {options.out_dir}")
 forcings.to_zarr(options.out_dir)
