@@ -7,7 +7,7 @@ import xarray as xr
 import numpy as np
 from numpy import ma
 import matplotlib.pyplot as plt
-import gz21_ocean_momentum.step.data.lib as lib
+import gz21_ocean_momentum.lib.data as lib
 
 class TestEddyForcing:
     "Class to test eddy forcing routines."
