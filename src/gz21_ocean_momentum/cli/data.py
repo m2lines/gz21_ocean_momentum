@@ -14,6 +14,7 @@ import logging
 import xarray as xr
 import dask.multiprocessing
 
+# Description of this module
 _cli_desc = "GZ21 data step: download CM2.6 dataset, apply coarse graining \
 and generate forcings. Saves result to disk in zarr format."
 
