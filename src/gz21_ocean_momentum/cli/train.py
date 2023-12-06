@@ -34,6 +34,7 @@ import tempfile
 # TODO ideally temporary but probably not
 import copy
 
+# Description of this module
 _cli_desc = """
 Train a Pytorch neural net to predict subgrid ocean momentum forcing from
 ocean surface velocity.

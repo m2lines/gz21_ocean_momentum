@@ -23,6 +23,7 @@ import gz21_ocean_momentum.models.transforms as transforms
 import gz21_ocean_momentum.train.losses as loss_funcs
 from gz21_ocean_momentum.inference.utils import predict_lazy_cm2_6
 
+# Description of this module
 _cli_desc = """
 Use a trained GZ21 neural net to predict forcing for input ocean velocity data.
 
