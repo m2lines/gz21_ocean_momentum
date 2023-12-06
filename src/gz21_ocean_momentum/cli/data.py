@@ -13,6 +13,9 @@ import logging
 
 import xarray as xr
 
+import dask.multiprocessing
+dask.config.set(num_workers=1)
+
 _cli_desc = "GZ21 data step: download CM2.6 dataset, apply coarse graining \
 and generate forcings. Saves result to disk in zarr format."
 
@@ -59,6 +62,8 @@ if not bounding_box.validate_nonempty(bbox):
 logger.info("retrieving CM2.6 dataset via Pangeo Cloud Datastore...")
 surface_fields, grid = lib.retrieve_cm2_6(options.pangeo_catalog_uri, options.co2_increase)
 
+#surface_fields = surface_fields.chunk(time=50)
+
 logger.debug("dropping irrelevant data variables...")
 surface_fields = surface_fields[["usurf", "vsurf"]]
 
@@ -85,24 +90,23 @@ if options.cyclize:
     surface_fields = surface_fields.chunk({"xu_ocean": -1})
     grid = grid.chunk({"xu_ocean": -1})
 
-logger.info("computing forcings...")
-forcings = lib.compute_forcings_and_coarsen_cm2_6(surface_fields, grid, options.factor)
+# re-chunk input Dask array (testing)
+surface_fields = surface_fields.chunk({"time": 1})
 
-use_old_func = False
-if use_old_func:
-    t = surface_fields.coarsen({"xu_ocean": options.factor, "yu_ocean": options.factor}, boundary="trim").mean()
-    t2 = t.copy()
-    t2 = t2.rename({"usurf": "S_x", "vsurf": "S_y"})
-    t = xr.merge((t, t2))
-    forcings = xr.map_blocks(lambda x: lib.compute_forcings_and_coarsen_cm2_6(x, grid, options.factor), surface_fields, template=t)
+logger.info("computing forcings...")
+# Dask may schedule poorly without `map_blocks`
+shape = lib.compute_forcings_and_coarsen_cm2_6_shape(surface_fields, options.factor)
+f = lambda x: lib.compute_forcings_and_coarsen_cm2_6(x, grid, options.factor)
+forcings = xr.map_blocks(f, surface_fields, template=shape) # TODO dask.array.map_blocks?
 
 logger.info("selecting forcing bounding box...")
 forcings = bounding_box.bound_dataset("yu_ocean", "xu_ocean", forcings, bbox)
 
-# re-chunk forcing Dask array (unsure if meaningful)
 for var in forcings:
     forcings[var].encoding = {}
-forcings = forcings.chunk(dict(time=1))
+
+# re-chunk forcing Dask array (unsure if required)
+#forcings = forcings.chunk({"time": 1})
 
 logger.info(f"writing forcings zarr to directory: {options.out_dir}")
 forcings.to_zarr(options.out_dir)
