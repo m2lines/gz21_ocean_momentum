@@ -11,6 +11,8 @@ paper can be found on [Zenodo][gz21-paper-code-zenodo].
 ## Usage
 Follow the installation instructions in the main project readme.
 
+Run `jupyter notebook` from project/repository root.
+
 You will also need to install Jupyter Notebook: `pip install notebook`
 
 Individual notebooks may have further dependencies. These should be displayed at
