@@ -158,12 +158,6 @@ def compute_forcings_and_coarsen_cm2_6(
     if nan_or_zero == "zero":
         u_v_dataset = u_v_dataset.fillna(0.0)
 
-    # Interpolate temperature
-    # interp_coords = dict(xt_ocean=u_v_dataset.coords['xu_ocean'],
-    #                      yt_ocean=u_v_dataset.coords['yu_ocean'])
-    # u_v_dataset['temp'] = u_v_dataset['surface_temperature'].interp(
-    #     interp_coords)
-
     # High res advection terms
     adv = _advections(u_v_dataset, grid_data)
     # Filtered advections
