@@ -2,46 +2,44 @@
 See README.md at repo root for further details. Here, we will provide just
 commands and commentary.
 
+Options such as `--out-dir` will be omitted. (The script will prompt you for
+missing options. You can display help by adding `--help` to your invocation.)
+
 ## 1. Training data generation
 ```
 python src/gz21_ocean_momentum/cli/data.py \
---config-file examples/cli-configs/data-paper.yaml \
---out-dir $(mktemp -d)
+--config-file resources/cli-configs/data-paper.yaml
 ```
 
 Unclear whether you may need `--ntimes 4000`.
 
-Configure `--out-dir` as you like.
-
 ## 2. Model training
-WIP.
+Not tested due to issues with training.
+
+Model hyperparameters adapted from Table A1.
 
 ```
-python src/gz21_ocean_momentum/cli/train.py
---subdomains-file examples/cli-configs/train-subdomains-paper.yaml
---batch-size 8 --epochs 20
---initial-learning-rate 5.0e-4 --decay-factor 0.0 --decay-at-epoch-milestones 15
---decay-at-epoch-milestones 30 --train-split 0.8 --test-split 0.85 \
---device cuda:0 \
---in-train-data-dir tmp/generated/forcings/paper-fig-1-ctrl-n100
---out-model $(mktemp -d)
+python src/gz21_ocean_momentum/cli/train.py \
+--config-file resources/cli-configs/train-paper.yaml \
+--subdomains-file resources/cli-configs/train-subdomains-paper.yaml \
+--train-split-end 0.8 --test-split-start 0.85
 ```
 
-Configure `--out-model` as you like.
+Add `--in-train-data-dir <forcings generated above>`.
 
 ## 3. Inference
 The CLI inference script has no configuration other than model to predict on,
 and input low-resolution data to predict forcings of:
 
-```
-python src/gz21_ocean_momentum/cli/infer.py \
---input-data-dir tmp/forcings/example \
---model-state-dict-file tmp/models/example.pth \
---out-dir $(mktemp -d)
-```
+    python src/gz21_ocean_momentum/cli/infer.py
 
-You may use a pretrained model. A low-resolution one is provided here:
+Currently will not reproduce the same predictions as used in the paper. See
+https://github.com/m2lines/gz21_ocean_momentum/pull/97 for further details.
+
+For `--model-state-dict-file`, you may use a pretrained model instead of running
+the training described above. A low-resolution one is provided here:
 https://huggingface.co/M2LInES/gz21-ocean-momentum/blob/main/low-resolution/files/trained_model.pth
 
-Example low resolution CM2.6 data for predicting on is available here:
+Similarly, instead of generating forcings as above, you may use pre-generated
+data for `--input-data-dir`. Low-resolution (~100 timepoints) CM2.6 data:
 https://huggingface.co/datasets/M2LInES/gz21-forcing-cm26/tree/main/forcing

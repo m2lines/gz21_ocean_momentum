@@ -1,0 +1,5 @@
+batch-size: 4
+epochs: 100
+initial-learning-rate: 5.0e-4
+decay-factor: 0.1
+decay-at-epoch-milestones: [10, 20]
