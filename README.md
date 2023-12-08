@@ -228,6 +228,9 @@ There is GZ21 Ocean Momentum data available on [HuggingFace](https://huggingface
 * [the output of the data step][datasets/M2LInES/gz21-forcing-cm26] and
 * [the trained model](https://huggingface.co/M2LInES/gz21-ocean-momentum).
 
+As of 2023-12-08, these are currently low-resolution: forcings generated
+for few time points (100 vs. 4000 available), and a model trained on that data.
+
 ## Contributing
 We are not currently accepting contributions outside of the M2LInES and ICCS
 projects until we have reached a code release milestone.
