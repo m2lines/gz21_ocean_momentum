@@ -17,10 +17,10 @@ forcing data, plus another set of forcings generated using the 1% annual CO2
 increase CM2.6 dataset. Use the same command as above, with `--co2-increase`.
 
 ## Figures 4, 5, 7
-`test-global-fig-4-5-7.ipynb` generates figures 4, 5 and 7, as well as D4 and D5. For
-this, the inference step with the trained neural network has to be run both on
-the data with and without `--co2-increase`, and then the notebook needs to be
-run once with each set. *(The neural net may be trained only once, on data
+`test-global-fig-4-5-7.ipynb` generates figures 4, 5 and 7, as well as D4 and
+D5. For this, the inference step with the trained neural network has to be run
+both on the data with and without `--co2-increase`, and then the notebook needs
+to be run once with each set. *(The neural net may be trained only once, on data
 without `--co2-increase`.)* The paper figures referring to _piControl_ are those
 without `--co2-increase` (the control simulation with pre-industrial CO2
 levels), and the figures referring to _1pctCO2_ are those with `--co2-increase`
