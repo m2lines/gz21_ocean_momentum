@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# TODO:
-# * probably remove the map usage. seems non-Pythonic, clumsy over list comps
 
 import gz21_ocean_momentum.common.cli as cli
 import gz21_ocean_momentum.common.assorted as common
@@ -28,12 +26,6 @@ from torch.utils.data import DataLoader, ConcatDataset
 from torch import optim
 from torch.optim.lr_scheduler import MultiStepLR
 
-# TODO probably temporary
-import tempfile
-
-# TODO ideally temporary but probably not
-import copy
-
 # Description of this module
 _cli_desc = """
 Train a Pytorch neural net to predict subgrid ocean momentum forcing from
@@ -46,7 +38,7 @@ p = configargparse.ArgParser(description=_cli_desc)
 p.add("--config-file", is_config_file=True, help="config file path")
 p.add("--in-train-data-dir",         type=str,   required=True, help="training data in zarr format, containing ocean velocities and forcings")
 p.add("--subdomains-file",           type=str,   required=True, help="YAML file describing subdomains to split input data into (see readme for format)")
-p.add("--batch-size",                 type=int,   required=True, help="TODO")
+p.add("--batch-size",                type=int,   required=True, help="PyTorch DataLoader batch size")
 p.add("--epochs",                    type=int,   required=True, help="number of epochs to train for")
 p.add("--out-model",                 type=str,   required=True, help="save trained model to this path")
 p.add("--initial-learning-rate",     type=float, required=True, help="initial learning rate for optimization algorithm")
@@ -59,34 +51,10 @@ p.add("--test-split-start", type=float, required=True, help="0>=x>=1. Use x->end
 p.add("--printevery", type=int, default=20)
 options = p.parse_args()
 
-# TODO raehik 2023-11-13: parse, don't validate
 if not common.list_is_strictly_increasing(options.decay_at_epoch_milestones):
     cli.fail(2, "epoch milestones list is not strictly increasing")
 
 torch.autograd.set_detect_anomaly(True)
-
-def _check_dir(dir_path):
-    """
-    Create directory if it does not already exist.
-
-    Parameters
-    ----------
-    dir_path : str
-        string of directory to check/make
-    """
-    if not os.path.exists(dir_path):
-        os.mkdir(dir_path)
-
-# Directories where temporary data will be saved
-data_location = tempfile.mkdtemp()
-print("Created temporary dir at  ", data_location)
-
-FIGURES_DIRECTORY = "figures"
-MODELS_DIRECTORY = "models"
-MODEL_OUTPUT_DIR = "model_output"
-
-for directory in [FIGURES_DIRECTORY, MODELS_DIRECTORY, MODEL_OUTPUT_DIR]:
-    _check_dir(os.path.join(data_location, directory))
 
 # dataset prep: load data, select subdomains via provided bounding boxes
 ds_xr = xr.open_zarr(options.in_train_data_dir)
@@ -98,7 +66,7 @@ def _transform_and_to_torch(ds_xr):
     """Attach a transformation to an xarray dataset, then convert to PyTorch."""
     # must deepcopy due to transformation implementation!
     ds_xr = copy.deepcopy(submodels.transform3).fit_transform(ds_xr)
-    #ds_xr = ds_xr.compute() # TODO ?
+    #ds_xr = ds_xr.compute() # should we force compute underlying xarray?
     ds_torch = lib.gz21_train_data_subdomain_xr_to_torch(ds_xr)
     return ds_torch
 datasets = [ _transform_and_to_torch(sd_xr) for sd_xr in sds_xr ]
@@ -147,7 +115,7 @@ for metric_name, metric in metrics.items():
 
 for i_epoch in range(options.epochs):
     print(f"Epoch number {i_epoch}.")
-    # TODO remove clipping?
+    # 2023-12-08 raehik: old note: remove clipping?
     train_loss = trainer.train_for_one_epoch(
         train_dataloader, optimizer, lr_scheduler, clip=1.0
     )
