@@ -199,11 +199,22 @@ Kernel size: (5 x 5). Kernel size can't be greater than actual input size
 ### Predicting using the trained model
 [cli-infer]: src/gz21_ocean_momentum/cli/infer.py
 
-The [`cli/infer.py`][cli-infer] script runs the model testing stage.
+The [`cli/infer.py`][cli-infer] script allows loading a trained model and a set
+of (low resolution) velocity data, and predicts forcings.
 
-TODO
+Example invocation:
 
-* 
+```
+python src/gz21_ocean_momentum/cli/infer.py \
+--model-state-dict-file model.pth \
+--input-data-dir <forcing zarr dir> \
+--device cuda:0
+```
+
+We have tested with data from the forcing generation step -- the forcings are
+not used, it is to obtain low-resolution velocities.
+
+See Guillaumin (2021) for detail on how to use model output.
 
 ### Jupyter Notebooks
 The [resources/jupyter-notebooks](resources/jupyter-notebooks/) folder stores
