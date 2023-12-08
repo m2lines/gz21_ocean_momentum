@@ -14,25 +14,39 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def retrieve_cm2_6(
-        catalog_uri: str,
-        co2_increase: bool,
-        ) -> Tuple[xr.Dataset, xr.Dataset]:
-    """Retrieve the CM2.6 dataset via the given intake catalog URI.
+def retrieve_cm2_6(catalog_uri: str, co2_increase: bool) -> xr.Dataset:
+    """
+    Retrieve CM2.6 velocity and grid data (lazily, as Dask arrays)
+    via the given Pangeo ocean intake catalog URI.
 
-    Returns a tuple of `(uv dataset, grid dataset)`.
+    Returns a tuple of `(velocities, grid)`.
 
     Will download if given an `http://` URI. Will use local files such as
     `/home/user/catalog.yaml` directly.
     """
-
     catalog = intake.open_catalog(catalog_uri)
+    surface_fields = retrieve_cm2_6_velocities(catalog, co2_increase)
+    grid = retrieve_cm2_6_grid(catalog)
+    return surface_fields, grid
+
+def retrieve_cm2_6_grid(catalog: str) -> xr.Dataset:
+    """
+    Retrieve CM2.6 grid data (lazily, as a Dask array)
+    via the given Pangeo ocean intake catalog.
+    """
     grid = catalog.GFDL_CM2_6.GFDL_CM2_6_grid
     grid = grid.to_dask()
 
     # transform non-primary coords into vars
     grid = grid.reset_coords()[["dxu", "dyu", "wet"]]
 
+    return grid
+
+def retrieve_cm2_6_velocities(catalog: str, co2_increase: bool) -> xr.Dataset:
+    """
+    Retrieve CM2.6 velocity data (lazily, as a Dask array)
+    via the given Pangeo ocean intake catalog.
+    """
     if co2_increase:
         logger.info("using 1% annual CO2 increase dataset")
         surface_fields = catalog.GFDL_CM2_6.GFDL_CM2_6_one_percent_ocean_surface
@@ -40,8 +54,7 @@ def retrieve_cm2_6(
         logger.info("using control dataset -> no annual CO2 increase")
         surface_fields = catalog.GFDL_CM2_6.GFDL_CM2_6_control_ocean_surface
     surface_fields = surface_fields.to_dask()
-
-    return surface_fields, grid
+    return surface_fields
 
 def cyclize(dim_name: str, ds: xr.Dataset, nb_points: int) -> xr.Dataset:
     """
@@ -220,8 +233,7 @@ def _advections(u_v_field: xr.Dataset, grid_data: xr.Dataset) -> xr.Dataset:
     adv_x = u * gradient_x["usurf"] + v * gradient_y["usurf"]
     adv_y = u * gradient_x["vsurf"] + v * gradient_y["vsurf"]
     result = xr.Dataset({"adv_x": adv_x, "adv_y": adv_y})
-    # check if we can simply prevent the previous operation from adding chunks
-    # result = result.chunk(dict(xu_ocean=-1, yu_ocean=-1))
+    # can these ops add chunks to our underlying Dask array? (should not)
     return result
 
 def _spatial_filter_dataset(
