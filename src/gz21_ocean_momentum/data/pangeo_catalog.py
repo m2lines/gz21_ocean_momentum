@@ -108,14 +108,3 @@ def get_whole_data(url, c02_level):
     """
     data, grid = get_patch(url, None, None, c02_level, "usurf", "vsurf")
     return data, grid
-
-
-if __name__ == "__main__":
-    import os
-
-    os.environ[
-        "GOOGLE_APPLICATION_CREDENTIALS"
-    ] = "~/.config/gcloud/application_default_credentials.json"
-    CATALOG_URL = "https://raw.githubusercontent.com/pangeo-data/pangeo-datastore\
-        /master/intake-catalogs/master.yaml"
-    retrieved_data = get_whole_data(CATALOG_URL, 0)
