@@ -50,7 +50,7 @@ else:
     logger = logging.getLogger(__name__)
 
 if options.dask_workers is not None:
-    dask.config.set(num_workers=1)
+    dask.config.set(num_workers=options.dask_workers)
 
 cli.fail_if_path_is_nonempty_dir(
         1, f"--out-dir \"{options.out_dir}\" invalid", options.out_dir)
