@@ -21,7 +21,7 @@ further reading. (A snapshot of the code used in the paper can be found on
 [Zenodo][gz21-paper-code-zenodo].)
 
 This repository also aims to enable reproducing the 2021 paper. The Jupyter
-notebooks at [`resources/jupyter-notebooks`][resources/jupyter-notebooks]
+notebooks at [`resources/jupyter-notebooks`](resources/jupyter-notebooks)
 generate some figures shown in the paper.
 
 ## Overview
@@ -225,7 +225,7 @@ details.
 ## Data on HuggingFace
 There is GZ21 Ocean Momentum data available on [HuggingFace](https://huggingface.co/)
 
-* [the output of the data step][datasets/M2LInES/gz21-forcing-cm26] and
+* [the output of the data step](https://huggingface.co/datasets/M2LInES/gz21-forcing-cm26) and
 * [the trained model](https://huggingface.co/M2LInES/gz21-ocean-momentum).
 
 As of 2023-12-08, these are currently low-resolution: forcings generated
