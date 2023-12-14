@@ -3,9 +3,9 @@
 If when running the data processing step, you see an error message like this:
 
 ```
-$ python src/gz21_ocean_momentum/cmip26.py -85 85 -280 80 --factor 4 --ntimes 1
+$ python src/gz21_ocean_momentum/cli/data.py --lat-min -80 --lat-max 80 --long-min -280 --long-max 80 --factor 4 --ntimes 1
 Traceback (most recent call last):
-  File "/home/user/workspace/gz21_ocean_momentum/src/gz21_ocean_momentum/cmip26.py", line 90, in <module>
+  File "/home/user/workspace/gz21_ocean_momentum/src/gz21_ocean_momentum/cli/data.py", line 90, in <module>
     patch_data, grid_data = get_patch(
                             ^^^^^^^^^^
   File "/home/user/workspace/gz21_ocean_momentum/src/gz21_ocean_momentum/data/pangeo_catalog.py", line 65, in get_patch
