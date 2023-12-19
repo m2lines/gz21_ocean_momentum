@@ -3,7 +3,7 @@
 # In particular, dependencies must be repeated. Keep these in sync.
 
 [project]
-version = "0.2.0"
+version = "0.3.0"
 
 name = "gz21_ocean_momentum"
 description = "TODO"
